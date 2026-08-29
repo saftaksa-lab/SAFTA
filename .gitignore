@@ -3,3 +3,7 @@ dist/
 .astro/
 graphify-out
 .env
+# The two content stores — the admin's data, not source. Anchored to the repo root so
+# they don't also swallow src/lib/content, src/components/content or public/assets/content.
+/content/
+/public/uploads/

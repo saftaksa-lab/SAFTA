@@ -9,7 +9,10 @@
     "preview": "astro preview",
     "start": "node ./dist/server/entry.mjs",
     "hash-password": "node scripts/hash-password.mjs",
-    "astro": "astro"
+    "astro": "astro",
+    "seed:content": "node scripts/seed-content.mjs",
+    "predev": "npm run seed:content",
+    "prebuild": "npm run seed:content"
   },
   "dependencies": {
     "@astrojs/node": "^11.1.4",

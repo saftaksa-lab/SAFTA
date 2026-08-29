@@ -1,0 +1,15 @@
+---
+import type { ImageField } from '../../lib/content/store';
+
+interface Props {
+  /** content key, kept in data-cms-img so the admin can still target this node */
+  key: string;
+  field: ImageField;
+  [attr: string]: unknown;
+}
+
+const { key, field, ...rest } = Astro.props;
+---
+{/* alt stays single-language: i18n.js swaps innerHTML and placeholders, never alt, so
+    field.altAr has no consumer on the page yet. */}
+<img data-cms-img={key} src={field.src} alt={field.alt} {...rest} />

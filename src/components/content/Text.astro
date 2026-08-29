@@ -1,0 +1,18 @@
+---
+import type { TextField } from '../../lib/content/store';
+
+interface Props {
+  /** element to render — the markup's original tag */
+  as?: string;
+  /** content key, kept in data-cms so the admin can still target this node */
+  key: string;
+  field: TextField;
+  [attr: string]: unknown;
+}
+
+const { as: Tag = 'span', key, field, ...rest } = Astro.props;
+---
+{/* English is the rendered text and Arabic rides along in data-ar — the contract
+    assets/js/i18n.js expects. It used to be produced by assets/js/cms.js after paint;
+    now it comes out of content/<page>.json on the server. */}
+<Tag data-cms={key} data-ar={field.ar} {...rest} set:html={field.en} />
