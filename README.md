@@ -149,11 +149,21 @@ get rendered as a plain inline attribute expression — `placeholder={c.text(key
 data-ar-placeholder={c.text(key).ar}` — on the input directly rather than through a
 component.
 
-**Migration status:** `about`, `contact` and `register-interest` have schema modules and
-are `apiBacked`. The other pages still render through `assets/content/<page>.js` +
-`assets/js/cms.js` (client-side DOM patching after paint) and still publish through the
-admin's original flow — edit into `localStorage`, download the generated `.js` files,
-commit them by hand.
+**Migration status:** `about`, `contact`, `register-interest`, `index` and `media` have
+schema modules and are `apiBacked`. The other pages still render through
+`assets/content/<page>.js` + `assets/js/cms.js` (client-side DOM patching after paint)
+and still publish through the admin's original flow — edit into `localStorage`, download
+the generated `.js` files, commit them by hand.
+
+`index` and `media` were the first pages migrated whose `public/admin/schema.js` entry
+had drifted from the actual page markup — two `believeSlider` cards on `index` (added to
+the page and to `content/index.json` at some point without a matching `schema.js`
+update) made the generator fail its cross-check. The fix was to add the missing card
+entries to `schema.js` by hand, matching the existing cards' shape, rather than
+hand-editing the generated output — the generator is meant to catch exactly this kind of
+drift, so when it does, fix the source it reads from. `media`'s Events tab
+(`#eventsList`) stays wired to `assets/js/events-data.js`; it was never a `schema.js`
+field to begin with, so this migration doesn't touch it.
 
 **Known issue, unrelated to any of the above:** Vite's built-in `dotenv-expand` treats any
 `$word` in a `.env` value as a variable reference and blanks it if undefined. A

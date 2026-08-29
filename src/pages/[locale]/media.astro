@@ -1,10 +1,18 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Text from '../../components/content/Text.astro';
+import Image from '../../components/content/Image.astro';
+import { getPageContent } from '../../lib/content/store';
+import { MEDIA_FIELDS } from '../../lib/content/schema/media';
+import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
   return [{ params: { locale: 'en' } }, { params: { locale: 'ar' } }];
 }
 const { locale } = Astro.params;
+if (!isLocale(locale)) return new Response(null, { status: 404 });
+
+const c = await getPageContent<typeof MEDIA_FIELDS>('media');
 ---
 <BaseLayout
   locale={locale}
@@ -15,34 +23,34 @@ const { locale } = Astro.params;
 <main>
 <section class="page-hero page-hero--plain">
 <div class="wrap">
-<p class="crumbs"><a data-cms="t001-الرئيسية" data-ar="الرئيسية" href={`/${locale}`}>Home</a><span>/</span>News &amp; Events</p>
-<h1 data-cms="t002-المركز-الإعلامي" data-ar="الأخبار والفعاليات">News &amp; Events</h1>
-<p data-cms="t003-الأخبار-والرؤى-والصور-والف" class="lede" data-ar="آخر أخبار التحالف وفعالياته ومعارضه.">The latest news, events and exhibitions from across the Alliance.</p>
+<p class="crumbs"><Text as="a" key="t001-الرئيسية" field={c.text("t001-الرئيسية")} href={`/${locale}`} /><span>/</span>News &amp; Events</p>
+<Text as="h1" key="t002-المركز-الإعلامي" field={c.text("t002-المركز-الإعلامي")} />
+<Text as="p" key="t003-الأخبار-والرؤى-والصور-والف" field={c.text("t003-الأخبار-والرؤى-والصور-والف")} class="lede" />
 </div>
 </section>
 <section class="ribbon">
 <div class="wrap">
-<p class="demo-note"><svg fill="none" height="17" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="17"><circle cx="12" cy="12" r="9"></circle><path d="M12 8h.01M11 12h1v4h1"></path></svg><span data-cms="t004-بيانات-تجريبية-المدخلات-في" data-ar="&lt;b&gt;بيانات تجريبية.&lt;/b&gt; المدخلات في هذه الصفحة عناصر مبدئية لعرض التصميم فقط، ويجب استبدالها بسجلات التحالف الحقيقية قبل الإطلاق."><b data-ar="بيانات تجريبية.">Demo data.</b> The entries on this page are placeholders used to show the layout. Replace them with the Alliance’s real records before launch.</span></p>
+<p class="demo-note"><svg fill="none" height="17" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="17"><circle cx="12" cy="12" r="9"></circle><path d="M12 8h.01M11 12h1v4h1"></path></svg><Text as="span" key="t004-بيانات-تجريبية-المدخلات-في" field={c.text("t004-بيانات-تجريبية-المدخلات-في")}><b>Demo data.</b> The entries on this page are placeholders used to show the layout. Replace them with the Alliance’s real records before launch.</Text></p>
 <div class="mtabs" role="tablist" aria-label="News & Events">
 <button class="mtab is-active" type="button" role="tab" aria-selected="true" data-mtab="news" data-ar="الأخبار">News</button>
 <button class="mtab" type="button" role="tab" aria-selected="false" data-mtab="events" data-ar="الفعاليات والمعارض">Events &amp; exhibitions</button>
 </div>
 <div class="mtab-panel is-active" id="news" role="tabpanel">
 <div class="card-row bleed reveal"><a class="news-card" href={`/${locale}/article?id=mou-water`}>
-<div class="news-card__media"><img data-cms-img="i005-phnews" alt="" src="assets/img/placeholders/ph-news.svg"/></div>
-<div class="news-card__body"><p data-cms="t006-أخبار-28-يوليو-2026" class="news-card__meta" data-ar="أخبار · 28 يوليو 2026">News  ·  July 28, 2026</p><h3 data-cms="t007-التحالف-ووزارة-البيئة-والم" data-ar="التحالف ووزارة البيئة والمياه والزراعة يوقّعان مذكرة لتسريع تقنيات الزراعة الموفّرة للمياه">SAFTA and MEWA sign a memorandum to accelerate water-efficient farming technologies</h3></div>
+<div class="news-card__media"><Image key="i005-phnews" field={c.image("i005-phnews")} /></div>
+<div class="news-card__body"><Text as="p" key="t006-أخبار-28-يوليو-2026" field={c.text("t006-أخبار-28-يوليو-2026")} class="news-card__meta" /><Text as="h3" key="t007-التحالف-ووزارة-البيئة-والم" field={c.text("t007-التحالف-ووزارة-البيئة-والم")} /></div>
 <div class="news-card__foot"><span class="circ-sm"><svg fill="none" height="13" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="13"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></div>
 </a><a class="news-card" href={`/${locale}/article?id=first-cohort`}>
-<div class="news-card__media"><img data-cms-img="i008-phmembership" alt="" src="assets/img/placeholders/ph-membership.svg"/></div>
-<div class="news-card__body"><p data-cms="t009-أخبار-14-يوليو-2026" class="news-card__meta" data-ar="أخبار · 14 يوليو 2026">News  ·  July 14, 2026</p><h3 data-cms="t010-انعقاد-الدفعة-الأولى-من-مج" data-ar="انعقاد الدفعة الأولى من مجموعات العمل في الرياض لوضع الأجندة البحثية">First cohort of working groups convenes in Riyadh to set the research agenda</h3></div>
+<div class="news-card__media"><Image key="i008-phmembership" field={c.image("i008-phmembership")} /></div>
+<div class="news-card__body"><Text as="p" key="t009-أخبار-14-يوليو-2026" field={c.text("t009-أخبار-14-يوليو-2026")} class="news-card__meta" /><Text as="h3" key="t010-انعقاد-الدفعة-الأولى-من-مج" field={c.text("t010-انعقاد-الدفعة-الأولى-من-مج")} /></div>
 <div class="news-card__foot"><span class="circ-sm"><svg fill="none" height="13" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="13"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></div>
 </a><a class="news-card" href={`/${locale}/article?id=loi-2026`}>
-<div class="news-card__media"><img data-cms-img="i011-phinsight02" alt="" src="assets/img/placeholders/ph-insight-02.svg"/></div>
-<div class="news-card__body"><p data-cms="t012-أخبار-30-يونيو-2026" class="news-card__meta" data-ar="أخبار · 30 يونيو 2026">News  ·  June 30, 2026</p><h3 data-cms="t013-التحالف-ينشر-خطاب-الاهتمام" data-ar="التحالف ينشر خطاب الاهتمام بالعضوية لعام 2026">SAFTA publishes the 2026 membership Letter of Interest</h3></div>
+<div class="news-card__media"><Image key="i011-phinsight02" field={c.image("i011-phinsight02")} /></div>
+<div class="news-card__body"><Text as="p" key="t012-أخبار-30-يونيو-2026" field={c.text("t012-أخبار-30-يونيو-2026")} class="news-card__meta" /><Text as="h3" key="t013-التحالف-ينشر-خطاب-الاهتمام" field={c.text("t013-التحالف-ينشر-خطاب-الاهتمام")} /></div>
 <div class="news-card__foot"><span class="circ-sm"><svg fill="none" height="13" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="13"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></div>
 </a><a class="news-card" href={`/${locale}/article?id=precision-pilots`}>
-<div class="news-card__media"><img data-cms-img="i014-phwhatwedo" alt="" src="assets/img/placeholders/ph-what-we-do.svg"/></div>
-<div class="news-card__body"><p data-cms="t015-أخبار-09-يونيو-2026" class="news-card__meta" data-ar="أخبار · 09 يونيو 2026">News  ·  June 09, 2026</p><h3 data-cms="t016-التحالف-يشارك-مراكز-بحثية-" data-ar="التحالف يشارك مراكز بحثية وطنية في تجارب الزراعة الدقيقة">Alliance partners with national research centres on precision agriculture pilots</h3></div>
+<div class="news-card__media"><Image key="i014-phwhatwedo" field={c.image("i014-phwhatwedo")} /></div>
+<div class="news-card__body"><Text as="p" key="t015-أخبار-09-يونيو-2026" field={c.text("t015-أخبار-09-يونيو-2026")} class="news-card__meta" /><Text as="h3" key="t016-التحالف-يشارك-مراكز-بحثية-" field={c.text("t016-التحالف-يشارك-مراكز-بحثية-")} /></div>
 <div class="news-card__foot"><span class="circ-sm"><svg fill="none" height="13" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="13"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></div>
 </a></div>
 </div>
@@ -55,7 +63,5 @@ const { locale } = Astro.params;
 </div>
 </section>
 </main>
-<script slot="scripts" is:inline src="assets/content/media.js?v=28"></script>
-<script slot="scripts" is:inline src="assets/js/cms.js?v=28"></script>
 <script slot="scripts-late" is:inline src="assets/js/events-data.js?v=28"></script>
 </BaseLayout>

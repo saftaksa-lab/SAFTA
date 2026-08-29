@@ -2,6 +2,8 @@ import { denormalizeSections, zodForFields } from './codec';
 import ABOUT_PAGE from './about';
 import CONTACT_PAGE from './contact';
 import REGISTER_INTEREST_PAGE from './register-interest';
+import INDEX_PAGE from './index';
+import MEDIA_PAGE from './media';
 
 /**
  * Every page with a generated schema module — the single source of truth for which pages
@@ -13,6 +15,8 @@ const PAGES = {
   about: ABOUT_PAGE,
   contact: CONTACT_PAGE,
   'register-interest': REGISTER_INTEREST_PAGE,
+  index: INDEX_PAGE,
+  media: MEDIA_PAGE,
 };
 
 export type PageName = keyof typeof PAGES;
