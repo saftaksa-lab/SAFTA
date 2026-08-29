@@ -141,10 +141,19 @@ live content API (not the frozen `baseline.js` snapshot) before computing what's
 so "reset to original" and the dirty-state markers track the real file, and "Save &
 Publish" writes directly instead of opening the download modal.
 
-**Migration status:** only `about` has a schema module and is `apiBacked`. The other
-pages still render through `assets/content/<page>.js` + `assets/js/cms.js` (client-side
-DOM patching after paint) and still publish through the admin's original flow — edit into
-`localStorage`, download the generated `.js` files, commit them by hand.
+Some fields are text rendered into an attribute rather than element content — e.g.
+`data-cms-ph` on an `<input>`, paired with `placeholder` and `data-ar-placeholder`.
+`Text.astro`'s contract is element-content-only (`set:html`), so these are still `kind:
+"text"` in the schema (the generator's `kindOf()` only looks at `'src' in record`) but
+get rendered as a plain inline attribute expression — `placeholder={c.text(key).en}
+data-ar-placeholder={c.text(key).ar}` — on the input directly rather than through a
+component.
+
+**Migration status:** `about`, `contact` and `register-interest` have schema modules and
+are `apiBacked`. The other pages still render through `assets/content/<page>.js` +
+`assets/js/cms.js` (client-side DOM patching after paint) and still publish through the
+admin's original flow — edit into `localStorage`, download the generated `.js` files,
+commit them by hand.
 
 **Known issue, unrelated to any of the above:** Vite's built-in `dotenv-expand` treats any
 `$word` in a `.env` value as a variable reference and blanks it if undefined. A

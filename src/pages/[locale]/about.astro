@@ -4,14 +4,16 @@ import Text from '../../components/content/Text.astro';
 import Image from '../../components/content/Image.astro';
 import { getPageContent } from '../../lib/content/store';
 import { ABOUT_FIELDS } from '../../lib/content/schema/about';
+import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
   return [{ params: { locale: 'en' } }, { params: { locale: 'ar' } }];
 }
 const { locale } = Astro.params;
 // The route renders on demand, so getStaticPaths does not constrain the param — /fr/about
-// would otherwise render the English copy under lang="fr".
-if (locale !== 'en' && locale !== 'ar') return new Response(null, { status: 404 });
+// would otherwise render the English copy under lang="fr". isLocale is a type predicate,
+// so this also narrows `locale` from string to 'en' | 'ar' for BaseLayout below.
+if (!isLocale(locale)) return new Response(null, { status: 404 });
 
 // Copy comes from ./content/about.json (gitignored, admin-owned), cached in memory. The
 // <typeof ABOUT_FIELDS> type argument narrows c.text()/c.image() to this page's own keys,

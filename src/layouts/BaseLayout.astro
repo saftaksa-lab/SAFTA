@@ -3,10 +3,11 @@ import SiteHeader from '../components/SiteHeader.astro';
 import SiteDrawer from '../components/SiteDrawer.astro';
 import JoinBanner from '../components/JoinBanner.astro';
 import SiteFooter from '../components/SiteFooter.astro';
+import type { Locale } from '../lib/locale';
 
 interface Props {
   /** which locale route this page was generated for */
-  locale: 'en' | 'ar';
+  locale: Locale;
   /** <title>, English. Arabic pages render titleAr instead. */
   title: string;
   /** <html data-title-ar> — read by assets/js/i18n.js and the admin preview */
