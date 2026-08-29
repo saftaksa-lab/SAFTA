@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout
+  title="Article | SAFTA"
+  titleAr="مقال | التحالف السعودي"
+>
+<main>
+<article class="art">
+
+<header class="art__hero">
+<img data-cms-img="i001-gd09rackshero" alt="" id="aImg" src="assets/img/green-dunes/gd-09-racks-hero.webp"/>
+<div class="art__scrim"></div>
+<div class="wrap">
+<p class="crumbs"><a data-cms="t002-الرئيسية" data-ar="الرئيسية" href="/">Home</a><span>/</span><a data-cms="t003-المركز-الإعلامي" data-ar="المركز الإعلامي" href="/media">Media</a><span>/</span><span id="aKind">News</span></p>
+<h1 id="aTitle">—</h1>
+<p class="art__meta"><span id="aDate">—</span><i></i><span id="aRead">—</span></p>
+</div>
+</header>
+
+<div class="wrap">
+<div class="art__body reveal">
+<p class="art__lede" id="aLede">—</p>
+<div id="aSections"></div>
+<figure class="art__quote" hidden="" id="aQuote"><blockquote id="aQuoteTxt"></blockquote><figcaption id="aQuoteBy"></figcaption></figure>
+<div class="art__tags" id="aTags"></div>
+</div>
+
+<div class="art__nav reveal">
+<a data-cms="t004-عودة-إلى-المركز-الإعلامي" class="btn-pill" data-ar="عودة إلى المركز الإعلامي" href="/media">Back to Media</a>
+<a data-cms="t005-سجّل-اهتمامك" class="btn-pill btn-pill--alt" data-ar="سجّل اهتمامك" href="/register-interest">Register your interest</a>
+</div>
+</div>
+
+</article>
+</main>
+<script slot="scripts" is:inline src="assets/content/article.js?v=28"></script>
+<script slot="scripts" is:inline src="assets/js/cms.js?v=28"></script>
+<script slot="scripts-late" is:inline src="assets/js/article-data.js"></script>
+</BaseLayout>

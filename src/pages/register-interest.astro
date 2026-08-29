@@ -1,0 +1,92 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout
+  title="Register your interest | SAFTA"
+  titleAr="سجّل اهتمامك | التحالف السعودي"
+  description="Tell us who you are and which challenge you want to work on. We will follow up with the membership pack."
+  joinBanner={false}
+>
+<main>
+<section class="page-hero page-hero--plain">
+<div class="wrap">
+<p class="crumbs"><a data-cms="t001-الرئيسية" data-ar="الرئيسية" href="/">Home</a><span>/</span>Register interest</p>
+<h1 data-cms="t002-سجّل-اهتمامك" data-ar="سجّل اهتمامك">Register your interest</h1>
+<p data-cms="t003-عرّفنا-بجهتك-والتحدي-الذي-" class="lede" data-ar="عرّفنا بجهتك والتحدي الذي ترغب بالعمل عليه، وسنتواصل معك بحزمة العضوية.">Tell us who you are and which challenge you want to work on. We will follow up with the membership pack.</p>
+</div>
+</section>
+<section class="ribbon">
+<div class="wrap">
+<div class="form-shell">
+<form class="form reveal" id="interestForm" novalidate="">
+<div class="row-2">
+<div class="field"><label data-cms="t004-الاسم-الكامل" data-ar="الاسم الكامل *" for="ri-name">Full name *</label><input id="ri-name" name="name" required=""/></div>
+<div class="field"><label data-cms="t005-اسم-الجهة" data-ar="اسم الجهة *" for="ri-entity">Entity name *</label><input id="ri-entity" name="entity" required=""/></div>
+</div>
+<div class="row-2">
+<div class="field"><label data-cms="t006-نوع-الجهة" data-ar="نوع الجهة *" for="ri-type">Entity type *</label>
+<select id="ri-type" name="type" required=""><option data-cms="t007-اختر" data-ar="اختر…" value="">Select…</option><option data-cms="t008-جهة-حكومية" data-ar="جهة حكومية">Government entity</option><option data-cms="t009-مؤسسة-أكاديمية" data-ar="مؤسسة أكاديمية">Academic institution</option><option data-cms="t010-شركة-من-القطاع-الخاص" data-ar="شركة من القطاع الخاص">Private sector company</option><option data-cms="t011-منظمة-غير-ربحية" data-ar="منظمة غير ربحية">Non-profit organization</option><option data-cms="t012-مبتكر-فرد" data-ar="مبتكر فرد">Individual innovator</option></select></div>
+<div class="field"><label data-cms="t013-البريد-الإلكتروني-للعمل" data-ar="البريد الإلكتروني للعمل *" for="ri-email">Work email *</label><input id="ri-email" name="email" required="" type="email"/></div>
+</div>
+<div class="row-2">
+<div class="field"><label data-cms="t014-رقم-الجوال" data-ar="رقم الجوال" for="ri-phone">Phone number</label><input id="ri-phone" name="phone"/></div>
+<div class="field"><label data-cms="t015-الموقع-الإلكتروني" data-ar="الموقع الإلكتروني" for="ri-site">Website</label><input data-cms-ph="p016-https" data-ar-placeholder="https://" id="ri-site" name="website" placeholder="https://"/></div>
+</div>
+<div class="field"><label data-cms="t017-مجال-الاهتمام" data-ar="مجال الاهتمام *" for="ri-area">Area of interest *</label>
+<select id="ri-area" name="area" required=""><option data-cms="t018-اختر" data-ar="اختر…" value="">Select…</option><option data-cms="t019-قسوة-الظروف-المناخية" data-ar="قسوة الظروف المناخية">Harsh climate conditions</option><option data-cms="t020-شُح-الموارد-المائية" data-ar="شُح الموارد المائية">Water scarcity</option><option data-cms="t021-مخاطر-الآفات-الزراعية" data-ar="مخاطر الآفات الزراعية">Pest risks</option><option data-cms="t022-تدهور-التربة" data-ar="تدهور التربة">Soil degradation</option><option data-cms="t023-هدر-الغذاء" data-ar="هدر الغذاء">Food waste</option><option data-cms="t024-أخرى-غير-محدد-بعد" data-ar="أخرى / غير محدد بعد">Other / not sure yet</option></select>
+<p data-cms="t025-مرتبط-بالتحديات-الوطنية-ال" class="hint" data-ar="مرتبط بالتحديات الوطنية الخمسة التي يعمل عليها التحالف.">Maps to the five national challenges the Alliance works on.</p></div>
+<div class="field"><label data-cms="t026-لماذا-ترغب-بالانضمام؟" data-ar="لماذا ترغب بالانضمام؟" for="ri-msg">Why do you want to join?</label><textarea id="ri-msg" name="message"></textarea></div>
+<div class="field">
+<label data-cms="t027-ملف-الأعمال-أو-العرض-التعر" data-ar="ملف الأعمال أو العرض التعريفي" for="ri-file">Portfolio or company profile</label>
+<p data-cms="t028-PDF-أو-PPTX-أو-DOCX-حتى-10" class="hint hint--top" data-ar="PDF أو PPTX أو DOCX · حتى 10 م.ب · اختياري">PDF, PPTX or DOCX · up to 10MB · optional</p>
+<div class="filepick">
+<input accept=".pdf,.ppt,.pptx,.doc,.docx" id="ri-file" name="portfolio" type="file"/>
+<label data-cms="t029-اختر-ملفًا" class="filepick__btn" data-ar="اختر ملفًا" for="ri-file">Choose file</label>
+<span data-cms="t030-لم-يُختر-أي-ملف" class="filepick__name" data-ar="لم يُختر أي ملف">No file chosen</span>
+</div>
+</div>
+<label class="check"><input required="" type="checkbox"/><span data-cms="t031-أُقرّ-بأنني-مخوّل-بتقديم-ه" data-ar="أُقرّ بأنني مخوّل بتقديم هذا الطلب نيابةً عن الجهة المذكورة أعلاه، وأوافق على &lt;a href=&quot;/terms&quot; style=&quot;color:var(--c-link)&quot;&gt;الشروط والأحكام&lt;/a&gt; و&lt;a href=&quot;/privacy&quot; style=&quot;color:var(--c-link)&quot;&gt;سياسة الخصوصية&lt;/a&gt;.">I confirm I am authorized to submit this request on behalf of the entity named above, and I accept the <a href="/terms" style="color:var(--c-link)">Terms &amp; Conditions</a> and <a href="/privacy" style="color:var(--c-link)">Privacy Policy</a>.</span></label>
+<div class="form-actions">
+<button class="btn-solid" type="submit"><span data-cms="t032-إرسال-التسجيل" data-ar="إرسال التسجيل">Submit registration</span><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></button>
+<span class="form-msg" id="riMsg"><svg fill="none" height="15" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="15"><path d="M20 6L9 17l-5-5"></path></svg><span data-cms="t033-شكرًا-لك-تم-تسجيل-طلبك-بنج" data-ar="شكرًا لك — تم تسجيل طلبك بنجاح.">Thank you — your registration has been recorded.</span></span>
+</div>
+</form>
+<aside class="aside-card reveal">
+<h3 data-cms="t034-ماذا-بعد؟" data-ar="ماذا بعد؟">What happens next</h3>
+<p data-cms="t035-أربع-خطوات-من-إرسال-الطلب-" class="aside-card__lede" data-ar="أربع خطوات من إرسال الطلب حتى إدراج جهتك في دليل المتحالفين.">Four steps from submitting your request to being listed in the Members directory.</p>
+
+<ol class="aside-steps">
+<li>
+<span class="aside-steps__no">1</span>
+<span><b data-cms="t036-المراجعة" data-ar="المراجعة">Review</b><span data-cms="t037-يراجع-فريق-التحالف-طلبك-وي" class="aside-steps__txt" data-ar="يراجع فريق التحالف طلبك ويتحقّق من اكتمال بياناته.">The Alliance team reviews your request and checks that it is complete.</span></span>
+</li>
+<li>
+<span class="aside-steps__no">2</span>
+<span><b data-cms="t038-التواصل" data-ar="التواصل">Contact</b><span data-cms="t039-نتواصل-معك-عبر-البريد-الإل" class="aside-steps__txt" data-ar="نتواصل معك عبر البريد الإلكتروني الذي زوّدتنا به.">We reach out to you at the email address you provided.</span></span>
+</li>
+<li>
+<span class="aside-steps__no">3</span>
+<span><b data-cms="t040-خطاب-العضوية" data-ar="خطاب العضوية">Letter of Interest</b><span data-cms="t041-تتلقّى-الجهات-المؤهّلة-خطا" class="aside-steps__txt" data-ar="تتلقّى الجهات المؤهّلة خطاب الاهتمام بالعضوية للتوقيع.">Eligible entities receive the Membership Letter of Interest to sign.</span></span>
+</li>
+<li>
+<span class="aside-steps__no">4</span>
+<span><b data-cms="t042-الإدراج" data-ar="الإدراج">Listing</b><span data-cms="t043-بعد-التوقيع-تُدرَج-جهتك-في" class="aside-steps__txt" data-ar="بعد التوقيع تُدرَج جهتك في دليل المتحالفين على الموقع.">Once signed, your entity is listed in the Members directory.</span></span>
+</li>
+</ol>
+
+<div class="aside-card__social">
+<p data-cms="t044-عندك-سؤال؟" data-ar="عندك سؤال؟">Any questions?</p>
+<a class="aside-card__mail" href="mailto:secretariat@safta.sa">
+<svg fill="none" height="15" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="15"><rect height="15" rx="2.5" width="19" x="2.5" y="4.5"></rect><path d="M3 6.5l9 6.5 9-6.5"></path></svg>
+<span>secretariat@safta.sa</span>
+</a>
+</div>
+</aside>
+</div>
+</div>
+</section>
+</main>
+<!-- لا لافتة انضمام هنا: الصفحة نفسها هي وجهة الزر -->
+<script slot="scripts" is:inline src="assets/content/register-interest.js?v=28"></script>
+<script slot="scripts" is:inline src="assets/js/cms.js?v=28"></script>
+</BaseLayout>

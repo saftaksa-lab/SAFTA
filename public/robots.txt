@@ -1,0 +1,10 @@
+# نسخة معاينة — محجوبة عن محركات البحث.
+# قبل الإطلاق الرسمي: احذف السطرين أدناه، واحذف وسم
+# <meta name="robots" content="noindex, nofollow"> من src/layouts/BaseLayout.astro
+# (صار في مكان واحد يسري على كل الصفحات، بدل تكراره في كل صفحة).
+User-agent: *
+Disallow: /
+
+# مركز التحكّم — محجوب دائمًا، حتى بعد الإطلاق. لا تحذف هذين السطرين.
+User-agent: *
+Disallow: /admin/

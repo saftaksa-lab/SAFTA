@@ -1,0 +1,20 @@
+---
+/* Drawer nav. `current` marks one link with is-current — same set of pages
+   that carried the class in the hand-written HTML. */
+interface Props { current?: string }
+const { current } = Astro.props;
+const on = (key: string) => (current === key ? 'is-current' : undefined);
+---
+<div aria-hidden="true" class="drawer" id="drawer">
+<button aria-label="Close" class="drawer__close" id="drawerClose" type="button">×</button>
+<nav class="drawer__nav">
+<a class={on('index')} data-ar="الرئيسية" href="/">Home</a>
+<a class={on('about')} data-ar="عن التحالف" href="/about">About</a>
+<a class={on('technologies')} data-ar="مجموعات العمل" href="/technologies">Working Groups</a>
+<a class={on('members')} data-ar="المتحالفون" href="/members">Our Members</a>
+<a class="is-soon" aria-disabled="true" tabindex="-1" href="#"><span data-ar="جوائز سافتا للتميّز">SAFTA Excellence Awards</span><em class="soon-tag" data-ar="قريبًا">Soon</em></a>
+<a class={on('media')} data-ar="الأخبار والفعاليات" href="/media">News &amp; Events</a>
+<a class={on('contact')} data-ar="تواصل معنا" href="/contact">Contact Us</a>
+</nav>
+<div class="drawer-cta"><a class="is-solid" data-ar="سجّل اهتمامك" href="/register-interest">Register interest</a></div>
+</div>

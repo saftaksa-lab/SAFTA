@@ -1,0 +1,39 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout
+  title="Page not found | SAFTA"
+  titleAr="الصفحة غير موجودة | SAFTA"
+  description="The page you requested could not be found."
+  appleTouchIcon
+>
+<main>
+<section class="page-hero page-hero--plain">
+<div class="wrap">
+<p class="crumbs"><a data-ar="الرئيسية" href="/">Home</a><span>/</span><span data-ar="غير موجودة">Not found</span></p>
+<h1 data-ar="عذرًا، الصفحة غير موجودة">Sorry, we couldn’t find that page</h1>
+<p class="lede" data-ar="ربما نُقل الرابط أو تغيّر عنوانه. جرّب أحد الروابط أدناه.">The link may have moved or changed address. Try one of the links below.</p>
+</div>
+</section>
+<section class="ribbon">
+<div class="wrap">
+<div class="sec-head reveal">
+<div class="sec-head__txt">
+<p class="eyebrow" data-ar="خطأ 404">Error 404</p>
+<h2 class="h-section" data-ar="أين تريد أن تذهب؟">Where would you like to go?</h2>
+</div>
+<a class="cta-circle" href="/"><span data-ar="العودة للرئيسية">Back to home</span><span class="circ"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></a>
+</div>
+<div class="docs reveal">
+<h3 data-ar="روابط سريعة">Quick links</h3>
+<div class="doc"><div class="doc__row"><a data-ar="عن التحالف" href="/about">About SAFTA</a></div></div>
+<div class="doc"><div class="doc__row"><a data-ar="مجموعات العمل" href="/technologies">Working Groups</a></div></div>
+<div class="doc"><div class="doc__row"><a data-ar="المتحالفون" href="/members">Members</a></div></div>
+<div class="doc"><div class="doc__row"><a data-ar="الأخبار والفعاليات" href="/media">News &amp; Events</a></div></div>
+<div class="doc"><div class="doc__row"><a data-ar="سجّل اهتمامك" href="/register-interest">Register interest</a></div></div>
+<div class="doc"><div class="doc__row"><a data-ar="تواصل معنا" href="/contact">Contact us</a></div></div>
+</div>
+</div>
+</section>
+</main>
+</BaseLayout>

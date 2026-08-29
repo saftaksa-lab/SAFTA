@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout
+  title="Members | SAFTA"
+  titleAr="المتحالفون | التحالف السعودي"
+  description="Government, academic, private sector and non-profit entities working together on agrifood technology."
+  current="members"
+>
+<link slot="head" crossorigin="" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" referrerpolicy="no-referrer" rel="stylesheet"/>
+<main>
+<section class="page-hero page-hero--plain">
+<div class="wrap">
+<p class="crumbs"><a data-cms="t001-الرئيسية" data-ar="الرئيسية" href="/">Home</a><span>/</span>Members</p>
+<h1 data-cms="t002-المتحالفون" data-ar="المتحالفون">Members of the Alliance</h1>
+<p data-cms="t003-جهات-حكومية-وأكاديمية-ومن-" class="lede" data-ar="جهات حكومية وأكاديمية ومن القطاع الخاص وغير ربحية تعمل معًا في تقنيات الزراعة والغذاء.">Government, academic, private sector and non-profit entities working together on agrifood technology.</p>
+</div>
+</section>
+<section class="ribbon">
+<div class="wrap">
+<div class="sec-head reveal">
+<div class="sec-head__txt">
+<p data-cms="t004-التحالف" class="eyebrow" data-ar="التحالف">The Alliance</p>
+<h2 data-cms="t005-المتحالفون" class="h-section" data-ar="المتحالفون">Members of the Alliance</h2>
+<p data-cms="t006-جهات-حكومية-ومؤسسات-أكاديم" class="lede" data-ar="جهات حكومية ومؤسسات أكاديمية وشركات من القطاع الخاص ومنظمات غير ربحية تعمل معًا للنهوض بتقنيات الزراعة والغذاء في المملكة.">Government entities, academic institutions, private sector companies and non-profit organizations working together to advance agrifood technology in the Kingdom.</p>
+</div>
+</div>
+<p class="demo-note"><svg fill="none" height="17" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="17"><circle cx="12" cy="12" r="9"></circle><path d="M12 8h.01M11 12h1v4h1"></path></svg><span data-cms="t007-بيانات-تجريبية-المدخلات-في" data-ar="&lt;b&gt;بيانات تجريبية.&lt;/b&gt; المدخلات في هذه الصفحة عناصر مبدئية لعرض التصميم فقط، ويجب استبدالها بسجلات التحالف الحقيقية قبل الإطلاق."><b data-ar="بيانات تجريبية.">Demo data.</b> The entries on this page are placeholders used to show the layout. Replace them with the Alliance’s real records before launch.</span></p>
+<div class="grid-3" id="memberGrid">
+<a class="mcard member-card member-card--a reveal" href="/member?id=mewa">
+<span class="member-card__logo"><img data-cms-img="i008-mewa" alt="" loading="lazy" src="assets/img/partners/mewa.png"/></span>
+<h3 data-cms="t009-وزارة-البيئة-والمياه-والزر" data-ar="وزارة البيئة والمياه والزراعة (MEWA)">Ministry of Environment, Water &amp; Agriculture</h3>
+</a><a class="mcard member-card member-card--b reveal" href="/member?id=gfsa">
+<span class="member-card__logo"><img data-cms-img="i010-gfsa" alt="" loading="lazy" src="assets/img/partners/gfsa.svg"/></span>
+<h3 data-cms="t011-الهيئة-العامة-للأمن-الغذائ" data-ar="الهيئة العامة للأمن الغذائي (GFSA)">General Food Security Authority</h3>
+</a><a class="mcard member-card member-card--c reveal" href="/member?id=sfda">
+<span class="member-card__logo"><img data-cms-img="i012-sfda" alt="" loading="lazy" src="assets/img/partners/sfda.svg"/></span>
+<h3 data-cms="t013-الهيئة-العامة-للغذاء-والدو" data-ar="الهيئة العامة للغذاء والدواء (SFDA)">Saudi Food &amp; Drug Authority</h3>
+</a><a class="mcard member-card member-card--d reveal" href="/member?id=kacst">
+<span class="member-card__logo"><img data-cms-img="i014-kacst" alt="" loading="lazy" src="assets/img/partners/kacst.svg"/></span>
+<h3 data-cms="t015-مدينة-الملك-عبدالعزيز-للعل" data-ar="مدينة الملك عبدالعزيز للعلوم والتقنية (KACST)">King Abdulaziz City for Science &amp; Technology</h3>
+</a><a class="mcard member-card member-card--e reveal" href="/member?id=kaust">
+<span class="member-card__logo"><img data-cms-img="i016-kaust" alt="" loading="lazy" src="assets/img/partners/kaust.png"/></span>
+<h3 data-cms="t017-جامعة-الملك-عبدالله-للعلوم" data-ar="جامعة الملك عبدالله للعلوم والتقنية (KAUST)">King Abdullah University of Science &amp; Technology</h3>
+</a><a class="mcard member-card member-card--f reveal" href="/member?id=ksu-agri">
+<span class="member-card__logo"><img data-cms-img="i018-ksu" alt="" loading="lazy" src="assets/img/partners/ksu.svg"/></span>
+<h3 data-cms="t019-جامعة-الملك-سعود-كلية-علوم" data-ar="جامعة الملك سعود — كلية علوم الأغذية والزراعة">King Saud University — College of Food &amp; Agriculture</h3>
+</a><a class="mcard member-card member-card--a reveal" href="/member?id=nadec">
+<span class="member-card__logo"><img data-cms-img="i020-nadec" alt="" loading="lazy" src="assets/img/partners/nadec.svg"/></span>
+<h3 data-cms="t021-الشركة-الوطنية-للتنمية-الز" data-ar="الشركة الوطنية للتنمية الزراعية (نادك)">National Agricultural Development Co.</h3>
+</a><a class="mcard member-card member-card--b reveal" href="/member?id=almarai">
+<span class="member-card__logo"><img data-cms-img="i022-almarai" alt="" loading="lazy" src="assets/img/partners/almarai.png"/></span>
+<h3 data-cms="t023-المراعي" data-ar="المراعي">Almarai</h3>
+</a><a class="mcard member-card member-card--c reveal" href="/member?id=neom-food">
+<span class="member-card__logo"><img data-cms-img="i024-neom" alt="" loading="lazy" src="assets/img/partners/neom.svg"/></span>
+<h3 data-cms="t025-نيوم-للغذاء" data-ar="نيوم للغذاء">NEOM Food</h3>
+</a><a class="mcard member-card member-card--d reveal" href="/member?id=monshaat">
+<span class="member-card__logo"><img data-cms-img="i026-monshaat" alt="" loading="lazy" src="assets/img/partners/monshaat.svg"/></span>
+<h3 data-cms="t027-منشآت-الهيئة-العامة-للمنشآ" data-ar="منشآت — الهيئة العامة للمنشآت الصغيرة والمتوسطة">Monsha’at — SME Authority</h3>
+</a><a class="mcard member-card member-card--e reveal" href="/member?id=wateer">
+<span class="member-card__logo"><img data-cms-img="i028-wateer" alt="" loading="lazy" src="assets/img/partners/wateer.svg"/></span>
+<h3 data-cms="t029-جمعية-ترشيد-استهلاك-المياه" data-ar="جمعية ترشيد استهلاك المياه">Water Conservation Society</h3>
+</a><a class="mcard member-card member-card--f reveal" href="/member?id=foodbank">
+<span class="member-card__logo"><img data-cms-img="i030-etaam" alt="" loading="lazy" src="assets/img/partners/etaam.svg"/></span>
+<h3 data-cms="t031-بنك-الطعام-السعودي-إطعام" data-ar="بنك الطعام السعودي (إطعام)">Saudi Food Bank (Eta’am)</h3>
+</a>
+</div>
+</div>
+</section>
+</main>
+<script slot="scripts" is:inline crossorigin="" integrity="sha512-BwHfrr4c9kmRkLw6iXFdzcdWV/PGkVgiIyIWLLlTSXzWQzxuSg4DiQUCpauz/EWjgk5TYQqX/kvn9pG1NpYfqg==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script slot="scripts" is:inline src="assets/js/members-map-data.js"></script>
+<script slot="scripts" is:inline src="assets/content/members.js?v=28"></script>
+<script slot="scripts" is:inline src="assets/js/cms.js?v=28"></script>
+</BaseLayout>

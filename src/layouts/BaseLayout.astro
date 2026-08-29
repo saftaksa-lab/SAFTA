@@ -1,0 +1,70 @@
+---
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteDrawer from '../components/SiteDrawer.astro';
+import JoinBanner from '../components/JoinBanner.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+
+interface Props {
+  /** <title>, English. i18n.js swaps in titleAr on language switch. */
+  title: string;
+  /** <html data-title-ar> — read by assets/js/i18n.js */
+  titleAr: string;
+  description?: string;
+  /** drawer nav key that gets is-current */
+  current?: string;
+  /** index and 404 are the only pages that link the 512px icon */
+  appleTouchIcon?: boolean;
+  /** the shared "Join the Alliance" band before the footer */
+  joinBanner?: boolean;
+}
+
+const {
+  title,
+  titleAr,
+  description = '',
+  current,
+  appleTouchIcon = false,
+  joinBanner = true,
+} = Astro.props;
+---
+<html data-title-ar={titleAr} dir="ltr" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>{title}</title>
+<meta content={description} name="description"/>
+<meta content="#015C44" name="theme-color"/>
+<meta content="noindex, nofollow" name="robots"/>
+<link href="assets/img/logo-mark.png" rel="icon" type="image/png"/>
+{appleTouchIcon && <link href="assets/img/favicon-512.png" rel="apple-touch-icon"/>}
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<slot name="head" />
+<link href="assets/css/style.css?v=28" rel="stylesheet"/>
+<script is:inline>document.documentElement.classList.add('js');</script>
+<script is:inline>
+/* set language + direction before first paint to avoid a flash of the wrong layout */
+(function(){try{var s=localStorage.getItem('safta.lang');
+var l=(s==='ar'||s==='en')?s:((navigator.language||'').toLowerCase().indexOf('ar')===0?'ar':'en');
+document.documentElement.lang=l;document.documentElement.dir=(l==='ar')?'rtl':'ltr';}catch(e){}})();
+</script>
+</head>
+<body>
+<!-- =============== SCROLL PROGRESS =============== -->
+<div id="scroll-progress"></div>
+<!-- =============== HEADER =============== -->
+<SiteHeader />
+<SiteDrawer current={current} />
+<slot />
+{joinBanner && <JoinBanner />}
+<SiteFooter />
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+<slot name="scripts" />
+<script is:inline src="assets/js/i18n.js?v=28"></script>
+<slot name="scripts-late" />
+<script is:inline src="assets/js/main.js?v=28"></script>
+</body>
+</html>

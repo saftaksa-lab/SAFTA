@@ -1,0 +1,59 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout
+  title="Working group | SAFTA"
+  titleAr="مجموعة عمل | التحالف السعودي"
+>
+<main>
+<section class="page-hero">
+<img data-cms-img="i001-gd09rackshero" alt="" src="assets/img/green-dunes/gd-09-racks-hero.webp"/>
+<div class="wrap">
+<p class="crumbs"><a data-cms="t002-الرئيسية" data-ar="الرئيسية" href="/">Home</a><span>/</span><a data-cms="t003-مجموعات-العمل" data-ar="مجموعات العمل" href="/technologies">Working groups</a><span>/</span><span data-cms="t004-تفاصيل-المجموعة" data-ar="تفاصيل المجموعة">Group</span></p>
+<h1 data-cms="t005-مجموعة-عمل" data-ar="مجموعة عمل" id="gTitle">Working group</h1>
+</div>
+</section>
+
+<section class="ribbon">
+<div class="wrap">
+
+<div class="wgp__head reveal">
+<span class="wgp__no" id="gNo">01</span>
+<div class="wgp__ident">
+<p data-cms="t006-مجموعة-عمل" class="eyebrow" data-ar="مجموعة عمل">Working group</p>
+<h2 class="h-section" id="gName" style="margin-top:8px">—</h2>
+</div>
+<span class="wg-status" hidden="" id="gStatus"></span>
+</div>
+
+<p class="lede wgp__scope reveal" id="gScope">—</p>
+
+<div class="wgp__stats reveal" id="gStats" hidden=""></div>
+
+<div class="facts reveal">
+<div class="fact"><b data-cms="t007-قائد-المجموعة" data-ar="قائد المجموعة">Group lead</b><span id="gHead">—</span></div>
+<div class="fact"><b data-cms="t008-الجهة-القائدة" data-ar="الجهة القائدة">Lead entity</b><span id="gLead">—</span></div>
+<div class="fact fact--wide"><b data-cms="t009-الجهات-المشاركة" data-ar="الجهات المشاركة">Participating organizations</b><span id="gOrgs">—</span></div>
+</div>
+
+<div class="wgp__sec reveal" id="gRecsWrap" hidden="">
+<h3 data-cms="t010-التوصيات" class="h-sub" data-ar="التوصيات">Recommendations</h3>
+<ol class="wgp__recs" id="gRecs"></ol>
+</div>
+
+<p class="wgp__note reveal" id="gNote" hidden=""></p>
+
+<p class="wgp__src reveal" id="gSrc"></p>
+
+<div class="wgp__nav reveal">
+<a data-cms="t011-كل-مجموعات-العمل" class="btn-pill" data-ar="كل مجموعات العمل" href="/technologies">All working groups</a>
+<a data-cms="t012-سجّل-اهتمامك-بالمشاركة" class="btn-pill btn-pill--alt" data-ar="سجّل اهتمامك بالمشاركة" href="/register-interest">Register your interest</a>
+</div>
+
+</div>
+</section>
+</main>
+<script slot="scripts" is:inline src="assets/content/working-group.js?v=28"></script>
+<script slot="scripts" is:inline src="assets/js/cms.js?v=28"></script>
+<script slot="scripts-late" is:inline src="assets/js/wg-data.js"></script>
+</BaseLayout>
