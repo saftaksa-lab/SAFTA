@@ -8,10 +8,16 @@ prerendered to plain HTML.
 
 ```bash
 npm install
-npm run dev       # http://localhost:4321
+npm run dev       # http://127.0.0.1:4321
 npm run build     # → dist/
 npm run preview   # serve dist/ locally
 ```
+
+Both servers bind `127.0.0.1` explicitly (`server.host` in `astro.config.mjs`). Astro's
+default is `localhost`, which Node 17+ resolves to `::1` first — that leaves the server on
+the IPv6 loopback only, and under WSL2 a Windows browser reaching it over IPv4 finds
+nothing listening and hangs until it times out. To reach the server from another device,
+pass the flag instead of changing the default: `npm run dev -- --host`.
 
 ## Layout
 
