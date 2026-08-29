@@ -15,4 +15,7 @@ export default defineConfig({
   // times out. Binding IPv4 loopback explicitly fixes that and keeps the server off the
   // LAN — pass `--host` on the command line when you do want it reachable from a phone.
   server: { host: '127.0.0.1' },
+  security: {
+    checkOrigin: false
+  }
 });
