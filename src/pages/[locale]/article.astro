@@ -1,7 +1,13 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export function getStaticPaths() {
+  return [{ params: { locale: 'en' } }, { params: { locale: 'ar' } }];
+}
+const { locale } = Astro.params;
 ---
 <BaseLayout
+  locale={locale}
   title="Article | SAFTA"
   titleAr="مقال | التحالف السعودي"
 >
@@ -12,7 +18,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <img data-cms-img="i001-gd09rackshero" alt="" id="aImg" src="assets/img/green-dunes/gd-09-racks-hero.webp"/>
 <div class="art__scrim"></div>
 <div class="wrap">
-<p class="crumbs"><a data-cms="t002-الرئيسية" data-ar="الرئيسية" href="/">Home</a><span>/</span><a data-cms="t003-المركز-الإعلامي" data-ar="المركز الإعلامي" href="/media">Media</a><span>/</span><span id="aKind">News</span></p>
+<p class="crumbs"><a data-cms="t002-الرئيسية" data-ar="الرئيسية" href={`/${locale}`}>Home</a><span>/</span><a data-cms="t003-المركز-الإعلامي" data-ar="المركز الإعلامي" href={`/${locale}/media`}>Media</a><span>/</span><span id="aKind">News</span></p>
 <h1 id="aTitle">—</h1>
 <p class="art__meta"><span id="aDate">—</span><i></i><span id="aRead">—</span></p>
 </div>
@@ -27,8 +33,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </div>
 
 <div class="art__nav reveal">
-<a data-cms="t004-عودة-إلى-المركز-الإعلامي" class="btn-pill" data-ar="عودة إلى المركز الإعلامي" href="/media">Back to Media</a>
-<a data-cms="t005-سجّل-اهتمامك" class="btn-pill btn-pill--alt" data-ar="سجّل اهتمامك" href="/register-interest">Register your interest</a>
+<a data-cms="t004-عودة-إلى-المركز-الإعلامي" class="btn-pill" data-ar="عودة إلى المركز الإعلامي" href={`/${locale}/media`}>Back to Media</a>
+<a data-cms="t005-سجّل-اهتمامك" class="btn-pill btn-pill--alt" data-ar="سجّل اهتمامك" href={`/${locale}/register-interest`}>Register your interest</a>
 </div>
 </div>
 

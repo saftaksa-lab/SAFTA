@@ -600,7 +600,7 @@ $('#btnPreview').addEventListener('click', function () {
 
 function buildPreview(t, lang, width) {
   var page = t.file.replace('.html', '');
-  var url = '/' + (page === 'index' ? '' : page) + (t.id ? '?id=' + encodeURIComponent(t.id) : '');
+  var url = '/en' + (page === 'index' ? '' : '/' + page) + (t.id ? '?id=' + encodeURIComponent(t.id) : '');
   fetch(url).then(function (r) { return r.text(); }).then(function (html) {
 
     /* المحتوى المعدّل بدل الملف المنشور */
@@ -616,7 +616,6 @@ function buildPreview(t, lang, width) {
     html = html.replace(/<script[^>]*src="\/?assets\/js\/events-data\.js(\?v=\d+)?"[^>]*><\/script>/,
       '<script>window.SAFTA_EVENTS=' + JSON.stringify(S.cur.events) + ';<\/script>');
 
-    html = html.replace(/<head([^>]*)>/i, '<head$1><base href="/">');
     html = html.replace(/localStorage\.getItem\(KEY\)/, 'null');
     html = html.replace(/<\/body>/i,
       '<script>try{localStorage.setItem("safta.lang",' + JSON.stringify(lang) +

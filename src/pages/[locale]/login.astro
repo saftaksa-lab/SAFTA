@@ -1,14 +1,20 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export function getStaticPaths() {
+  return [{ params: { locale: 'en' } }, { params: { locale: 'ar' } }];
+}
+const { locale } = Astro.params;
 ---
 <BaseLayout
+  locale={locale}
   title="Login | SAFTA"
   titleAr="تسجيل الدخول | التحالف السعودي"
 >
 <main>
 <section class="page-hero page-hero--plain">
 <div class="wrap">
-<p class="crumbs"><a data-ar="الرئيسية" href="/">Home</a><span>/</span>Login</p>
+<p class="crumbs"><a data-ar="الرئيسية" href={`/${locale}`}>Home</a><span>/</span>Login</p>
 <h1 data-ar="دخول الأعضاء">Members login</h1>
 </div>
 </section>
@@ -27,7 +33,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <span class="form-msg" hidden="" id="lMsg" style="justify-content:center"></span>
 </div>
 </form>
-<p class="login-note">Not a member yet? <a data-ar="سجّل اهتمامك" href="/register-interest" style="color:var(--c-link)">Register your interest</a>  ·  <a data-ar="نسيت كلمة المرور" href="/forgot-password" style="color:var(--c-link)">Forgot password</a></p>
+<p class="login-note">Not a member yet? <a data-ar="سجّل اهتمامك" href={`/${locale}/register-interest`} style="color:var(--c-link)">Register your interest</a>  ·  <a data-ar="نسيت كلمة المرور" href={`/${locale}/forgot-password`} style="color:var(--c-link)">Forgot password</a></p>
 </div>
 </div>
 </section>

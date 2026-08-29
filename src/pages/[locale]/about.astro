@@ -1,7 +1,13 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export function getStaticPaths() {
+  return [{ params: { locale: 'en' } }, { params: { locale: 'ar' } }];
+}
+const { locale } = Astro.params;
 ---
 <BaseLayout
+  locale={locale}
   title="About SAFTA | SAFTA"
   titleAr="عن التحالف | التحالف السعودي لتقنيات الزراعة والغذاء"
   description="A national platform for collaboration, coordination and knowledge exchange in agrifood technology innovation, in support of Saudi Vision 2030."
@@ -10,7 +16,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <main>
 <section class="page-hero page-hero--plain">
 <div class="wrap">
-<p class="crumbs"><a data-cms="t001-الرئيسية" data-ar="الرئيسية" href="/">Home</a><span>/</span>About SAFTA</p>
+<p class="crumbs"><a data-cms="t001-الرئيسية" data-ar="الرئيسية" href={`/${locale}`}>Home</a><span>/</span>About SAFTA</p>
 <h1 data-cms="t002-عن-التحالف" data-ar="عن التحالف">About SAFTA</h1>
 <p data-cms="t003-منصة-وطنية-للتعاون-والتنسي" class="lede" data-ar="منصة وطنية للتعاون والتنسيق وتبادل المعرفة في ابتكار تقنيات الزراعة والغذاء، دعمًا لرؤية السعودية 2030.">A national platform for collaboration, coordination and knowledge exchange in agrifood technology innovation, in support of Saudi Vision 2030.</p>
 </div>
@@ -64,7 +70,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <h2 data-cms="t021-تحديات-تجعل-الابتكار-ضرورة" class="h-section" data-ar="تحديات تجعل الابتكار ضرورة">Challenges that make innovation urgent</h2>
 <p data-cms="t022-تواجه-أنظمة-الزراعة-والغذا" class="lede" data-ar="تواجه أنظمة الزراعة والغذاء في المملكة تحديات كبيرة، تخلق مجتمعةً دافعًا واضحًا لتبنّي التقنيات المتقدمة — بما يوازن بين تحقيق الأمن الغذائي والحفاظ على الموارد الطبيعية.">Saudi Arabia’s agriculture and food systems face significant challenges. Together they create a clear impetus to adopt advanced technologies — balancing food security with the preservation of natural resources.</p>
 </div>
-<a class="cta-circle" href="/technologies"><span data-cms="t023-استعرض-مجموعات-العمل" data-ar="استعرض مجموعات العمل">See the working groups</span><span class="circ"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></a>
+<a class="cta-circle" href={`/${locale}/technologies`}><span data-cms="t023-استعرض-مجموعات-العمل" data-ar="استعرض مجموعات العمل">See the working groups</span><span class="circ"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></a>
 </div>
 <div class="grid-3 reveal">
 <article class="tri__card">
@@ -115,7 +121,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <div>
 <p data-cms="t051-البيان-التأسيسي" class="eyebrow" data-ar="البيان التأسيسي">Founding statement</p>
 <h3 data-cms="t052-يمثّل-تأسيسه-فرصة-تاريخية-" data-ar="«يمثّل تأسيسه فرصة تاريخية لتسخير الذكاء الجماعي والقدرات المتنوعة والطموحات المشتركة لأعضائه من داخل المملكة وحول العالم — للعمل معًا نحو مستقبل زراعي وغذائي مستدام للسعودية وما بعدها.»" style="font-family:var(--f-head);font-size:27px;line-height:38px;font-weight:500;margin:16px 0 24px">“Its founding marks a historic opportunity to harness the collective intelligence, diverse capabilities and shared ambitions of members from within the Kingdom and around the world — working together toward a sustainable agricultural and food future for Saudi Arabia and beyond.”</h3>
-<a class="cta-circle" href="/members"><span data-cms="t053-تعرّف-على-المتحالفين" data-ar="تعرّف على المتحالفين">Meet the members</span><span class="circ"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></a>
+<a class="cta-circle" href={`/${locale}/members`}><span data-cms="t053-تعرّف-على-المتحالفين" data-ar="تعرّف على المتحالفين">Meet the members</span><span class="circ"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></a>
 </div>
 </div>
 </div>

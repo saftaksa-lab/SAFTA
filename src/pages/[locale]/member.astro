@@ -1,14 +1,20 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export function getStaticPaths() {
+  return [{ params: { locale: 'en' } }, { params: { locale: 'ar' } }];
+}
+const { locale } = Astro.params;
 ---
 <BaseLayout
+  locale={locale}
   title="Member profile | SAFTA"
   titleAr="ملف العضو | التحالف السعودي"
 >
 <main>
 <section class="page-hero page-hero--plain">
 <div class="wrap">
-<p class="crumbs"><a data-cms="t001-الرئيسية" data-ar="الرئيسية" href="/">Home</a><span>/</span><a data-cms="t002-المتحالفون" data-ar="المتحالفون" href="/members">Members</a><span>/</span>Profile</p>
+<p class="crumbs"><a data-cms="t001-الرئيسية" data-ar="الرئيسية" href={`/${locale}`}>Home</a><span>/</span><a data-cms="t002-المتحالفون" data-ar="المتحالفون" href={`/${locale}/members`}>Members</a><span>/</span>Profile</p>
 <h1 data-cms="t003-ملف-العضو" data-ar="ملف العضو">Member profile</h1>
 </div>
 </section>
@@ -45,7 +51,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <p data-cms="t019-تُوجَّه-الطلبات-المتعلقة-ب" data-ar="تُوجَّه الطلبات المتعلقة بهذه الجهة عبر أمانة التحالف، فنحيلها إلى جهة الاتصال المناسبة لديها.">Requests relating to this member are routed through the Alliance Secretariat, which forwards them to the right contact point.</p>
 </div>
 <div class="mcontact__acts">
-<a class="btn-solid" href="/contact">
+<a class="btn-solid" href={`/${locale}/contact`}>
 <span data-cms="t020-افتح-نموذج-التواصل" data-ar="افتح نموذج التواصل">Open the contact form</span>
 <svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg>
 </a>
@@ -56,7 +62,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </div>
 </div>
 <div style="margin-top:64px">
-<a class="cta-circle" href="/members"><span data-cms="t021-العودة-إلى-كل-المتحالفين" data-ar="العودة إلى كل المتحالفين">Back to all members</span><span class="circ"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></a>
+<a class="cta-circle" href={`/${locale}/members`}><span data-cms="t021-العودة-إلى-كل-المتحالفين" data-ar="العودة إلى كل المتحالفين">Back to all members</span><span class="circ"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></a>
 </div>
 </div>
 </section>

@@ -1,7 +1,13 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export function getStaticPaths() {
+  return [{ params: { locale: 'en' } }, { params: { locale: 'ar' } }];
+}
+const { locale } = Astro.params;
 ---
 <BaseLayout
+  locale={locale}
   title="Contact us | SAFTA"
   titleAr="تواصل معنا | التحالف السعودي"
   description="For inquiries, partnership opportunities or support requests, please contact us."
@@ -10,7 +16,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <main>
 <section class="page-hero page-hero--plain">
 <div class="wrap">
-<p class="crumbs"><a data-cms="t001-الرئيسية" data-ar="الرئيسية" href="/">Home</a><span>/</span>Contact</p>
+<p class="crumbs"><a data-cms="t001-الرئيسية" data-ar="الرئيسية" href={`/${locale}`}>Home</a><span>/</span>Contact</p>
 <h1 data-cms="t002-تواصل-معنا" data-ar="تواصل معنا">Contact us</h1>
 <p data-cms="t003-للاستفسارات-وفرص-الشراكة-و" class="lede" data-ar="للاستفسارات وفرص الشراكة وطلبات الدعم، تواصل معنا.">For inquiries, partnership opportunities or support requests, please contact us.</p>
 </div>
@@ -106,11 +112,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </li>
 <li>
 <span class="aside-list__ico"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="16"><path d="M12 5v14M5 12h14"></path></svg></span>
-<span><b data-cms="t064-العضوية" data-ar="العضوية">Membership</b><a data-cms="t065-سجّل-اهتمامك-بالانضمام" data-ar="سجّل اهتمامك بالانضمام" href="/register-interest">Register your interest</a></span>
+<span><b data-cms="t064-العضوية" data-ar="العضوية">Membership</b><a data-cms="t065-سجّل-اهتمامك-بالانضمام" data-ar="سجّل اهتمامك بالانضمام" href={`/${locale}/register-interest`}>Register your interest</a></span>
 </li>
 <li>
 <span class="aside-list__ico"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="16"><path d="M4 5h16v14H4z"></path><path d="M8 9h8M8 13h5"></path></svg></span>
-<span><b data-cms="t066-الاستفسارات-الإعلامية" data-ar="الاستفسارات الإعلامية">Media enquiries</b><a data-cms="t067-المركز-الإعلامي" data-ar="المركز الإعلامي" href="/media">Media Centre</a></span>
+<span><b data-cms="t066-الاستفسارات-الإعلامية" data-ar="الاستفسارات الإعلامية">Media enquiries</b><a data-cms="t067-المركز-الإعلامي" data-ar="المركز الإعلامي" href={`/${locale}/media`}>Media Centre</a></span>
 </li>
 <li>
 <span class="aside-list__ico"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="16"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span>

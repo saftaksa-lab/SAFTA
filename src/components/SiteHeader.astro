@@ -1,10 +1,19 @@
+---
+interface Props { locale: 'en' | 'ar' }
+const { locale } = Astro.props;
+const otherLocale = locale === 'ar' ? 'en' : 'ar';
+// build.format:'file' means Astro.url.pathname is the on-disk file path during SSG
+// (e.g. /en/about.html) rather than the extensionless served route — strip that back off.
+const rest = Astro.url.pathname.split('/').filter(Boolean).slice(1).join('/').replace(/\.html$/, '');
+const switchHref = `/${otherLocale}${rest ? `/${rest}` : ''}${Astro.url.search}`;
+---
 <header class="site-head" id="siteHead">
 <nav class="navbar">
 <div class="wrap">
-<a aria-label="SAFTA — التحالف السعودي لتقنيات الزراعة والغذاء" class="brand" href="/"><img alt="SAFTA — Saudi AgriFood Tech Alliance" src="assets/img/logo-safta-light.png"/></a>
+<a aria-label="SAFTA — التحالف السعودي لتقنيات الزراعة والغذاء" class="brand" href={`/${locale}`}><img alt="SAFTA — Saudi AgriFood Tech Alliance" src="assets/img/logo-safta-light.png"/></a>
 <div class="nav-actions">
-<a class="btn-pill btn-pill--solid" href="/register-interest"><span data-ar="سجّل اهتمامك">Register interest</span></a>
-<a class="lang-switch" href="#">AR</a>
+<a class="btn-pill btn-pill--solid" href={`/${locale}/register-interest`}><span data-ar="سجّل اهتمامك">Register interest</span></a>
+<a class="lang-switch" href={switchHref}>{locale === 'ar' ? 'EN' : 'AR'}</a>
 <button aria-controls="drawer" aria-expanded="false" aria-label="Menu" class="nav-toggle" id="navToggle" type="button"><svg fill="none" height="26" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="26"><path d="M3 6h18M3 12h18M3 18h18"></path></svg></button>
 </div>
 </div>

@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export function getStaticPaths() {
+  return [{ params: { locale: 'en' } }, { params: { locale: 'ar' } }];
+}
+const { locale } = Astro.params;
+---
+<BaseLayout
+  locale={locale}
+  title="Sitemap | SAFTA"
+  titleAr="خريطة الموقع | التحالف السعودي"
+  description="Every page on this site, in one place."
+>
+<main>
+<section class="page-hero page-hero--plain">
+<div class="wrap">
+<p class="crumbs"><a data-ar="الرئيسية" href={`/${locale}`}>Home</a><span>/</span>Sitemap</p>
+<h1 data-ar="خريطة الموقع">Sitemap</h1>
+<p class="lede" data-ar="كل صفحات الموقع في مكان واحد.">Every page on this site, in one place.</p>
+</div>
+</section>
+<section class="ribbon"><div class="wrap"><div class="sitemap reveal"><div><h3 data-ar="الرئيسية">Main</h3><ul><li><a data-ar="الرئيسية" href={`/${locale}`}>Home</a></li><li><a data-ar="عن التحالف" href={`/${locale}/about`}>About SAFTA</a></li><li><a data-ar="مجموعات العمل" href={`/${locale}/technologies`}>Working Groups</a></li><li><a data-ar="المتحالفون" href={`/${locale}/members`}>Members</a></li><li><a data-ar="الأخبار والفعاليات" href={`/${locale}/media`}>News &amp; Events</a></li><li><a data-ar="تواصل معنا" href={`/${locale}/contact`}>Contact</a></li></ul></div><div><h3 data-ar="المشاركة">Participate</h3><ul><li><a data-ar="سجّل اهتمامك" href={`/${locale}/register-interest`}>Register your interest</a></li><li><a data-ar="دليل المتحالفين" href={`/${locale}/members`}>Member directory</a></li><li><a data-ar="ملف العضو" href={`/${locale}/member`}>Member profile</a></li></ul></div><div><h3 data-ar="الأخبار والفعاليات">News &amp; Events</h3><ul><li><a data-ar="الأخبار" href={`/${locale}/media`}>News</a></li><li><a data-ar="الفعاليات والمعارض" href={`/${locale}/media`}>Events &amp; exhibitions</a></li></ul></div><div><h3 data-ar="الشؤون النظامية">Legal</h3><ul><li><a data-ar="الشروط والأحكام" href={`/${locale}/terms`}>Terms &amp; Conditions</a></li><li><a data-ar="سياسة الخصوصية" href={`/${locale}/privacy`}>Privacy Policy</a></li><li><a data-ar="إشعار ملفات الارتباط" href={`/${locale}/cookies`}>Cookie Notice</a></li><li><a data-ar="إمكانية الوصول" href={`/${locale}/accessibility`}>Accessibility</a></li><li><a data-ar="خريطة الموقع" href={`/${locale}/sitemap`}>Sitemap</a></li></ul></div></div></div></section>
+</main>
+</BaseLayout>

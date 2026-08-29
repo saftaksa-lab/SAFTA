@@ -25,16 +25,29 @@ pass the flag instead of changing the default: `npm run dev -- --host`.
 src/
   layouts/BaseLayout.astro    <head>, header, drawer, join banner, footer, shared scripts
   components/                 SiteHeader · SiteDrawer · JoinBanner · SiteFooter
-  pages/*.astro               one file per route; each holds only its own <main>
+  pages/index.astro           redirects "/" to the visitor's preferred locale (/en or /ar)
+  pages/404.astro             site-wide 404 fallback, not locale-routed, links to /en/*
+  pages/[locale]/*.astro      one file per route, generated at both /en/x and /ar/x via
+                               getStaticPaths(); each holds only its own <main>
 public/
   assets/                     css · js · img · video · content — served as-is, paths unchanged
   admin/                      the content control centre (plain HTML/JS, not built by Astro)
   robots.txt
 ```
 
-URLs are extensionless (`/about`, `/member?id=kaust`). That comes from
-`build.format: 'file'` in `astro.config.mjs`, which emits `dist/about.html` — keeping
-every route one segment deep so the relative asset paths in `public/` keep resolving.
+Every page is bilingual: English is the visible markup, `data-ar="..."` on the same
+element holds the Arabic translation, and `assets/js/i18n.js` swaps between them at
+runtime (also flipping `dir`/`lang`). The `/en` and `/ar` URL prefix is source of truth for
+which language is shown — `i18n.js`'s `detect()` reads it from `location.pathname` first,
+falling back to a saved preference or `navigator.language` only when no prefix is present
+(the root redirector, or the admin preview iframe). `BaseLayout` renders the correct
+`<html lang dir>` and `<title>` per locale at build time from the `locale` prop every
+`[locale]/*.astro` page receives via `Astro.params.locale`.
+
+URLs are extensionless (`/en/about`, `/en/member?id=kaust`). That comes from
+`build.format: 'file'` in `astro.config.mjs`, which emits `dist/en/about.html`. Pages now
+sit two segments deep, so `BaseLayout` sets `<base href="/">` in `<head>` — every relative
+`assets/...` reference in `public/` keeps resolving from site root regardless of route depth.
 
 ## Front-end scripts
 

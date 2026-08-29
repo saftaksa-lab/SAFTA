@@ -1,31 +1,35 @@
+---
+interface Props { locale: 'en' | 'ar' }
+const { locale } = Astro.props;
+---
 <footer class="site-foot">
 <div class="wrap">
 <div class="foot-cols">
 <div class="foot-col">
 <h4 data-ar="روابط سريعة">Quick links</h4>
 <ul>
-<li><a data-ar="عن التحالف" href="/about">About SAFTA</a></li>
-<li><a data-ar="مجموعات العمل" href="/technologies">Working Groups</a></li>
-<li><a data-ar="المتحالفون" href="/members">Members</a></li>
-<li><a data-ar="الأخبار والفعاليات" href="/media">News &amp; Events</a></li>
-<li><a data-ar="سجّل اهتمامك" href="/register-interest">Register interest</a></li>
+<li><a data-ar="عن التحالف" href={`/${locale}/about`}>About SAFTA</a></li>
+<li><a data-ar="مجموعات العمل" href={`/${locale}/technologies`}>Working Groups</a></li>
+<li><a data-ar="المتحالفون" href={`/${locale}/members`}>Members</a></li>
+<li><a data-ar="الأخبار والفعاليات" href={`/${locale}/media`}>News &amp; Events</a></li>
+<li><a data-ar="سجّل اهتمامك" href={`/${locale}/register-interest`}>Register interest</a></li>
 </ul>
 </div>
 <div class="foot-col">
 <h4 data-ar="الشؤون النظامية">Legal</h4>
 <ul>
-<li><a data-ar="الشروط والأحكام" href="/terms">Terms &amp; Conditions</a></li>
-<li><a data-ar="سياسة الخصوصية" href="/privacy">Privacy Policy</a></li>
-<li><a data-ar="إشعار ملفات الارتباط" href="/cookies">Cookie Notice</a></li>
-<li><a data-ar="إمكانية الوصول" href="/accessibility">Accessibility</a></li>
-<li><a data-ar="خريطة الموقع" href="/sitemap">Sitemap</a></li>
+<li><a data-ar="الشروط والأحكام" href={`/${locale}/terms`}>Terms &amp; Conditions</a></li>
+<li><a data-ar="سياسة الخصوصية" href={`/${locale}/privacy`}>Privacy Policy</a></li>
+<li><a data-ar="إشعار ملفات الارتباط" href={`/${locale}/cookies`}>Cookie Notice</a></li>
+<li><a data-ar="إمكانية الوصول" href={`/${locale}/accessibility`}>Accessibility</a></li>
+<li><a data-ar="خريطة الموقع" href={`/${locale}/sitemap`}>Sitemap</a></li>
 </ul>
 </div>
 <div class="foot-col">
 <h4 data-ar="تواصل معنا">Connect</h4>
 <ul>
 <li><a href="mailto:secretariat@safta.sa">secretariat@safta.sa</a></li>
-<li><a data-ar="تواصل معنا" href="/contact">Contact us</a></li>
+<li><a data-ar="تواصل معنا" href={`/${locale}/contact`}>Contact us</a></li>
 <li><a href="https://www.linkedin.com/company/saudi-agrifood-tech-alliance-safta/" rel="noopener" target="_blank">LinkedIn</a></li>
 <li><a href="https://x.com/SAFTA_KSA" rel="noopener" target="_blank">X (Twitter)</a></li>
 </ul>
@@ -39,7 +43,7 @@
 <div class="foot-bottom">
 <small data-ar="© 2026 التحالف السعودي لتقنيات الزراعة والغذاء (SAFTA).">© 2026 SAFTA — Saudi AgriFood Tech Alliance.</small>
 <button aria-label="Back to top" class="to-top" id="toTop"><svg fill="none" height="15" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="15"><path d="M12 19V5M6 11l6-6 6 6"></path></svg></button>
-<a aria-label="SAFTA — التحالف السعودي لتقنيات الزراعة والغذاء" class="brand" href="/"><img alt="SAFTA — Saudi AgriFood Tech Alliance" src="assets/img/logo-safta-dark.png"/></a>
+<a aria-label="SAFTA — التحالف السعودي لتقنيات الزراعة والغذاء" class="brand" href={`/${locale}`}><img alt="SAFTA — Saudi AgriFood Tech Alliance" src="assets/img/logo-safta-dark.png"/></a>
 </div>
 </div>
 </footer>

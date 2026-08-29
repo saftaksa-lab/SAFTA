@@ -19,6 +19,8 @@
   var root = document.documentElement;
 
   function detect() {
+    var seg = (location.pathname.split('/')[1] || '').toLowerCase();
+    if (seg === 'ar' || seg === 'en') return seg;
     try {
       var saved = localStorage.getItem(KEY);
       if (saved === 'ar' || saved === 'en') return saved;
@@ -79,6 +81,13 @@
   /* run before paint so there is no flash of the wrong language */
   apply(detect());
 
+  /* query-string pages (?id=...) are prerendered, so the lang-switch href baked at
+     build time never carries the runtime query — patch it in before it can be clicked */
+  if (location.search) {
+    var sw = document.querySelector('.lang-switch');
+    if (sw) sw.setAttribute('href', sw.getAttribute('href') + location.search);
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     apply(detect());
 
@@ -89,9 +98,6 @@
         apply(lang === 'toggle' ? (root.lang === 'ar' ? 'en' : 'ar') : lang);
       });
     }
-
-    var pills = document.querySelectorAll('.lang-switch');
-    for (var i = 0; i < pills.length; i++) bind(pills[i], 'toggle');
 
     bind(document.querySelector('.lang a:first-child'), 'ar');
     bind(document.querySelector('.lang a:last-child'), 'en');

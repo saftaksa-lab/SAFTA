@@ -1,7 +1,13 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export function getStaticPaths() {
+  return [{ params: { locale: 'en' } }, { params: { locale: 'ar' } }];
+}
+const { locale } = Astro.params;
 ---
 <BaseLayout
+  locale={locale}
   title="Working group | SAFTA"
   titleAr="مجموعة عمل | التحالف السعودي"
 >
@@ -9,7 +15,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <section class="page-hero">
 <img data-cms-img="i001-gd09rackshero" alt="" src="assets/img/green-dunes/gd-09-racks-hero.webp"/>
 <div class="wrap">
-<p class="crumbs"><a data-cms="t002-الرئيسية" data-ar="الرئيسية" href="/">Home</a><span>/</span><a data-cms="t003-مجموعات-العمل" data-ar="مجموعات العمل" href="/technologies">Working groups</a><span>/</span><span data-cms="t004-تفاصيل-المجموعة" data-ar="تفاصيل المجموعة">Group</span></p>
+<p class="crumbs"><a data-cms="t002-الرئيسية" data-ar="الرئيسية" href={`/${locale}`}>Home</a><span>/</span><a data-cms="t003-مجموعات-العمل" data-ar="مجموعات العمل" href={`/${locale}/technologies`}>Working groups</a><span>/</span><span data-cms="t004-تفاصيل-المجموعة" data-ar="تفاصيل المجموعة">Group</span></p>
 <h1 data-cms="t005-مجموعة-عمل" data-ar="مجموعة عمل" id="gTitle">Working group</h1>
 </div>
 </section>
@@ -46,8 +52,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <p class="wgp__src reveal" id="gSrc"></p>
 
 <div class="wgp__nav reveal">
-<a data-cms="t011-كل-مجموعات-العمل" class="btn-pill" data-ar="كل مجموعات العمل" href="/technologies">All working groups</a>
-<a data-cms="t012-سجّل-اهتمامك-بالمشاركة" class="btn-pill btn-pill--alt" data-ar="سجّل اهتمامك بالمشاركة" href="/register-interest">Register your interest</a>
+<a data-cms="t011-كل-مجموعات-العمل" class="btn-pill" data-ar="كل مجموعات العمل" href={`/${locale}/technologies`}>All working groups</a>
+<a data-cms="t012-سجّل-اهتمامك-بالمشاركة" class="btn-pill btn-pill--alt" data-ar="سجّل اهتمامك بالمشاركة" href={`/${locale}/register-interest`}>Register your interest</a>
 </div>
 
 </div>

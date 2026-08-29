@@ -1,14 +1,20 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export function getStaticPaths() {
+  return [{ params: { locale: 'en' } }, { params: { locale: 'ar' } }];
+}
+const { locale } = Astro.params;
 ---
 <BaseLayout
+  locale={locale}
   title="Accessibility | SAFTA"
   titleAr="إمكانية الوصول | التحالف السعودي"
 >
 <main>
 <section class="page-hero page-hero--plain">
 <div class="wrap">
-<p class="crumbs"><a data-ar="الرئيسية" href="/">Home</a><span>/</span>Accessibility</p>
+<p class="crumbs"><a data-ar="الرئيسية" href={`/${locale}`}>Home</a><span>/</span>Accessibility</p>
 <h1 data-ar="إمكانية الوصول">Accessibility</h1>
 </div>
 </section>

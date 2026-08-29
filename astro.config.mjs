@@ -1,6 +1,9 @@
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
+  // Routes are extensionless (`/en/about` -> dist/en/about.html) rather than directories
+  // with an index.html each. Pages live two segments deep now (/en/x, /ar/x); every relative
+  // `assets/...` reference still resolves because BaseLayout emits `<base href="/">`.
   build: { format: 'file' },
   trailingSlash: 'never',
 

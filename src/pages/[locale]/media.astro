@@ -1,7 +1,13 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export function getStaticPaths() {
+  return [{ params: { locale: 'en' } }, { params: { locale: 'ar' } }];
+}
+const { locale } = Astro.params;
 ---
 <BaseLayout
+  locale={locale}
   title="Media | SAFTA"
   titleAr="المركز الإعلامي | التحالف السعودي"
   description="News, insights, photography and events from across the Alliance."
@@ -9,7 +15,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <main>
 <section class="page-hero page-hero--plain">
 <div class="wrap">
-<p class="crumbs"><a data-cms="t001-الرئيسية" data-ar="الرئيسية" href="/">Home</a><span>/</span>News &amp; Events</p>
+<p class="crumbs"><a data-cms="t001-الرئيسية" data-ar="الرئيسية" href={`/${locale}`}>Home</a><span>/</span>News &amp; Events</p>
 <h1 data-cms="t002-المركز-الإعلامي" data-ar="الأخبار والفعاليات">News &amp; Events</h1>
 <p data-cms="t003-الأخبار-والرؤى-والصور-والف" class="lede" data-ar="آخر أخبار التحالف وفعالياته ومعارضه.">The latest news, events and exhibitions from across the Alliance.</p>
 </div>
@@ -22,19 +28,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <button class="mtab" type="button" role="tab" aria-selected="false" data-mtab="events" data-ar="الفعاليات والمعارض">Events &amp; exhibitions</button>
 </div>
 <div class="mtab-panel is-active" id="news" role="tabpanel">
-<div class="card-row bleed reveal"><a class="news-card" href="/article?id=mou-water">
+<div class="card-row bleed reveal"><a class="news-card" href={`/${locale}/article?id=mou-water`}>
 <div class="news-card__media"><img data-cms-img="i005-phnews" alt="" src="assets/img/placeholders/ph-news.svg"/></div>
 <div class="news-card__body"><p data-cms="t006-أخبار-28-يوليو-2026" class="news-card__meta" data-ar="أخبار · 28 يوليو 2026">News  ·  July 28, 2026</p><h3 data-cms="t007-التحالف-ووزارة-البيئة-والم" data-ar="التحالف ووزارة البيئة والمياه والزراعة يوقّعان مذكرة لتسريع تقنيات الزراعة الموفّرة للمياه">SAFTA and MEWA sign a memorandum to accelerate water-efficient farming technologies</h3></div>
 <div class="news-card__foot"><span class="circ-sm"><svg fill="none" height="13" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="13"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></div>
-</a><a class="news-card" href="/article?id=first-cohort">
+</a><a class="news-card" href={`/${locale}/article?id=first-cohort`}>
 <div class="news-card__media"><img data-cms-img="i008-phmembership" alt="" src="assets/img/placeholders/ph-membership.svg"/></div>
 <div class="news-card__body"><p data-cms="t009-أخبار-14-يوليو-2026" class="news-card__meta" data-ar="أخبار · 14 يوليو 2026">News  ·  July 14, 2026</p><h3 data-cms="t010-انعقاد-الدفعة-الأولى-من-مج" data-ar="انعقاد الدفعة الأولى من مجموعات العمل في الرياض لوضع الأجندة البحثية">First cohort of working groups convenes in Riyadh to set the research agenda</h3></div>
 <div class="news-card__foot"><span class="circ-sm"><svg fill="none" height="13" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="13"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></div>
-</a><a class="news-card" href="/article?id=loi-2026">
+</a><a class="news-card" href={`/${locale}/article?id=loi-2026`}>
 <div class="news-card__media"><img data-cms-img="i011-phinsight02" alt="" src="assets/img/placeholders/ph-insight-02.svg"/></div>
 <div class="news-card__body"><p data-cms="t012-أخبار-30-يونيو-2026" class="news-card__meta" data-ar="أخبار · 30 يونيو 2026">News  ·  June 30, 2026</p><h3 data-cms="t013-التحالف-ينشر-خطاب-الاهتمام" data-ar="التحالف ينشر خطاب الاهتمام بالعضوية لعام 2026">SAFTA publishes the 2026 membership Letter of Interest</h3></div>
 <div class="news-card__foot"><span class="circ-sm"><svg fill="none" height="13" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="13"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></div>
-</a><a class="news-card" href="/article?id=precision-pilots">
+</a><a class="news-card" href={`/${locale}/article?id=precision-pilots`}>
 <div class="news-card__media"><img data-cms-img="i014-phwhatwedo" alt="" src="assets/img/placeholders/ph-what-we-do.svg"/></div>
 <div class="news-card__body"><p data-cms="t015-أخبار-09-يونيو-2026" class="news-card__meta" data-ar="أخبار · 09 يونيو 2026">News  ·  June 09, 2026</p><h3 data-cms="t016-التحالف-يشارك-مراكز-بحثية-" data-ar="التحالف يشارك مراكز بحثية وطنية في تجارب الزراعة الدقيقة">Alliance partners with national research centres on precision agriculture pilots</h3></div>
 <div class="news-card__foot"><span class="circ-sm"><svg fill="none" height="13" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="13"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></div>

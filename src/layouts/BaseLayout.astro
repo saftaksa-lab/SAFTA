@@ -5,9 +5,11 @@ import JoinBanner from '../components/JoinBanner.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 
 interface Props {
-  /** <title>, English. i18n.js swaps in titleAr on language switch. */
+  /** which locale route this page was generated for */
+  locale: 'en' | 'ar';
+  /** <title>, English. Arabic pages render titleAr instead. */
   title: string;
-  /** <html data-title-ar> — read by assets/js/i18n.js */
+  /** <html data-title-ar> — read by assets/js/i18n.js and the admin preview */
   titleAr: string;
   description?: string;
   /** drawer nav key that gets is-current */
@@ -19,6 +21,7 @@ interface Props {
 }
 
 const {
+  locale,
   title,
   titleAr,
   description = '',
@@ -27,11 +30,12 @@ const {
   joinBanner = true,
 } = Astro.props;
 ---
-<html data-title-ar={titleAr} dir="ltr" lang="en">
+<html data-title-ar={titleAr} dir={locale === 'ar' ? 'rtl' : 'ltr'} lang={locale}>
 <head>
 <meta charset="utf-8"/>
+<base href="/"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>{title}</title>
+<title>{locale === 'ar' ? titleAr : title}</title>
 <meta content={description} name="description"/>
 <meta content="#015C44" name="theme-color"/>
 <meta content="noindex, nofollow" name="robots"/>
@@ -43,22 +47,16 @@ const {
 <slot name="head" />
 <link href="assets/css/style.css?v=28" rel="stylesheet"/>
 <script is:inline>document.documentElement.classList.add('js');</script>
-<script is:inline>
-/* set language + direction before first paint to avoid a flash of the wrong layout */
-(function(){try{var s=localStorage.getItem('safta.lang');
-var l=(s==='ar'||s==='en')?s:((navigator.language||'').toLowerCase().indexOf('ar')===0?'ar':'en');
-document.documentElement.lang=l;document.documentElement.dir=(l==='ar')?'rtl':'ltr';}catch(e){}})();
-</script>
 </head>
 <body>
 <!-- =============== SCROLL PROGRESS =============== -->
 <div id="scroll-progress"></div>
 <!-- =============== HEADER =============== -->
-<SiteHeader />
-<SiteDrawer current={current} />
+<SiteHeader locale={locale} />
+<SiteDrawer current={current} locale={locale} />
 <slot />
-{joinBanner && <JoinBanner />}
-<SiteFooter />
+{joinBanner && <JoinBanner locale={locale} />}
+<SiteFooter locale={locale} />
 <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script is:inline src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>

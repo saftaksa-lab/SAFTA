@@ -1,10 +1,14 @@
+---
+interface Props { locale: 'en' | 'ar' }
+const { locale } = Astro.props;
+---
 <section class="about-banner">
 <img alt="" loading="lazy" src="assets/img/green-dunes/gd-03-rows-hero.webp"/>
 <div class="about-banner__in">
 <p class="eyebrow eyebrow--light" data-ar="العضوية">Membership</p>
 <h2 data-ar="انضم إلى التحالف">Join the Alliance</h2>
 <p class="about-banner__lede" data-ar="شارك في تشكيل مستقبل تقنيات الزراعة والغذاء في المملكة.">Help shape the future of agrifood technology in the Kingdom.</p>
-<a class="btn-brand" href="/register-interest">
+<a class="btn-brand" href={`/${locale}/register-interest`}>
 <span data-ar="سجّل اهتمامك">Register your interest</span>
 <svg fill="none" height="15" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24" width="15"><path d="M5 12h13M13 6l6 6-6 6"></path></svg>
 </a>
