@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Text from '../../components/content/Text.astro';
 import Image from '../../components/content/Image.astro';
 import { getPageContent } from '../../lib/content/store';
+import { ABOUT_FIELDS } from '../../lib/content/schema/about';
 
 export function getStaticPaths() {
   return [{ params: { locale: 'en' } }, { params: { locale: 'ar' } }];
@@ -12,8 +13,10 @@ const { locale } = Astro.params;
 // would otherwise render the English copy under lang="fr".
 if (locale !== 'en' && locale !== 'ar') return new Response(null, { status: 404 });
 
-// Copy comes from ./content/about.json (gitignored, admin-owned), cached in memory.
-const c = await getPageContent('about');
+// Copy comes from ./content/about.json (gitignored, admin-owned), cached in memory. The
+// <typeof ABOUT_FIELDS> type argument narrows c.text()/c.image() to this page's own keys,
+// so a typo'd key or calling .text() on an image key is a compile-time error.
+const c = await getPageContent<typeof ABOUT_FIELDS>('about');
 ---
 <BaseLayout
   locale={locale}

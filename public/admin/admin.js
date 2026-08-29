@@ -221,6 +221,41 @@ function start() {
   renderPane();
 }
 
+/* الصفحات apiBacked (حاليًا «عن التحالف» فقط) تُقرأ وتُكتب مباشرة من الخادم —
+   BASE لهذه الصفحات يجب أن يعكس آخر نسخة محفوظة فعليًا قبل حساب الفروقات،
+   بدل الاعتماد على لقطة baseline.js الجامدة. */
+function apiBackedViews() {
+  return Object.keys(SCHEMA).filter(function (v) { return SCHEMA[v].apiBacked; });
+}
+
+/* مخطط الحقول لهذه الصفحات يُولَّد من ملف مخطط واحد على الخادم
+   (src/lib/content/schema/*.ts) بدل الاعتماد فقط على النسخة اليدوية في schema.js —
+   نجلبه هنا ونستبدل به قبل أي استخدام لـ SCHEMA، فيبقى schema.js احتياطًا محليًا فقط
+   إن تعذّر الاتصال بالخادم. */
+function syncApiBackedSchema() {
+  var views = apiBackedViews();
+  return Promise.all(views.map(function (v) {
+    return fetch('/admin/api/schema/' + v)
+      .then(function (r) { if (!r.ok) throw new Error('bad status'); return r.json(); })
+      .then(function (data) { SCHEMA[v] = Object.assign({}, SCHEMA[v], data); })
+      .catch(function () {
+        toast('تعذّر تحميل أحدث مخطط لحقول «' + (SCHEMA[v].label || v) + '» — يُعرض آخر إصدار محفوظ محليًا');
+      });
+  }));
+}
+
+function syncApiBackedBaseline() {
+  var views = apiBackedViews();
+  return Promise.all(views.map(function (v) {
+    return fetch('/admin/api/content/' + v)
+      .then(function (r) { if (!r.ok) throw new Error('bad status'); return r.json(); })
+      .then(function (data) { BASE.pages[v] = data; })
+      .catch(function () {
+        toast('تعذّر تحميل أحدث نسخة من «' + (SCHEMA[v].label || v) + '» — يُعرض آخر إصدار محفوظ محليًا');
+      });
+  }));
+}
+
 /* ═══════════════════ 6 · القائمة الجانبية ═══════════════════ */
 
 function renderSide() {
@@ -459,6 +494,29 @@ function bindPane() {
       var wrap = inp.closest('.f');
       var view = wrap.getAttribute('data-view');
       var f = findField(wrap.getAttribute('data-uid'), view);
+
+      /* الصفحات apiBacked تُرفَع صورها فورًا إلى public/uploads عبر الخادم —
+         لا حاجة لتخزينها كـ dataURL محليًا بانتظار التنزيل والنشر اليدوي. */
+      if (SCHEMA[view] && SCHEMA[view].apiBacked) {
+        var fd = new FormData();
+        fd.append('file', file);
+        toast('يتم رفع الصورة…');
+        fetch('/admin/api/uploads', { method: 'POST', body: fd })
+          .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+          .then(function (res) {
+            if (!res.ok) { toast((res.j && res.j.error) || 'تعذّر رفع الصورة'); return; }
+            var path = res.j.path;
+            writeField(view, f, 'src', path);
+            saveDraft(); refreshChip(); renderSide();
+            $('.img__prev', wrap).style.backgroundImage = "url('../" + path + "')";
+            $('.img__path', wrap).textContent = path;
+            wrap.classList.add('is-dirty');
+            toast('تم رفع الصورة');
+          })
+          .catch(function () { toast('تعذّر رفع الصورة'); });
+        return;
+      }
+
       var rd = new FileReader();
       rd.onload = function () {
         var name = file.name.replace(/[^\w.\-]+/g, '-').toLowerCase();
@@ -572,7 +630,32 @@ function buildPreview(t, lang, width) {
   var url = '/en' + (page === 'index' ? '' : '/' + page) + (t.id ? '?id=' + encodeURIComponent(t.id) : '');
   fetch(url).then(function (r) { return r.text(); }).then(function (html) {
 
-    /* المحتوى المعدّل بدل الملف المنشور */
+    /* الصفحات apiBacked تُصيَّر من content/<page>.json مباشرة على الخادم — لا
+       سكربت محتوى نستبدله كما في الصفحات القديمة. نطبّق المسودة بنفس منطق
+       cms.js القديم عبر data-cms/data-cms-img، ونضعه قبل i18n.js — لا بعد
+       </body> — حتى لا يخزّن i18n.js النصّ الأصلي في data-en قبل أن نُبدّله. */
+    if (SCHEMA[page] && SCHEMA[page].apiBacked) {
+      var draft = withImages(S.cur.pages[page] || {});
+      var patch = '<script>(function(){' +
+        'var C=' + JSON.stringify(draft) + ';' +
+        'document.querySelectorAll("[data-cms]").forEach(function(el){' +
+          'var r=C[el.getAttribute("data-cms")];if(!r)return;' +
+          'if(typeof r.en==="string")el.innerHTML=r.en;' +
+          'if(typeof r.ar==="string")el.setAttribute("data-ar",r.ar);' +
+        '});' +
+        'document.querySelectorAll("[data-cms-img]").forEach(function(el){' +
+          'var r=C[el.getAttribute("data-cms-img")];if(!r)return;' +
+          'if(r.src)el.setAttribute("src",r.src);' +
+          'if(typeof r.alt==="string")el.setAttribute("alt",r.alt);' +
+        '});' +
+      '})();<\/script>';
+      html = html.replace(
+        /<script[^>]*src="\/?assets\/js\/i18n\.js(\?v=\d+)?"[^>]*><\/script>/,
+        function (m) { return patch + m; }
+      );
+    }
+
+    /* المحتوى المعدّل بدل الملف المنشور (الصفحات القديمة فقط) */
     var inject = '<script>window.SAFTA_C=window.SAFTA_C||{};window.SAFTA_C[' +
       JSON.stringify(page) + ']=' + JSON.stringify(withImages(S.cur.pages[page] || {})) + ';<\/script>';
     html = html.replace(/<script[^>]*src="\/?assets\/content\/[\w-]+\.js(\?v=\d+)?"[^>]*><\/script>/, inject);
@@ -628,10 +711,12 @@ $('#pvX').addEventListener('click', function () { $('#pvModal').hidden = true; $
 function changedFiles() {
   var out = [];
 
-  /* ملفات محتوى الصفحات */
+  /* ملفات محتوى الصفحات — الصفحات apiBacked تُنشَر مباشرة عبر الخادم، فلا
+     تظهر هنا كملفٍ يُنزَّل ويُرفَع يدويًا. */
   Object.keys(SCHEMA).forEach(function (v) {
     var sc = SCHEMA[v];
     if (sc.kind === 'data') return;
+    if (sc.apiBacked) return;
     var n = dirtyInView(v);
     if (!n) return;
     out.push({
@@ -686,8 +771,7 @@ function changedFiles() {
   return out;
 }
 
-$('#btnPublish').addEventListener('click', function () {
-  var files = changedFiles();
+function showDownloadModal(files) {
   var list = $('#pubList');
   if (!files.length) {
     list.innerHTML = '<div class="empty"><b>لا توجد تعديلات</b>لم تُغيّر أي نص أو صورة بعد.</div>';
@@ -714,6 +798,50 @@ $('#btnPublish').addEventListener('click', function () {
     });
   }
   $('#pubModal').hidden = false;
+}
+
+/* تنشر مباشرةً كل صفحة apiBacked تحمل تعديلًا — عبر POST إلى content/<page>.json
+   على الخادم. عند النجاح تُحدَّث BASE لتلك الصفحة فتُصفَّر علامة "غير محفوظ". */
+function publishApiBacked() {
+  var views = apiBackedViews().filter(function (v) { return dirtyInView(v) > 0; });
+  if (!views.length) return Promise.resolve([]);
+  return Promise.all(views.map(function (v) {
+    return fetch('/admin/api/content/' + v, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(S.cur.pages[v])
+    })
+      .then(function (r) { return r.json().then(function (j) { return { view: v, ok: r.ok, j: j }; }); })
+      .catch(function () { return { view: v, ok: false, j: {} }; });
+  }));
+}
+
+$('#btnPublish').addEventListener('click', function () {
+  var apiDirty = apiBackedViews().filter(function (v) { return dirtyInView(v) > 0; });
+
+  if (!apiDirty.length) {
+    showDownloadModal(changedFiles());
+    return;
+  }
+
+  var btn = $('#btnPublish');
+  btn.disabled = true;
+  publishApiBacked().then(function (results) {
+    btn.disabled = false;
+    var saved = [], failed = [];
+    results.forEach(function (r) {
+      if (r.ok) { BASE.pages[r.view] = clone(S.cur.pages[r.view]); saved.push(SCHEMA[r.view].label); }
+      else failed.push((SCHEMA[r.view] && SCHEMA[r.view].label) || r.view);
+    });
+    saveDraft(); refreshChip(); renderSide(); renderPane();
+
+    if (failed.length) toast('تعذّر حفظ: ' + failed.join('، ') + (saved.length ? ' (نُشر: ' + saved.join('، ') + ')' : ''));
+    else toast('تم الحفظ والنشر مباشرة: ' + saved.join('، '));
+
+    /* لا داعي لفتح نافذة التنزيل إن لم يبقَ أي ملفٍ من الصفحات القديمة ينتظر النشر اليدوي */
+    var remaining = changedFiles();
+    if (remaining.length) showDownloadModal(remaining);
+  });
 });
 
 $('#pubAll').addEventListener('click', function () {
@@ -754,7 +882,9 @@ document.addEventListener('keydown', function (e) {
    يتحقّق من الجلسة قبل أن تصل هذه الصفحة أصلًا، فلا حاجة لفحصٍ هنا. */
 
 (function boot() {
-  start();
+  syncApiBackedSchema().then(function () {
+    return syncApiBackedBaseline();
+  }).then(start, start);
 })();
 
 /* للاختبار الآلي */

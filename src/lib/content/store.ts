@@ -1,5 +1,7 @@
-import { readFile, stat } from 'node:fs/promises';
+import { readFile, rename, stat, unlink, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
+import type { FieldMap, TypedPageContent } from './schema/codec';
+import { getPageValidator, isEditablePage } from './schema/registry';
 
 /**
  * Reads the site's editable content out of ./content/*.json at request time.
@@ -12,6 +14,7 @@ import { join, resolve } from 'node:path';
  */
 
 const CONTENT_DIR = resolve(process.cwd(), 'content');
+const UPLOADS_DIR = resolve(process.cwd(), 'public', 'uploads');
 
 // Dev revalidates on every read so an edit shows up on the next reload; production trades
 // a few seconds of staleness for not touching the filesystem on every hit.
@@ -29,7 +32,7 @@ export interface ImageField {
 }
 
 type Record_ = { en?: string; ar?: string; src?: string; alt?: string; alt_ar?: string };
-type PageData = Record<string, Record_>;
+export type PageData = Record<string, Record_>;
 
 interface CacheEntry {
   data: unknown;
@@ -84,12 +87,98 @@ export function resolveAsset(src: string): string {
   return src;
 }
 
+/** The raw field map for a page, as stored on disk — what the admin edits. */
+export async function readPageData(page: string): Promise<PageData> {
+  return readJson<PageData>(`${page}.json`);
+}
+
+/**
+ * Replaces a page's content file. Writes to a sibling temp file and renames, so a reader
+ * never observes a half-written file, and primes the cache with what was just written so
+ * the site reflects the edit immediately instead of waiting out the revalidate window.
+ */
+export async function writePageData(page: string, data: PageData): Promise<void> {
+  const path = join(CONTENT_DIR, `${page}.json`);
+  const tmp = `${path}.${process.pid}.${Date.now()}.tmp`;
+  const json = JSON.stringify(data, null, 2) + '\n';
+
+  await writeFile(tmp, json, 'utf8');
+  await rename(tmp, path);
+
+  const { mtimeMs } = await stat(path);
+  cache.set(path, { data, mtimeMs, checkedAt: Date.now() });
+}
+
+/**
+ * Deletes uploaded image files that a publish just replaced, so re-uploading a page's
+ * images repeatedly doesn't leak files into public/uploads forever. Only touches files
+ * under uploads/ — asset paths from public/assets/content are never admin-uploaded and
+ * are never removed. A file is only deleted if no field in the *new* data still points at
+ * it, so two keys sharing one image never lose it out from under the surviving one.
+ */
+export async function pruneReplacedUploads(existing: PageData, next: PageData): Promise<void> {
+  const keptSrcs = new Set(Object.values(next).map((r) => r.src).filter(Boolean));
+
+  for (const key of Object.keys(existing)) {
+    const oldSrc = existing[key]?.src;
+    if (!oldSrc || !oldSrc.startsWith('uploads/')) continue;
+    if (oldSrc === next[key]?.src) continue;
+    if (keptSrcs.has(oldSrc)) continue;
+
+    const name = oldSrc.slice('uploads/'.length);
+    if (!name || name.includes('/') || name.includes('\\')) continue;
+
+    try {
+      await unlink(join(UPLOADS_DIR, name));
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+        console.warn(`[content] failed to delete replaced upload "${oldSrc}":`, err);
+      }
+    }
+  }
+}
+
+export class InvalidContentError extends Error {}
+
+/**
+ * Validates an admin-submitted field map against that page's schema module
+ * (./schema/<page>.ts, generated from the admin UI's field layout — see
+ * ./schema/registry.ts) before it is ever passed to writePageData. The schema, not
+ * whatever happens to already be on disk, is the source of truth for the editable key
+ * set: every registered key is required (never fewer — a dropped key would blank the live
+ * page) and no unregistered key is accepted (never more — an extra key is either a client
+ * bug or an attempt to smuggle in data no renderer was written to expect). Each record
+ * must keep its schema-declared shape — text stays {en, ar}, image stays
+ * {src, alt, alt_ar} — because that shape is what tells the renderer which component
+ * (Text vs Image) the key belongs to.
+ */
+export function validatePageUpdate(page: string, incoming: unknown): PageData {
+  if (!isEditablePage(page)) throw new InvalidContentError(`"${page}" has no registered schema`);
+
+  const result = getPageValidator(page).safeParse(incoming);
+  if (!result.success) {
+    const issue = result.error.issues[0];
+    const path = issue?.path.join('.') || '(root)';
+    throw new InvalidContentError(`field "${path}": ${issue?.message ?? 'invalid content'}`);
+  }
+  return result.data as PageData;
+}
+
 export interface PageContent {
   text(key: string): TextField;
   image(key: string): ImageField;
 }
 
-export async function getPageContent(page: string): Promise<PageContent> {
+/**
+ * `F` narrows `text()`/`image()` to one page's own keys — pass a page's `*_FIELDS` export
+ * as the type parameter (e.g. `getPageContent<typeof ABOUT_FIELDS>('about')`) so a call
+ * with a typo'd key, or a text call on an image key, is a compile-time error instead of a
+ * silent blank field at runtime. `F` is a type-only hint: the accessors below are still
+ * built generically and know nothing about any specific page's field set.
+ */
+export async function getPageContent<F extends FieldMap = FieldMap>(
+  page: string,
+): Promise<TypedPageContent<F>> {
   const data = await readJson<PageData>(`${page}.json`);
 
   function record(key: string, kind: string): Record_ {
@@ -103,7 +192,7 @@ export async function getPageContent(page: string): Promise<PageContent> {
     return {};
   }
 
-  return {
+  const content: PageContent = {
     text(key) {
       const r = record(key, 'text');
       return { en: r.en ?? '', ar: r.ar ?? '' };
@@ -113,4 +202,5 @@ export async function getPageContent(page: string): Promise<PageContent> {
       return { src: resolveAsset(r.src ?? ''), alt: r.alt ?? '', altAr: r.alt_ar ?? '' };
     },
   };
+  return content as unknown as TypedPageContent<F>;
 }

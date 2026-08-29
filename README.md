@@ -97,7 +97,61 @@ and `npm run build` run it first to fill in anything missing (it never overwrite
 request. Astro copies `public/` into the build output only once, at build time, so
 without that route a file uploaded after a deploy would 404 until the next build.
 
-**Migration status:** only `[locale]/about.astro` is on the new stores. The other pages
-still load `assets/content/<page>.js` and let `assets/js/cms.js` patch the DOM after
-paint, and `/admin` still edits `localStorage` and exports those `.js` files for manual
-upload — it does not yet write to `content/`.
+`/admin` (`public/admin/`) is the editor UI. For pages on the new stores it now writes
+straight through three API routes gated by the same session middleware as the rest of
+`/admin`:
+
+- `src/pages/admin/api/content/[page].ts` — GET returns a page's current
+  `content/<page>.json`; POST replaces it, validated against that page's **schema
+  module**, not against whatever is currently on disk (see below).
+- `src/pages/admin/api/schema/[page].ts` — GET returns a page's editable-field layout
+  (sections, cards, labels) straight from the same schema module the admin panel used to
+  keep only in the hand-maintained `public/admin/schema.js`.
+- `src/pages/admin/api/uploads.ts` — accepts one image (≤3MB, `image/*`), writes it into
+  `public/uploads/` under a generated name, and returns the path to store in a field.
+  Publishing a page prunes any upload an edit just replaced (`pruneReplacedUploads` in
+  `store.ts`) — deleted only once the file that stopped referencing it is actually
+  written, and only if no other field on the page still points at it.
+
+**Schema modules** (`src/lib/content/schema/`) are the source of truth for which fields a
+page has and what shape each one is — not `content/<page>.json`, which used to double as
+its own schema (whatever keys happened to be on disk defined what a future publish was
+allowed to contain, so a corrupted file could permanently narrow the editable set).
+`src/lib/content/schema/registry.ts` maps page name → schema module and is what both
+`isEditablePage()` and the two routes above key off; `codec.ts` turns a schema module's
+field map into the zod validator content POSTs are checked against
+(`getPageValidator`) and expands its section/card key-lists back into the full
+`{key, tag, type, label}` objects the admin UI reads (`denormalizeSections`,
+`getAdminSchema`). `store.ts`'s `getPageContent<F>()` takes a schema module's field map as
+a type parameter, so `c.text('some-key')` in a page's `.astro` frontmatter is checked at
+compile time against that page's actual keys — a typo, or calling `.text()` on an image
+key, is a type error instead of a blank field at runtime.
+
+A schema module is generated, not hand-written: `node scripts/generate-page-schema.mjs
+<page>` reads that page's existing `public/admin/schema.js` entry (field labels/tags/
+layout) and `content/<page>.json` (which key is text vs. image) and emits
+`src/lib/content/schema/<page>.ts`, failing loudly if the two disagree. Re-run it after
+changing a page's field layout in the admin UI rather than hand-editing the generated
+file. `public/admin/schema.js` stays in place as a local fallback: `admin.js` fetches
+`/admin/api/schema/<page>` at boot for every `apiBacked` page and overwrites the static
+copy with the server's version, only falling back to the bundled one if that fetch fails.
+
+`admin.js` also refreshes its notion of "original" content for `apiBacked` pages from the
+live content API (not the frozen `baseline.js` snapshot) before computing what's changed,
+so "reset to original" and the dirty-state markers track the real file, and "Save &
+Publish" writes directly instead of opening the download modal.
+
+**Migration status:** only `about` has a schema module and is `apiBacked`. The other
+pages still render through `assets/content/<page>.js` + `assets/js/cms.js` (client-side
+DOM patching after paint) and still publish through the admin's original flow — edit into
+`localStorage`, download the generated `.js` files, commit them by hand.
+
+**Known issue, unrelated to any of the above:** Vite's built-in `dotenv-expand` treats any
+`$word` in a `.env` value as a variable reference and blanks it if undefined. A
+`scrypt$<salt>$<hash>` value from `npm run hash-password` trips this whenever either hex
+segment happens to start with a letter (`a`–`f`) rather than a digit — roughly 60% of
+freshly generated hashes, by chance alone — silently truncating `ADMIN_PASSWORD_HASH` at
+build time and locking out the admin account with no error at build or login time. Not
+introduced by anything above; flagged here because it was found while testing the schema
+API and is worth fixing before the next password rotation (e.g. by base64- or
+hex-encoding the stored hash, or escaping `$` as `$$` when writing `.env`).
