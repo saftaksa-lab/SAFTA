@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000" role="img" aria-label="SAFTA Insights">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0%" stop-color="#072A22"/><stop offset="55%" stop-color="#015C44"/><stop offset="100%" stop-color="#63BD69"/>
+</linearGradient>
+<linearGradient id="rule" x1="0" y1="0" x2="1" y2="0">
+<stop offset="0%" stop-color="#63BD69"/><stop offset="48%" stop-color="#2FA58C"/><stop offset="100%" stop-color="#4689C8"/>
+</linearGradient>
+<clipPath id="cp"><rect width="1600" height="1000"/></clipPath>
+</defs>
+<rect width="1600" height="1000" fill="url(#bg)"/>
+<g clip-path="url(#cp)" opacity=".13" fill="none" stroke="#CFEFD8" stroke-width="3">
+<!-- leaf motif from the SAFTA mark -->
+<g transform="translate(1180 190) scale(2.9)">
+<path d="M0 150 C0 60 60 0 150 0 C150 90 90 150 0 150 Z"/>
+<path d="M8 142 C50 100 100 50 142 8"/>
+<path d="M40 138 C55 110 78 88 104 74"/>
+<path d="M74 128 C86 108 104 92 124 82"/>
+</g>
+<g transform="translate(-120 620) scale(2.2) rotate(-18)">
+<path d="M0 150 C0 60 60 0 150 0 C150 90 90 150 0 150 Z"/>
+<path d="M8 142 C50 100 100 50 142 8"/>
+</g>
+</g>
+<g opacity=".9">
+<text x="800" y="452" text-anchor="middle" fill="#7FD08A"
+ font-family="'Space Grotesk','Inter',system-ui,sans-serif" font-size="34" font-weight="600" letter-spacing="9">SAFTA INSIGHTS</text>
+<text x="800" y="556" text-anchor="middle" fill="#FFFFFF" direction="rtl"
+ font-family="'IBM Plex Sans Arabic','Segoe UI',system-ui,sans-serif" font-size="62" font-weight="600">مركز الرؤى</text>
+</g>
+<rect x="620" y="618" width="360" height="4" fill="url(#rule)" opacity=".95"/>
+<text x="800" y="700" text-anchor="middle" fill="#BFE3CE" opacity=".75" direction="rtl"
+ font-family="'IBM Plex Sans Arabic','Segoe UI',system-ui,sans-serif" font-size="26">صورة مؤقتة — بانتظار صورة التحالف</text>
+</svg>

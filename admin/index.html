@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>مركز تحكّم سافتا</title>
+<link rel="icon" href="../assets/img/logo-mark.png">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<!-- شاشة انتقال: تظهر لحظةً قبل التحويل إلى بوابة أعضاء التحالف -->
+<div id="gate" class="gate">
+  <div class="gate__box">
+    <img src="../assets/img/logo-safta-dark.png" alt="سافتا" class="gate__logo">
+    <h1 class="gate__title">مركز تحكّم المحتوى</h1>
+    <p class="gate__sub">يجري تحويلك إلى صفحة دخول الأعضاء…</p>
+    <a class="gate__btn" href="../login.html"
+       style="display:grid;place-items:center;text-decoration:none">دخول الأعضاء</a>
+  </div>
+</div>
+
+<!-- ══════════════════ اللوحة ══════════════════ -->
+<div id="app" class="app" hidden>
+
+  <!-- الشريط العلوي -->
+  <header class="bar">
+    <div class="bar__id">
+      <img src="../assets/img/logo-safta-dark.png" alt="سافتا">
+      <span>مركز تحكّم المحتوى</span>
+    </div>
+
+    <div class="bar__search">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M11 4a7 7 0 105.2 11.7l4.1 4.1 1.4-1.4-4.1-4.1A7 7 0 0011 4zm0 2a5 5 0 110 10 5 5 0 010-10z" fill="currentColor"/></svg>
+      <input type="search" id="q" placeholder="ابحث عن أي نص في الموقع…">
+    </div>
+
+    <div class="bar__acts">
+      <span class="chip" id="dirtyChip" hidden><b id="dirtyN">0</b> تعديل غير منشور</span>
+      <button class="btn btn--ghost" id="btnPreview">معاينة</button>
+      <button class="btn btn--primary" id="btnPublish">حفظ ونشر</button>
+      <button class="btn btn--icon" id="btnOut" title="خروج" aria-label="خروج">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path d="M10 17l1.4-1.4-2.6-2.6H17v-2H8.8l2.6-2.6L10 7l-5 5 5 5zm9-14H5a2 2 0 00-2 2v4h2V5h14v14H5v-4H3v4a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="shell">
+    <!-- القائمة الجانبية -->
+    <nav class="side" id="side" aria-label="أقسام الموقع"></nav>
+
+    <!-- منطقة التحرير -->
+    <main class="pane" id="pane"></main>
+  </div>
+</div>
+
+<!-- ══════════════════ نافذة النشر ══════════════════ -->
+<div class="modal" id="pubModal" hidden>
+  <div class="modal__box">
+    <button class="modal__x" id="pubX" aria-label="إغلاق">&times;</button>
+    <h2>حفظ ونشر التعديلات</h2>
+    <p class="modal__lede">
+      نزّل الملفات التالية وارفعها في مستودع GitHub في نفس المسار المكتوب بجانب كل ملف،
+      ثم انتظر دقيقة — Netlify ينشر التحديث تلقائيًا.
+    </p>
+    <div id="pubList" class="pub"></div>
+    <div class="modal__foot">
+      <button class="btn btn--primary" id="pubAll">تنزيل كل الملفات</button>
+      <button class="btn btn--ghost" id="pubZip" hidden>تنزيل مضغوط (ZIP)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ نافذة المعاينة ══════════════════ -->
+<div class="modal modal--wide" id="pvModal" hidden>
+  <div class="modal__box modal__box--wide">
+    <button class="modal__x" id="pvX" aria-label="إغلاق">&times;</button>
+    <div class="pv__bar">
+      <strong id="pvTitle">معاينة</strong>
+      <div class="pv__seg">
+        <button data-pv-lang="ar" class="is-on">عربي</button>
+        <button data-pv-lang="en">English</button>
+      </div>
+      <div class="pv__seg">
+        <button data-pv-w="100%" class="is-on">كمبيوتر</button>
+        <button data-pv-w="390px">جوال</button>
+      </div>
+    </div>
+    <div class="pv__stage"><iframe id="pvFrame" title="معاينة"></iframe></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="schema.js"></script>
+<script src="baseline.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

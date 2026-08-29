@@ -1,0 +1,3497 @@
+/* =========================================================================
+   SAFTA — Saudi AgriFood Tech Alliance
+   Homepage. Layout system reverse-engineered from aramco.com/en,
+   re-skinned end-to-end with the SAFTA visual identity.
+   ========================================================================= */
+
+/* ---------- 1. DESIGN TOKENS ------------------------------------------- */
+:root {
+  /* SAFTA identity */
+  --c-green-deep:  #015C44;   /* primary   */
+  --c-green-light: #63BD69;   /* secondary */
+  --c-blue:        #4689C8;   /* accent    */
+
+  --c-text:        #0E2F2A;
+  --c-text-soft:   #4B6660;
+  --c-link:        #015C44;
+  --c-white:       #FFFFFF;
+  --c-grey-bg:     #F2F7F4;   /* green-tinted neutral */
+  --c-grey-line:   #D3E0DA;
+  --c-header-dark: #0E2F2A;
+
+  /* leaf-mark gradient: green -> teal -> blue */
+  --g-brand: linear-gradient(90deg, #63BD69 0%, #2FA58C 48%, #4689C8 100%);
+
+  /* Layout — measured from the live site at 2560px viewport */
+  --wrap-max:   1632px;   /* .content-wrapper */
+  --wrap-pad:   128px;    /* inner padding  -> grid = 1376px */
+  --bleed:      64px;     /* card rows extend 64px each side -> 1504px */
+  --gap:        20px;     /* flex gap inside card rows */
+
+  /* Typography — same families as the existing SAFTA site */
+  --f-body: 'Inter', 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
+  --f-head: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+
+  --sec-pad: 120px;       /* vertical rhythm between ribbons */
+  --header-h: 88px;
+}
+
+/* ---------- 2. RESET ---------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--c-white);
+  color: var(--c-text);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+  overflow-x: hidden;
+}
+
+/* Lenis */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+img { display: block; max-width: 100%; }
+a   { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+h1,h2,h3,h4,p,figure { margin: 0; }
+ul { margin: 0; padding: 0; list-style: none; }
+
+::selection { background: var(--c-green-light); color: #06231D; }
+
+/* ---------- 3. LAYOUT PRIMITIVES --------------------------------------- */
+.wrap {
+  max-width: var(--wrap-max);
+  margin-inline: auto;
+  padding-inline: var(--wrap-pad);
+}
+
+/* card rows bleed 64px outside the 1376 grid */
+.bleed { margin-inline: calc(var(--bleed) * -1); }
+
+.ribbon { padding-block: var(--sec-pad); position: relative; }
+.ribbon--grey { background: var(--c-grey-bg); }
+/* علامة الورقة المائية على الأشرطة الرمادية — أُزيلت بطلب العميل:
+   كانت تظهر خلف عناوين الأخبار والوثائق كصورة ثابتة غير متحركة.
+   لإعادتها لاحقًا: أرجع القاعدة `.ribbon--grey::before` مع
+   background: url('../img/logo-pattern.png') right -80px top -60px / 340px no-repeat; */
+.ribbon--grey > * { position: relative; z-index: 1; }
+.ribbon--tight { padding-block: 0 var(--sec-pad); }
+
+/* ---------- 4. TYPE SCALE ---------------------------------------------- */
+.eyebrow {
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 400;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--c-text);
+}
+.eyebrow--light { color: rgba(255,255,255,.92); }
+
+.h-display {                 /* hero H2 */
+  font-family: var(--f-head);
+  font-size: 58px;
+  line-height: 64px;
+  font-weight: 500;
+  letter-spacing: -.6px;
+  color: #fff;
+}
+.h-section {                 /* "At a glance", "Resource resilience" */
+  font-family: var(--f-head);
+  font-size: 40px;
+  line-height: 48px;
+  font-weight: 500;
+  letter-spacing: -.4px;
+}
+.h-intro {                   /* opening paragraph of a section */
+  font-size: 24px;
+  line-height: 34px;
+  font-weight: 400;
+  letter-spacing: -.1px;
+}
+.lede {                      /* section descriptions */
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 300;
+  letter-spacing: .18px;
+}
+.small { font-size: 14px; line-height: 18px; letter-spacing: .28px; }
+
+/* ---------- 5. LINKS & ARROW BUTTONS ----------------------------------- */
+.link-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--c-link);
+  font-size: 14px;
+  line-height: 18px;
+  letter-spacing: .28px;
+}
+.link-arrow svg { flex: none; transition: transform .35s cubic-bezier(.22,1,.36,1); }
+.link-arrow:hover svg { transform: translateX(6px); }
+
+/* circled arrow (right aligned CTA) */
+.cta-circle {
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  color: var(--c-link);
+  font-size: 14px;
+  letter-spacing: .28px;
+}
+.cta-circle .circ {
+  width: 44px; height: 44px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  transition: background .35s, color .35s;
+}
+.cta-circle:hover .circ { background: var(--c-link); color: #fff; }
+.cta-circle--light { color: #fff; }
+.cta-circle--light:hover .circ { background: #fff; color: var(--c-text); }
+
+/* ---------- 6. SCROLL PROGRESS BAR ------------------------------------- */
+#scroll-progress {
+  position: fixed; inset: 0 auto auto 0;
+  height: 3px; width: 100%;
+  transform: scaleX(0); transform-origin: 0 50%;
+  background: var(--g-brand);
+  z-index: 999;
+  pointer-events: none;
+}
+
+/* ---------- 7. TOPBAR + HEADER ----------------------------------------- */
+.site-head {
+  position: absolute; inset: 0 0 auto 0;
+  z-index: 200;
+  color: #fff;
+  transition: background .4s ease, transform .4s ease;
+}
+.site-head.is-stuck {
+  position: fixed;
+  background: var(--c-header-dark);
+}
+
+.lang { display: flex; align-items: center; gap: 10px; }
+.lang .sep { opacity: .5; }
+.lang .is-active { color: var(--c-green-light); }
+.region { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; }
+
+.navbar {
+  height: var(--header-h);
+  display: flex; align-items: center;
+}
+.navbar .wrap { display: flex; align-items: center; width: 100%; }
+.nav-search { margin-inline-end: 32px; display: grid; place-items: center; }
+.nav-links { display: flex; align-items: center; gap: 26px; }
+.nav-links a {
+  font-size: 13px; font-weight: 600;
+  letter-spacing: .6px; text-transform: uppercase;
+  position: relative; padding-block: 6px;
+}
+.nav-links a::after {
+  content: ''; position: absolute; left: 0; bottom: 0;
+  width: 100%; height: 2px; background: var(--g-brand);
+  transform: scaleX(0); transform-origin: 0 50%;
+  transition: transform .35s cubic-bezier(.22,1,.36,1);
+}
+.nav-links a:hover::after { transform: scaleX(1); }
+/* ---- SAFTA lockup: leaf mark + live wordmark ---- */
+.brand { margin-inline-start: auto; display: flex; align-items: center; gap: 12px; }
+.brand img { width: 40px; height: 40px; }
+.brand .wordmark {
+  font-family: var(--f-head);
+  font-size: 22px; font-weight: 700; letter-spacing: 2.4px; line-height: 1;
+}
+.brand .tagline {
+  display: block; font-size: 11px; letter-spacing: .8px;
+  text-transform: uppercase; opacity: .75; margin-top: 4px; font-weight: 500;
+}
+/* footer lockup is identical to the header lockup */
+.site-foot .brand { margin: 0; }
+
+.nav-toggle { display: none; }
+
+/* ---------- 8. HERO ----------------------------------------------------- */
+.hero {
+  position: relative;
+  height: 100vh; min-height: 680px;
+  overflow: hidden;
+  background: #111;
+}
+.hero__slides { position: absolute; inset: 0; }
+.hero__slide {
+  position: absolute; inset: 0;
+  opacity: 0; visibility: hidden;
+  transition: opacity 1s ease, visibility 1s;
+}
+.hero__slide.is-active { opacity: 1; visibility: visible; }
+/* ---- Ken Burns: زوم-أوت مستمر مع انزياح خفيف ------------------------------
+   كانت الحركة السابقة `transition` تحتاج تغيّر حالة لتشتغل — والشريحة الأولى
+   تُفتح وهي is-active أصلًا، فلا يحدث تغيّر ولا تتحرك الصورة عند فتح الموقع.
+   الحل: `animation` تبدأ فور مطابقة العنصر بلا انتظار أي حدث.
+   المدة أطول من مدة الشريحة (×1.6) فلا تصل الحركة لنهايتها أبدًا — الصورة
+   في حالة تحرّك دائم مهما طال بقاء الزائر.                                */
+.hero__slide img {
+  width: 100%; height: 100%; object-fit: cover;
+  transform: scale(1.20);
+  transform-origin: 50% 45%;
+  will-change: transform;
+  backface-visibility: hidden;   /* يمنع اهتزاز الحواف أثناء التكبير */
+}
+.hero__slide.is-active img {
+  animation: heroKenBurns calc(var(--hero-dur, 8s) * 1.6) cubic-bezier(.24, .46, .3, 1) forwards;
+}
+@keyframes heroKenBurns {
+  from { transform: scale(1.20) translate3d(2.2%, 1.4%, 0); }
+  to   { transform: scale(1.02) translate3d(0, 0, 0); }
+}
+/* اتجاه الانزياح يتبدّل بين الشرائح فلا تتكرّر الحركة نفسها */
+.hero__slide:nth-child(even) img { transform-origin: 50% 55%; }
+.hero__slide:nth-child(even).is-active img { animation-name: heroKenBurnsAlt; }
+@keyframes heroKenBurnsAlt {
+  from { transform: scale(1.20) translate3d(-2.2%, -1.2%, 0); }
+  to   { transform: scale(1.02) translate3d(0, 0, 0); }
+}
+
+/* الفيديو يتحرّك بذاته، فيكفيه تنفّس خفيف حتى لا تبدو شريحته جامدة */
+.hero__slide.is-active .hero__video {
+  animation: heroBreathe calc(var(--hero-dur, 8s) * 2) ease-in-out infinite alternate;
+}
+@keyframes heroBreathe {
+  from { transform: scale(1.04); }
+  to   { transform: scale(1); }
+}
+/* brand-green scrim instead of a neutral black one */
+.hero__slide::after {
+  content: ''; position: absolute; inset: 0;
+  background:
+    linear-gradient(90deg, rgba(6,35,29,.86) 0%, rgba(6,35,29,.45) 52%, rgba(6,35,29,.10) 100%),
+    linear-gradient(180deg, rgba(1,92,68,.30) 0%, rgba(70,137,200,.22) 100%);
+}
+.hero__copy {
+  position: absolute; inset: 0;
+  display: flex; align-items: center;
+  z-index: 3; pointer-events: none;
+}
+.hero__copy .wrap { width: 100%; position: relative; display: grid; align-items: center; }
+/* all 4 panels are stacked in the same cell — only the active one is visible */
+.hero__panel {
+  grid-area: 1 / 1;
+  max-width: 700px;
+  /* OUTGOING slide: fades out quickly and on its own, so two headlines are
+     never legible at the same time. (كانت الشريحتان تظهران معًا فيتراكب النص) */
+  opacity: 0; visibility: hidden; transform: translateY(16px);
+  transition: opacity .30s ease, transform .30s ease, visibility 0s linear .30s;
+  pointer-events: none;
+  z-index: 1;
+}
+/* INCOMING slide: waits for the outgoing one to clear, then fades in. */
+.hero__panel.is-active {
+  opacity: 1; visibility: visible; transform: none; pointer-events: auto;
+  z-index: 2;
+  transition: opacity .55s ease .30s,
+              transform .70s cubic-bezier(.22,1,.36,1) .30s,
+              visibility 0s;
+}
+.hero__panel .eyebrow { margin-bottom: 26px; }
+.hero__panel .h-display { margin-bottom: 34px; }
+
+/* hero tabs */
+.hero__tabs {
+  position: absolute; left: 0; right: 0; bottom: 46px;
+  z-index: 4;
+}
+.hero__tabs .wrap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.hero-tab { text-align: start; padding-bottom: 14px; position: relative; color: #fff; }
+.hero-tab span {
+  font-size: 12px; letter-spacing: 1.1px; text-transform: uppercase;
+  font-weight: 600; opacity: .55; transition: opacity .3s;
+}
+.hero-tab.is-active span { opacity: 1; }
+.hero-tab::before {
+  content: ''; position: absolute; left: 0; bottom: 0;
+  width: 100%; height: 2px; background: rgba(255,255,255,.35);
+}
+.hero-tab i {
+  position: absolute; left: 0; bottom: 0;
+  height: 2px; width: 100%; background: var(--g-brand);
+  transform: scaleX(0); transform-origin: 0 50%;
+}
+/* Arabic: the progress bar must fill from the right, like the text reads. */
+[dir="rtl"] .hero-tab i { left: auto; right: 0; transform-origin: 100% 50%; }
+.hero-tab.is-active i { animation: heroFill var(--hero-dur, 8s) linear forwards; }
+@keyframes heroFill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* ---------- 9. DISCOVER ARAMCO (4 tall cards, staggered) ---------------- */
+.discover__intro { max-width: 688px; }
+.discover__intro .eyebrow { margin-bottom: 26px; }
+
+.card-row { display: flex; gap: var(--gap); }
+
+.tile {
+  position: relative; flex: 1 1 0; min-width: 0;
+  aspect-ratio: 361 / 545;
+  overflow: hidden;
+  color: #fff;
+  display: block;
+}
+/* subtle stagger, matching the live site (cards 3 & 4 sit ~6px lower) */
+.tile:nth-child(3), .tile:nth-child(4) { margin-top: 6px; }
+.tile img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform .9s cubic-bezier(.22,1,.36,1);
+}
+.tile:hover img { transform: scale(1.06); }
+.tile::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(6,35,29,.78) 0%, rgba(6,35,29,.12) 44%, rgba(1,92,68,.62) 100%);
+}
+.tile__txt { position: absolute; inset: 26px 26px auto 26px; z-index: 2; }
+.tile__txt .eyebrow { margin-bottom: 12px; }
+.tile__txt h3 { font-size: 18px; line-height: 26px; font-weight: 400; }
+.tile__arrow {
+  position: absolute; right: 22px; bottom: 22px; z-index: 2;
+  width: 34px; height: 34px; border: 1px solid rgba(255,255,255,.8);
+  border-radius: 50%; display: grid; place-items: center;
+  transition: background .35s, color .35s;
+}
+.tile:hover .tile__arrow { background: #fff; color: var(--c-text); }
+
+/* ---------- 10. WHAT WE BELIEVE (5-item drag slider) -------------------- */
+.believe__intro { max-width: 700px; }
+.believe__intro .eyebrow { margin-bottom: 26px; }
+
+/* prev / next controls — the drag slider used to be drag-only, which left
+   the last card unreachable on trackpads and keyboards */
+.slider-nav { display: flex; gap: 12px; margin-top: 34px; }
+.slider-nav__btn {
+  width: 46px; height: 46px; border-radius: 50%;
+  border: 1px solid var(--c-grey-line); background: transparent;
+  color: var(--c-text); display: grid; place-items: center; cursor: pointer;
+  transition: background .3s, color .3s, border-color .3s, opacity .3s;
+}
+.slider-nav__btn:hover:not(:disabled) { background: var(--c-text); border-color: var(--c-text); color: #fff; }
+.slider-nav__btn:disabled { opacity: .3; cursor: default; }
+.slider-nav__btn:focus-visible { outline: 2px solid var(--c-brand, #015C44); outline-offset: 3px; }
+[dir="rtl"] .slider-nav__btn svg { transform: scaleX(-1); }
+
+.slider { overflow: hidden; cursor: grab; }
+.slider:focus-visible { outline: 2px solid var(--c-brand, #015C44); outline-offset: 6px; }
+.slider.is-dragging { cursor: grabbing; }
+.slider__track { display: flex; gap: var(--gap); will-change: transform; }
+.slide {
+  flex: 0 0 auto; width: 313px;
+  user-select: none;
+}
+.slide figure { margin: 0; overflow: hidden; }
+.slide img { width: 100%; object-fit: cover; }
+.slide:nth-child(odd)  img { height: 320px; }
+.slide:nth-child(even) img { height: 228px; margin-top: 46px; }
+.slide h4 { font-size: 16px; line-height: 24px; font-weight: 400; margin: 18px 0 10px; }
+
+.scrollbar {
+  height: 2px; background: var(--c-grey-line);
+  margin-top: 54px; position: relative; overflow: hidden;
+}
+.scrollbar i {
+  position: absolute; inset: 0 auto 0 0;
+  width: 20%; background: var(--g-brand);
+}
+
+/* ---------- 11. AT A GLANCE -------------------------------------------- */
+.glance h2 { margin-bottom: 62px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 40px; max-width: 1376px; }
+.stat { border-bottom: 1px solid var(--c-grey-line); padding-bottom: 22px; padding-inline-end: 60px; }
+.stat b {
+  display: block;
+  font-family: var(--f-head);
+  font-size: 53px; line-height: 53px; font-weight: 500; letter-spacing: -1px;
+  background: var(--g-brand); -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 18px;
+}
+.stat p { font-size: 14px; line-height: 18px; letter-spacing: .28px; }
+
+/* ---------- 12. SECTION HEAD (title left + CTA right) ------------------- */
+.sec-head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 40px; margin-bottom: 56px;
+}
+.sec-head__txt { max-width: 688px; }
+.sec-head__txt .eyebrow { margin-bottom: 14px; }
+.sec-head__txt .lede { margin-top: 20px; }
+
+/* ---------- 13. ELEMENTS MAGAZINE (1 big + 2 stacked) ------------------- */
+.mag { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
+.mag__col { display: grid; gap: 46px; align-content: start; }
+.mag-item img { width: 100%; object-fit: cover; transition: transform .9s cubic-bezier(.22,1,.36,1); }
+.mag-item figure { overflow: hidden; }
+.mag-item:hover img { transform: scale(1.05); }
+.mag-item h4 { font-size: 20px; line-height: 28px; font-weight: 400; margin: 20px 0 12px; }
+.mag--lead img { height: 812px; }
+.mag__col img { height: 335px; }
+
+/* ---------- 14. SUSTAINABILITY 3-CARDS --------------------------------- */
+.tri { display: flex; gap: var(--gap); }
+.tri__card { flex: 1 1 0; min-width: 0; }
+.tri__card figure { overflow: hidden; margin-bottom: 22px; }
+.tri__card img { width: 100%; height: 250px; object-fit: cover; transition: transform .9s cubic-bezier(.22,1,.36,1); }
+.tri__card:hover img { transform: scale(1.05); }
+.tri__card h3 { font-size: 20px; line-height: 28px; font-weight: 400; margin-bottom: 14px; }
+.tri__card p { font-size: 16px; line-height: 24px; margin-bottom: 22px; }
+
+/* ---------- 15. CASE STUDY (split) ------------------------------------- */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 110px; align-items: center; }
+.split figure { overflow: hidden; }
+.split img { width: 100%; height: 385px; object-fit: cover; }
+.split h3 { font-size: 26px; line-height: 34px; font-weight: 400; margin-bottom: 24px; }
+.split p { font-size: 16px; line-height: 26px; margin-bottom: 20px; }
+.split .cta-circle { margin-top: 16px; }
+
+/* ---------- 16. NEWS CARDS --------------------------------------------- */
+.news-card {
+  flex: 1 1 0; min-width: 0;
+  background: #fff;
+  display: flex; flex-direction: column;
+  min-height: 540px;
+  transition: box-shadow .35s, transform .35s;
+}
+.news-card:hover { box-shadow: 0 18px 40px rgba(0,0,0,.10); transform: translateY(-4px); }
+.news-card__media { overflow: hidden; }
+.news-card__media img { width: 100%; height: 175px; object-fit: cover; }
+.news-card__body { padding: 24px 24px 0; flex: 1; }
+.news-card__meta {
+  font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--c-text-soft); margin-bottom: 16px;
+}
+.news-card h3 { font-size: 16px; line-height: 24px; font-weight: 400; }
+.news-card__foot { padding: 0 24px 24px; display: flex; justify-content: flex-end; }
+.news-card .circ-sm {
+  width: 30px; height: 30px; border: 1px solid var(--c-link); color: var(--c-link);
+  border-radius: 50%; display: grid; place-items: center;
+  transition: background .35s, color .35s;
+}
+.news-card:hover .circ-sm { background: var(--c-link); color: #fff; }
+
+/* ---------- 17. KEY DOCUMENTS ------------------------------------------ */
+.docs { background: #fff; padding: 34px 20px 24px; }
+.docs > h3 { font-size: 20px; font-weight: 400; padding-inline: 10px; margin-bottom: 12px; }
+.doc {
+  border-top: 1px solid var(--c-grey-line);
+}
+.doc__row {
+  display: flex; align-items: center; gap: 24px;
+  padding: 20px 10px;
+}
+.doc__row > a:first-child { flex: 1; font-size: 16px; }
+.doc__row > a:first-child:hover { color: var(--c-link); }
+.doc__info { font-size: 12px; color: var(--c-text-soft); letter-spacing: .3px; white-space: nowrap; }
+.doc__btn { color: var(--c-link); display: grid; place-items: center; width: 24px; height: 24px; }
+.doc__btn.is-open svg { transform: rotate(45deg); }
+.doc__btn svg { transition: transform .3s; }
+.doc__panel {
+  overflow: hidden; height: 0;
+  transition: height .45s cubic-bezier(.22,1,.36,1);
+}
+.doc__panel p { padding: 0 10px 22px; font-size: 15px; line-height: 24px; color: var(--c-text-soft); max-width: 780px; }
+.docs__foot { border-top: 1px solid var(--c-grey-line); padding: 24px 10px 0; display: flex; justify-content: flex-end; }
+.docs__foot .circ { width: 34px; height: 34px; }
+
+/* ---------- 18. OUR HISTORY (framed video) ----------------------------- */
+.history__head { margin-bottom: 92px; }
+.frame {
+  position: relative;
+  max-width: 1780px; margin-inline: auto;
+  padding: 0;
+}
+.frame__deco { position: absolute; inset: -26px -34px; pointer-events: none; }
+.frame__deco svg { width: 100%; height: 100%; }
+.video-wrap { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: #000; }
+.video-wrap img { width: 100%; height: 100%; object-fit: cover; filter: none; }
+.video-wrap h3 {
+  position: absolute; right: 7%; top: 50%; transform: translateY(-50%);
+  font-size: 56px; line-height: 62px; font-weight: 700; color: #fff; text-align: end;
+  max-width: 46%;
+}
+.video-play {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+  width: 54px; height: 54px; border: 1px solid rgba(255,255,255,.85); border-radius: 50%;
+  display: grid; place-items: center; color: #fff;
+  transition: background .35s, color .35s;
+}
+.video-play:hover { background: #fff; color: #000; }
+
+/* ---------- 19. ABOUT BANNER + FOOTER ---------------------------------- */
+.about-banner {
+  position: relative; height: 240px;
+  display: grid; place-items: center; text-align: center; color: #fff;
+  overflow: hidden;
+}
+.about-banner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.about-banner::after { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,.32); }
+.about-banner__in { position: relative; z-index: 2; }
+.about-banner h2 { font-size: 36px; font-weight: 400; margin-bottom: 14px; }
+.about-banner .link-arrow { color: #fff; }
+
+.site-foot { padding: 80px 0 46px; }
+.foot-cols { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)) auto; gap: 40px; }
+.foot-col h4 {
+  font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase;
+  font-weight: 400; color: var(--c-text); margin-bottom: 26px;
+}
+.foot-col li { margin-bottom: 12px; }
+.foot-col a { font-size: 14px; }
+.foot-col a:hover { color: var(--c-link); }
+
+.socials { display: grid; grid-template-columns: repeat(2, 40px); gap: 12px; align-content: start; }
+.socials a {
+  width: 40px; height: 40px; border: 1px solid var(--c-grey-line); border-radius: 50%;
+  display: grid; place-items: center;
+  transition: background .3s, color .3s, border-color .3s;
+}
+.socials a:hover { background: var(--c-text); color: #fff; border-color: var(--c-text); }
+
+.foot-bottom {
+  margin-top: 70px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.foot-bottom small { font-size: 12px; }
+.to-top {
+  width: 34px; height: 34px; border: 1px solid var(--c-text); border-radius: 50%;
+  display: grid; place-items: center;
+  transition: background .3s, color .3s;
+}
+.to-top:hover { background: var(--c-text); color: #fff; }
+
+/* ---------- 20. REVEAL ANIMATIONS -------------------------------------- */
+/* only hidden when JS is running, so the page never stays blank */
+.js .reveal { opacity: 0; transform: translateY(34px); }
+
+/* ---------- 21. RESPONSIVE --------------------------------------------- */
+@media (max-width: 1500px) {
+  :root { --wrap-pad: 64px; --bleed: 32px; }
+}
+@media (max-width: 1200px) {
+  :root { --wrap-pad: 40px; --bleed: 0px; --sec-pad: 88px; }
+  .h-display { font-size: 44px; line-height: 48px; }
+  .h-section { font-size: 32px; line-height: 40px; }
+  .mag--lead img { height: 560px; }
+  .mag__col img { height: 250px; }
+  .split { gap: 48px; }
+  .video-wrap h3 { font-size: 34px; line-height: 40px; }
+}
+@media (max-width: 900px) {
+  :root { --sec-pad: 64px; }
+  .nav-links { display: none; }
+  .nav-toggle { display: grid; place-items: center; margin-inline-start: auto; }
+  .brand { margin-inline-start: 24px; }
+  
+  .hero { height: 88vh; min-height: 560px; }
+  .h-display { font-size: 34px; line-height: 40px; }
+  .hero__tabs .wrap { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+
+  .card-row { flex-wrap: wrap; }
+  .tile { flex: 1 1 calc(50% - var(--gap)); margin-top: 0 !important; }
+
+  .stats { grid-template-columns: 1fr; }
+  .stat { padding-inline-end: 0; }
+
+  .sec-head { flex-direction: column; align-items: flex-start; }
+  .mag, .split { grid-template-columns: 1fr; }
+  .mag--lead img, .mag__col img { height: 260px; }
+  .split img { height: 280px; }
+  .tri { flex-direction: column; }
+  .news-card { flex: 1 1 100%; min-height: 0; }
+  .slide { width: 240px; }
+  .slide:nth-child(even) img { margin-top: 0; }
+  .foot-cols { grid-template-columns: 1fr 1fr; }
+  .foot-bottom { flex-direction: column; gap: 24px; align-items: flex-start; }
+  .video-wrap h3 { font-size: 24px; line-height: 30px; max-width: 55%; }
+}
+@media (max-width: 600px) {
+  .tile { flex: 1 1 100%; }
+  .foot-cols { grid-template-columns: 1fr; }
+}
+
+/* ---------- 22. MOBILE DRAWER ------------------------------------------ */
+.drawer {
+  position: fixed; inset: 0; z-index: 300;
+  background: var(--c-header-dark); color: #fff;
+  padding: 90px 40px;
+  transform: translateX(100%);
+  transition: transform .45s cubic-bezier(.22,1,.36,1);
+}
+.drawer.is-open { transform: none; }
+.drawer a { display: block; font-size: 22px; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,.12); }
+.drawer__close { position: absolute; top: 28px; right: 34px; font-size: 30px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  .reveal { opacity: 1; transform: none; }
+  /* لا زوم ولا انزياح لمن يطلب تقليل الحركة */
+  .hero__slide img, .hero__slide.is-active img,
+  .hero__slide .hero__video, .hero__slide.is-active .hero__video {
+    transform: none; animation: none;
+  }
+}
+
+/* =========================================================================
+   23. HEADER ACTION BUTTONS  (Register interest · Login · AR/EN)
+   ========================================================================= */
+.nav-actions { margin-inline-start: auto; display: flex; align-items: center; gap: 14px; }
+.btn-pill {
+  display: inline-flex; align-items: center; gap: 9px;
+  height: 40px; padding: 0 22px; border-radius: 100px;
+  font-size: 13px; font-weight: 600; letter-spacing: .4px;
+  border: 1px solid currentColor;
+  transition: background .35s, color .35s, border-color .35s, filter .35s;
+  white-space: nowrap;
+}
+.btn-pill--solid { background: var(--g-brand); color: #06231D; border-color: transparent; }
+.btn-pill--solid:hover { filter: brightness(1.09); }
+.btn-pill--ghost:hover { background: #fff; color: var(--c-header-dark); border-color: #fff; }
+.lang-switch { font-size: 13px; font-weight: 600; letter-spacing: .6px; padding: 0 6px; opacity: .9; }
+.lang-switch:hover { opacity: 1; }
+.site-head .brand { margin-inline-start: 0; margin-inline-end: 34px; }
+.navbar .wrap { gap: 0; }
+.nav-links { margin-inline-end: 22px; }
+
+/* solid header on inner pages (no hero behind it) */
+.site-head--solid { position: sticky; top: 0; background: var(--c-header-dark); }
+/* =========================================================================
+   24. INNER PAGE HERO
+   ========================================================================= */
+.page-hero {
+  position: relative; min-height: 300px;
+  display: flex; align-items: flex-end;
+  color: #fff; overflow: hidden;
+  padding-block: calc(var(--header-h) + 34px) 46px;
+}
+.page-hero > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* شريط عنوان بلا صورة — يستخدمه أي قسم داخلي لا صورة حقيقية له */
+.page-hero--plain { min-height: auto; background: var(--c-green-deep, #015C44); }
+.page-hero--plain::after {
+  background: linear-gradient(120deg, rgba(1,92,68,1) 0%, rgba(1,70,52,1) 55%, rgba(4,52,44,1) 100%);
+}
+.page-hero--plain h1 { font-size: clamp(26px, 3.4vw, 40px); line-height: 1.18; }
+[lang="ar"] .page-hero--plain h1 { line-height: 1.4; }
+.page-hero::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(6,35,29,.90) 0%, rgba(6,35,29,.55) 60%, rgba(6,35,29,.25) 100%);
+}
+.page-hero .wrap { position: relative; z-index: 2; width: 100%; }
+.page-hero h1 {
+  font-family: var(--f-head); font-size: 52px; line-height: 58px;
+  font-weight: 500; letter-spacing: -.6px; margin: 18px 0 0;
+  max-width: 900px;
+}
+.page-hero .lede { color: rgba(255,255,255,.88); max-width: 760px; margin-top: 20px; }
+
+.crumbs { font-size: 12px; letter-spacing: .8px; text-transform: uppercase; opacity: .82; }
+.crumbs a:hover { text-decoration: underline; }
+.crumbs span { opacity: .5; padding: 0 8px; }
+
+/* =========================================================================
+   25. TABS (Media)
+   ========================================================================= */
+.tabs { display: flex; gap: 40px; border-bottom: 1px solid var(--c-grey-line); margin-bottom: 60px; }
+.tab { position: relative; padding: 0 0 18px; font-size: 15px; font-weight: 500; color: var(--c-text-soft); transition: color .3s; }
+.tab::after {
+  content: ''; position: absolute; left: 0; bottom: -1px; height: 2px; width: 100%;
+  background: var(--g-brand); transform: scaleX(0); transform-origin: 0 50%;
+  transition: transform .35s cubic-bezier(.22,1,.36,1);
+}
+.tab.is-active { color: var(--c-text); }
+.tab.is-active::after { transform: scaleX(1); }
+.tab-panel { display: none; }
+.tab-panel.is-active { display: block; }
+
+/* =========================================================================
+   26. MEMBERS
+   ========================================================================= */
+.filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 46px; }
+.chip { padding: 9px 20px; border: 1px solid var(--c-grey-line); border-radius: 100px; font-size: 13px; color: var(--c-text-soft); transition: all .3s; }
+.chip:hover { border-color: var(--c-green-light); color: var(--c-text); }
+.chip.is-active { background: var(--c-green-deep); border-color: var(--c-green-deep); color: #fff; }
+
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap); }
+
+.member-card {
+  background: #fff; border: 1px solid var(--c-grey-line);
+  padding: 30px 28px 26px;
+  display: flex; flex-direction: column; min-height: 272px;
+  transition: box-shadow .35s, transform .35s, border-color .35s;
+}
+.member-card:hover { box-shadow: 0 18px 40px rgba(1,92,68,.10); transform: translateY(-4px); border-color: transparent; }
+.member-card__logo {
+  width: 54px; height: 54px; border-radius: 12px; margin-bottom: 20px;
+  display: grid; place-items: center; background: var(--c-grey-bg);
+  font-family: var(--f-head); font-weight: 700; font-size: 17px;
+  color: var(--c-green-deep); letter-spacing: .5px;
+}
+.member-card__cat { font-size: 11px; letter-spacing: 1.1px; text-transform: uppercase; color: var(--c-text-soft); margin-bottom: 10px; }
+.member-card h3 { font-size: 18px; line-height: 25px; font-weight: 500; margin-bottom: 12px; }
+.member-card p { font-size: 14px; line-height: 22px; color: var(--c-text-soft); flex: 1; margin-bottom: 18px; }
+
+.member-head { display: grid; grid-template-columns: 120px 1fr; gap: 34px; align-items: center; }
+.member-head .member-card__logo { width: 120px; height: 120px; font-size: 34px; margin: 0; }
+.facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); margin-top: 56px; }
+.fact { border-top: 2px solid var(--c-green-light); padding-top: 18px; }
+.fact b { display: block; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--c-text-soft); font-weight: 500; margin-bottom: 8px; }
+.fact span { font-size: 17px; }
+
+/* =========================================================================
+   27. GALLERY / EVENTS
+   ========================================================================= */
+.gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.gallery figure { margin: 0; overflow: hidden; aspect-ratio: 4/3; }
+.gallery img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s cubic-bezier(.22,1,.36,1); }
+.gallery figure:hover img { transform: scale(1.07); }
+.gallery figure:nth-child(1) { grid-column: span 2; grid-row: span 2; aspect-ratio: auto; }
+
+.event { display: grid; grid-template-columns: 130px 1fr auto; gap: 34px; align-items: center; padding: 30px 0; border-top: 1px solid var(--c-grey-line); }
+.event__date { font-family: var(--f-head); text-align: center; border-inline-end: 1px solid var(--c-grey-line); padding-inline-end: 20px; }
+.event__date b { display: block; font-size: 34px; font-weight: 600; line-height: 1; }
+.event__date span { font-size: 12px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--c-text-soft); }
+.event h3 { font-size: 19px; font-weight: 500; margin-bottom: 8px; }
+.event p { font-size: 14px; color: var(--c-text-soft); }
+
+/* =========================================================================
+   28. FORMS
+   ========================================================================= */
+.form-shell { display: grid; grid-template-columns: 1fr 420px; gap: 96px; align-items: start; }
+.form { display: grid; gap: 26px; }
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.field label { display: block; font-size: 12px; letter-spacing: .9px; text-transform: uppercase; color: var(--c-text-soft); margin-bottom: 9px; }
+.field input, .field select, .field textarea {
+  width: 100%; font: inherit; font-size: 15px; color: var(--c-text);
+  background: #fff; border: 1px solid var(--c-grey-line); border-radius: 0; padding: 14px 16px;
+  transition: border-color .3s, box-shadow .3s;
+}
+.field textarea { min-height: 150px; resize: vertical; }
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: 0; border-color: var(--c-green-deep); box-shadow: 0 0 0 3px rgba(99,189,105,.18);
+}
+.field .hint { font-size: 12px; color: var(--c-text-soft); margin-top: 7px; }
+.check { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; line-height: 21px; }
+.check input { width: 18px; height: 18px; margin-top: 2px; flex: none; accent-color: var(--c-green-deep); }
+.form-actions { display: flex; align-items: center; gap: 22px; margin-top: 8px; }
+.btn-solid {
+  display: inline-flex; align-items: center; gap: 12px;
+  height: 52px; padding: 0 34px; background: var(--c-green-deep); color: #fff;
+  font-size: 14px; font-weight: 600; letter-spacing: .5px;
+  transition: background .3s, transform .3s;
+}
+.btn-solid:hover { background: #01452F; transform: translateY(-2px); }
+.form-msg { display: none; align-items: center; gap: 10px; font-size: 14px; color: var(--c-green-deep); }
+.form-msg.is-on { display: flex; }
+
+/* البطاقة الجانبية خضراء (القسم 49) — النص أبيض دائمًا */
+.aside-card { padding: 40px 36px; }
+.aside-card h3 { font-size: 20px; font-weight: 500; margin-bottom: 18px; }
+.aside-card li { display: flex; gap: 12px; font-size: 14px; line-height: 23px; margin-bottom: 14px; color: rgba(255,255,255,.9); }
+.aside-card li svg { flex: none; margin-top: 4px; color: #9FE3B0; }
+.aside-card a { color: #fff; }
+
+.login-shell { max-width: 460px; margin-inline: auto; }
+.login-note { text-align: center; font-size: 14px; color: var(--c-text-soft); margin-top: 26px; }
+
+/* =========================================================================
+   29. PROSE (legal) + SITEMAP
+   ========================================================================= */
+.prose { max-width: 820px; }
+.prose h2 { font-family: var(--f-head); font-size: 26px; font-weight: 500; margin: 54px 0 16px; color: var(--c-text); }
+.prose h2:first-child { margin-top: 0; }
+.prose p, .prose li { font-size: 16px; line-height: 28px; color: var(--c-text-soft); margin-bottom: 14px; }
+.prose ul { list-style: disc; padding-inline-start: 22px; margin-bottom: 20px; }
+.prose .updated { font-size: 13px; color: var(--c-text-soft); border-inline-start: 3px solid var(--c-green-light); padding-inline-start: 16px; margin-bottom: 46px; }
+
+.sitemap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 48px var(--gap); }
+.sitemap h3 { font-size: 13px; letter-spacing: 1.1px; text-transform: uppercase; font-weight: 500; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--c-grey-line); }
+.sitemap li { margin-bottom: 11px; }
+.sitemap a { font-size: 15px; }
+.sitemap a:hover { color: var(--c-link); }
+
+.demo-note {
+  display: flex; gap: 12px; align-items: flex-start;
+  background: #FFF8E5; border: 1px solid #F0DFAE;
+  padding: 16px 20px; font-size: 13.5px; line-height: 21px; color: #6B5518;
+  margin-bottom: 46px;
+}
+.demo-note svg { flex: none; margin-top: 2px; }
+
+/* =========================================================================
+   30. INNER-PAGE RESPONSIVE
+   ========================================================================= */
+@media (max-width: 1400px) {
+  .nav-links { gap: 18px; }
+  .nav-links a { font-size: 12px; }
+  .btn-pill { padding: 0 16px; }
+  .site-head .brand { margin-inline-end: 22px; }
+}
+@media (max-width: 1150px) {
+  .form-shell { grid-template-columns: 1fr; gap: 56px; }
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .sitemap { grid-template-columns: repeat(2, 1fr); }
+  .brand .tagline { display: none; }
+}
+@media (max-width: 900px) {
+  .nav-actions .btn-pill--ghost { display: none; }
+  .page-hero { min-height: 240px; padding-block: calc(var(--header-h) + 24px) 34px; }
+  .page-hero h1 { font-size: 32px; line-height: 38px; }
+  .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .member-head { grid-template-columns: 1fr; gap: 22px; }
+  .member-head .member-card__logo { width: 84px; height: 84px; font-size: 24px; }
+  .facts { grid-template-columns: 1fr; }
+  .gallery { grid-template-columns: repeat(2, 1fr); }
+  .gallery figure:nth-child(1) { grid-column: span 2; grid-row: auto; aspect-ratio: 4/3; }
+  .event { grid-template-columns: 1fr; gap: 16px; }
+  .event__date { text-align: start; border: 0; padding: 0; display: flex; gap: 10px; align-items: baseline; }
+  .row-2 { grid-template-columns: 1fr; }
+  .tabs { gap: 22px; overflow-x: auto; }
+  .tab { white-space: nowrap; font-size: 14px; }
+  .sitemap { grid-template-columns: 1fr; }
+  .nav-actions { gap: 8px; }
+}
+
+/* current page indicator in the nav */
+.nav-links a.is-current::after { transform: scaleX(1); }
+.nav-links a.is-current { opacity: 1; }
+.member-card code { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; background: var(--c-grey-bg); padding: 1px 5px; }
+.prose code { font-family: ui-monospace, Menlo, monospace; font-size: 14px; background: var(--c-grey-bg); padding: 2px 6px; }
+.btn-solid[disabled] { opacity: .55; pointer-events: none; }
+
+/* =========================================================================
+   31. RTL  —  Arabic (dir="rtl")
+   Everything below only applies when the document direction is right-to-left.
+   ========================================================================= */
+[lang="ar"] body,
+[lang="ar"] .h-display,
+[lang="ar"] .h-section,
+[lang="ar"] .stat b,
+[lang="ar"] .page-hero h1,
+[lang="ar"] .brand .wordmark,
+[lang="ar"] .event__date,
+[lang="ar"] .prose h2,
+[lang="ar"] .member-card__logo,
+[lang="ar"] .video-wrap h3 {
+  font-family: 'IBM Plex Sans Arabic', 'Inter', system-ui, sans-serif;
+}
+/* the SAFTA wordmark itself always stays Latin */
+[lang="ar"] .brand .wordmark { font-family: 'Space Grotesk', sans-serif; }
+/* Arabic needs a little more leading and no negative tracking */
+[lang="ar"] .h-display { letter-spacing: 0; line-height: 1.35; }
+[lang="ar"] .h-section { letter-spacing: 0; line-height: 1.45; }
+[lang="ar"] .h-intro   { letter-spacing: 0; line-height: 1.75; }
+[lang="ar"] .page-hero h1 { letter-spacing: 0; line-height: 1.35; }
+[lang="ar"] .eyebrow { letter-spacing: 0; }
+[lang="ar"] .btn-pill, [lang="ar"] .nav-links a, [lang="ar"] .btn-solid,
+[lang="ar"] .foot-col h4, [lang="ar"] .sitemap h3, [lang="ar"] .field label,
+[lang="ar"] .member-card__cat, [lang="ar"] .news-card__meta, [lang="ar"] .crumbs,
+[lang="ar"] .hero-tab span, [lang="ar"] .fact b { letter-spacing: 0; }
+[lang="ar"] .nav-links a, [lang="ar"] .foot-col h4, [lang="ar"] .sitemap h3,
+[lang="ar"] .field label, [lang="ar"] .member-card__cat, [lang="ar"] .news-card__meta,
+[lang="ar"] .crumbs, [lang="ar"] .hero-tab span, [lang="ar"] .fact b,
+[lang="ar"] .event__date span { text-transform: none; }
+[lang="ar"] .prose p, [lang="ar"] .prose li { line-height: 32px; }
+
+/* --- direction-dependent geometry --- */
+[dir="rtl"] #scroll-progress { transform-origin: 100% 50%; }
+
+[dir="rtl"] .hero__slide::after {
+  background:
+    linear-gradient(270deg, rgba(6,35,29,.86) 0%, rgba(6,35,29,.45) 52%, rgba(6,35,29,.10) 100%),
+    linear-gradient(180deg, rgba(1,92,68,.30) 0%, rgba(70,137,200,.22) 100%);
+}
+[dir="rtl"] .page-hero::after {
+  background: linear-gradient(270deg, rgba(6,35,29,.90) 0%, rgba(6,35,29,.55) 60%, rgba(6,35,29,.25) 100%);
+}
+
+/* underline / progress fills grow from the right */
+[dir="rtl"] .nav-links a::after,
+[dir="rtl"] .hero-tab i,
+[dir="rtl"] .tab::after { transform-origin: 100% 50%; }
+[dir="rtl"] .hero-tab i,
+[dir="rtl"] .hero-tab::before { left: auto; right: 0; }
+[dir="rtl"] .nav-links a::after,
+[dir="rtl"] .tab::after { left: auto; right: 0; }
+[dir="rtl"] .scrollbar i { inset: 0 0 0 auto; }
+
+/* arrows point the other way */
+[dir="rtl"] .link-arrow svg,
+[dir="rtl"] .tile__arrow svg,
+[dir="rtl"] .circ-sm svg,
+[dir="rtl"] .cta-circle .circ svg,
+[dir="rtl"] .btn-solid svg,
+[dir="rtl"] .btn-pill--ghost svg { transform: scaleX(-1); }
+[dir="rtl"] .link-arrow:hover svg { transform: scaleX(-1) translateX(6px); }
+/* download / external-link / back-to-top icons must NOT flip */
+[dir="rtl"] .docs__foot .cta-circle .circ svg,
+[dir="rtl"] .doc__btn svg,
+[dir="rtl"] .to-top svg,
+/* الشريحة 2 وحدها تستخدم سهم «رابط خارجي» المائل — وهذا لا ينعكس.
+   أمّا الشريحتان 0 و1 فسهمهما عادي ويجب أن ينعكس مع اتجاه القراءة. */
+[dir="rtl"] .hero__panel[data-panel="2"] .circ svg { transform: none; }
+
+/* decorative frame mirrors */
+[dir="rtl"] .frame__deco svg { transform: scaleX(-1); }
+
+/* off-canvas drawer comes in from the left */
+[dir="rtl"] .drawer { transform: translateX(-100%); }
+[dir="rtl"] .drawer.is-open { transform: none; }
+[dir="rtl"] .drawer__close { right: auto; left: 34px; }
+
+/* small positional bits */
+[dir="rtl"] .tile__arrow { right: auto; left: 22px; }
+[dir="rtl"] .video-wrap h3 { right: auto; left: 7%; text-align: start; }
+
+/* keep Latin fragments (emails, SAFTA, file sizes) readable inside RTL text */
+[dir="rtl"] .doc__info,
+[dir="rtl"] .news-card__meta,
+[dir="rtl"] .region span { direction: ltr; unicode-bidi: embed; display: inline-block; }
+[dir="rtl"] .news-card__meta, [dir="rtl"] .doc__info { direction: rtl; }
+
+/* =========================================================================
+   32. MOBILE FIXES   (≤ 900px only — desktop is untouched)
+   ========================================================================= */
+
+/* --- A. kill the horizontal overflow -------------------------------------
+   The off-canvas drawer sits at translateX(±100%), i.e. one full viewport
+   outside the page, which adds that empty strip on the side.
+   `overflow-x: clip` removes it WITHOUT creating a scroll container, so the
+   sticky header keeps working (plain `overflow: hidden` would break it).   */
+html { overflow-x: clip; }
+body { overflow-x: clip; }
+.drawer { visibility: hidden; transition: transform .45s cubic-bezier(.22,1,.36,1), visibility .45s; }
+.drawer.is-open { visibility: visible; }
+
+@media (max-width: 900px) {
+
+  /* --- B. one language switch, not two ---------------------------------
+     The top bar duplicated العربية | English next to the AR pill.
+     On mobile the top bar goes away entirely and the AR pill stays,
+     because it is the bigger tap target.                                  */
+    .site-head--solid { position: sticky; }
+
+  /* --- C. header that fits ---------------------------------------------
+     Logo on one side, AR + menu on the other. The two pills move into the
+     drawer, where they get full-width tap targets.                        */
+  .navbar { height: 68px; }
+  .navbar .wrap { display: flex; align-items: center; gap: 0; }
+  .site-head .brand { margin-inline-end: auto; gap: 10px; min-width: 0; }
+  /* أُزيلت: كانت تسحق الشعار في مربّع 34×34 — انظر القسم 58 */
+  .site-head .brand .wordmark { font-size: 19px; letter-spacing: 1.8px; }
+  .site-head .brand .tagline { display: none; }
+
+  .nav-actions { gap: 4px; flex: none; }
+  .nav-actions .btn-pill { display: none; }     /* both pills live in the drawer */
+  .lang-switch {
+    padding: 0 12px; height: 34px; display: inline-flex; align-items: center;
+    border: 1px solid rgba(255,255,255,.45); border-radius: 100px; font-size: 12px;
+  }
+  .nav-toggle { margin-inline-start: 8px; }
+
+  /* --- D. drawer --------------------------------------------------------- */
+  .drawer { padding: 78px 28px 40px; display: flex; flex-direction: column; }
+  .drawer a { font-size: 19px; padding: 15px 0; }
+  .drawer .drawer-cta {
+    margin-top: auto; border: 0; text-align: center;
+    padding: 0; display: grid; gap: 12px;
+  }
+  .drawer .drawer-cta a {
+    border: 0; border-radius: 100px; height: 50px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 600; padding: 0;
+  }
+  .drawer .drawer-cta .is-solid { background: var(--g-brand); color: #06231D; }
+  .drawer .drawer-cta .is-ghost { border: 1px solid rgba(255,255,255,.45); }
+  .drawer__close { top: 22px; font-size: 34px; line-height: 1; }
+
+  /* --- E. hero on a phone ------------------------------------------------ */
+  .hero { height: auto; min-height: 0; }
+  .hero__slides { position: absolute; inset: 0; }
+  .hero__copy { position: relative; inset: auto; padding: 132px 0 44px; }
+  .hero__copy .wrap { min-height: 320px; }
+  .hero__panel { max-width: none; }
+  .hero__panel .h-display { font-size: 30px; line-height: 40px; }
+  .hero__tabs { position: relative; bottom: auto; padding-bottom: 34px; }
+  .hero__tabs .wrap { grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+  .hero-tab span { font-size: 11px; line-height: 15px; display: block; }
+  .hero-tab { padding-bottom: 10px; }
+
+  /* --- F. spacing / type ------------------------------------------------- */
+  :root { --wrap-pad: 22px; }
+  .h-intro { font-size: 19px; line-height: 30px; }
+  .h-section { font-size: 26px; line-height: 36px; }
+  .page-hero { min-height: 210px; padding-block: calc(var(--header-h) + 20px) 28px; }
+  .page-hero h1 { font-size: 27px; line-height: 36px; }
+  .sec-head { gap: 24px; margin-bottom: 36px; }
+  .stat b { font-size: 42px; line-height: 46px; }
+  .docs { padding: 24px 12px 18px; }
+  .doc__row { flex-wrap: wrap; gap: 10px 16px; padding: 18px 6px; }
+  .doc__row > a:first-child { flex: 1 1 100%; }
+  .frame__deco { display: none; }
+  .video-wrap h3 { font-size: 20px; line-height: 27px; max-width: 60%; }
+  .about-banner { height: 190px; }
+  .foot-bottom { gap: 20px; }
+  .socials { grid-template-columns: repeat(5, 40px); }
+}
+
+@media (max-width: 480px) {
+  :root { --wrap-pad: 18px; }
+  .hero__panel .h-display { font-size: 26px; line-height: 35px; }
+  .hero__tabs .wrap { grid-template-columns: 1fr; gap: 8px; }
+  .hero-tab span { font-size: 11px; }
+  .site-head .brand .wordmark { font-size: 17px; }
+  .socials { grid-template-columns: repeat(4, 40px); }
+}
+
+/* RTL: the drawer arrives from the left, so the close button follows */
+@media (max-width: 900px) {
+  [dir="rtl"] .nav-toggle { margin-inline-start: 8px; }
+}
+
+/* =======================================================================
+   33. V2.1 ADDITIONS — hero announcement link · partner strip · Green
+       Dunes visit · Excellence Awards · gallery lightbox · members map
+   ======================================================================= */
+
+/* ---------- 33.1 hero: clickable announcement --------------------------- */
+[dir="rtl"] .hero__actions { display: flex; align-items: center; gap: 32px; flex-wrap: nowrap; }
+
+/* ---------- 33.2 partner logo strip ------------------------------------ */
+.partners { background: var(--c-bg, #fff); border-bottom: 1px solid var(--c-grey-line); padding: 34px 0 30px; }
+.partners__label { font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--c-muted, #6a7472); margin: 0 0 20px; }
+[lang="ar"] .partners__label { letter-spacing: 0; text-transform: none; font-size: 13px; }
+.partners__viewport { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
+.partners__track { display: flex; gap: 44px; align-items: center; animation: partner-marquee 46s linear infinite; width: max-content; }
+.partners__viewport:hover .partners__track,
+.partners__track:focus-within { animation-play-state: paused; }
+/* في RTL يتدفّق الصف من اليمين لليسار، فالإزاحة تكون موجبة.
+   الطريقة السابقة (عكس اتجاه الحركة) كانت تبدأ عند ‎-50%‎
+   أي أن النصف الأول يبدأ خارج الشاشة والشريط يظهر فارغًا. */
+[dir="rtl"] .partners__track { animation-name: partner-marquee-rtl; }
+.partner { flex: 0 0 auto; display: grid; gap: 3px; text-decoration: none; color: var(--c-text);
+  padding: 8px 0; opacity: .62; transition: opacity .3s; max-width: 250px; }
+.partner:hover, .partner:focus-visible { opacity: 1; }
+.partner span { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 19px; letter-spacing: .04em; white-space: nowrap; }
+.partner small { font-size: 11px; line-height: 15px; color: var(--c-muted, #6a7472); }
+@keyframes partner-marquee     { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes partner-marquee-rtl { from { transform: translateX(0); } to { transform: translateX(50%);  } }
+@media (prefers-reduced-motion: reduce) {
+  .partners__track { animation: none; }
+  .partners__viewport { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+}
+
+/* ---------- 33.2b Green Dunes video ------------------------------------ */
+/* hero background loop — sits exactly where the slide <img> used to */
+.hero__slide .hero__video {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; display: block; background: #06231D;
+}
+/* the <img> inside <video> is only a last-resort fallback — keep it flat */
+.hero__slide .hero__video img,
+.hero__slide.is-active .hero__video img { transform: none; animation: none; }
+
+.visit__video { position: relative; margin-top: 56px; overflow: hidden; background: #06231D; }
+.visit__player, .video-wrap__player {
+  width: 100%; display: block; object-fit: cover; background: #06231D;
+}
+/* height:auto + aspect-ratio — never let a percentage height collapse the player */
+.visit__player { height: auto; aspect-ratio: 16/9; }
+.video-wrap__player { height: 100%; }
+/* matches the grayscale treatment the old placeholder image had */
+.video-wrap__player { position: absolute; inset: 0; filter: grayscale(1) brightness(.86); transition: filter .5s; }
+.video-wrap.is-playing .video-wrap__player { filter: none; }
+.video-wrap.is-playing h3 { opacity: 0; transition: opacity .3s; pointer-events: none; }
+.visit__vcap {
+  position: absolute; inset: auto auto 20px 24px; margin: 0;
+  color: rgba(255,255,255,.82); font-size: 12px; letter-spacing: .04em;
+  text-shadow: 0 1px 8px rgba(0,0,0,.5); pointer-events: none;
+}
+[dir="rtl"] .visit__vcap { inset: auto 24px 20px auto; }
+.visit__video .video-play {
+  position: absolute; inset: 50% auto auto 50%; transform: translate(-50%, -50%);
+  width: 74px; height: 74px; border-radius: 50%;
+  background: rgba(255,255,255,.16); backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,255,255,.65); color: #fff;
+  display: grid; place-items: center; cursor: pointer;
+  transition: background .35s, transform .35s;
+}
+.visit__video .video-play:hover { background: rgba(255,255,255,.3); transform: translate(-50%, -50%) scale(1.06); }
+[dir="rtl"] .visit__video .video-play svg { transform: scaleX(-1); }
+/* once playing, the overlay chrome gets out of the way */
+.is-playing .video-play, .is-playing .visit__vcap { opacity: 0; pointer-events: none; }
+.visit__video .video-play, .visit__vcap { transition: opacity .3s; }
+
+/* ---------- 33.3 Green Dunes visit strip ------------------------------- */
+.visit__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); margin-top: 56px; }
+.visit__grid figure { margin: 0; }
+.visit__grid img { width: 100%; height: 260px; object-fit: cover; display: block;
+  transition: transform .8s cubic-bezier(.22,1,.36,1); }
+.visit__grid figure { overflow: hidden; }
+.visit__grid figure:hover img { transform: scale(1.05); }
+.visit__grid figcaption { font-size: 13px; line-height: 20px; color: var(--c-muted, #6a7472); margin-top: 12px; }
+
+/* ---------- 33.4 Excellence Awards ------------------------------------- */
+.awards { padding-block: 0; }
+.awards__panel { background: var(--c-text, #0B2C25); color: #fff; padding: 78px 68px;
+  display: grid; grid-template-columns: 1fr 1.15fr; gap: 66px; align-items: start;
+  background-image: var(--g-brand); background-size: 100% 4px; background-repeat: no-repeat; background-position: 0 0; }
+.awards__txt .h-section { color: #fff; margin: 0 0 22px; }
+.awards__txt .lede { color: rgba(255,255,255,.78); margin: 0 0 34px; max-width: 46ch; }
+.awards__cats { list-style: none; margin: 0; padding: 0; display: grid; }
+.awards__cats li { border-top: 1px solid rgba(255,255,255,.16); padding: 20px 0;
+  display: grid; grid-template-columns: 46px 1fr; column-gap: 14px; }
+.awards__cats li:last-child { border-bottom: 1px solid rgba(255,255,255,.16); }
+.awards__no { font-family: 'Space Grotesk', sans-serif; font-size: 13px; color: #63BD69; padding-top: 3px; }
+.awards__cats h3 { font-size: 17px; line-height: 25px; font-weight: 500; margin: 0; color: #fff; }
+.awards__cats p { grid-column: 2; font-size: 13px; line-height: 20px; color: rgba(255,255,255,.62); margin: 6px 0 0; }
+
+/* ---------- 33.5 gallery lightbox -------------------------------------- */
+.gallery__head { max-width: 640px; margin-bottom: 34px; }
+.gallery__head h3 { font-size: 26px; line-height: 34px; margin: 0 0 10px; }
+.gallery__head p { color: var(--c-muted, #6a7472); margin: 0; }
+.gallery figure { position: relative; }
+.gallery__btn { display: block; width: 100%; height: 100%; padding: 0; border: 0; background: none;
+  cursor: zoom-in; text-align: start; }
+.gallery figcaption { position: absolute; inset: auto 0 0 0; padding: 30px 16px 14px; color: #fff;
+  font-size: 12px; line-height: 17px; background: linear-gradient(transparent, rgba(0,0,0,.72));
+  opacity: 0; transform: translateY(8px); transition: opacity .4s, transform .4s; pointer-events: none; }
+.gallery figure:hover figcaption,
+.gallery__btn:focus-visible ~ figcaption { opacity: 1; transform: none; }
+.gallery__btn:focus-visible { outline: 2px solid #63BD69; outline-offset: -2px; }
+
+.lightbox { position: fixed; inset: 0; z-index: 200; background: rgba(6,20,17,.94);
+  display: none; place-items: center; padding: 5vh 6vw; }
+.lightbox.is-open { display: grid; }
+.lightbox__fig { margin: 0; max-width: 100%; max-height: 100%; display: grid; gap: 14px; justify-items: center; }
+.lightbox__fig img { max-width: 100%; max-height: 78vh; object-fit: contain; display: block; }
+.lightbox__fig figcaption { color: rgba(255,255,255,.8); font-size: 13px; text-align: center; }
+.lightbox__close, .lightbox__nav { position: absolute; background: none; border: 0; color: #fff; cursor: pointer; line-height: 1; }
+.lightbox__close { top: 18px; inset-inline-end: 22px; font-size: 40px; }
+.lightbox__nav { top: 50%; transform: translateY(-50%); font-size: 56px; width: 56px; opacity: .7; transition: opacity .3s; }
+.lightbox__nav:hover { opacity: 1; }
+.lightbox__nav--prev { inset-inline-start: 10px; }
+.lightbox__nav--next { inset-inline-end: 10px; }
+[dir="rtl"] .lightbox__nav--prev { transform: translateY(-50%) scaleX(-1); }
+[dir="rtl"] .lightbox__nav--next { transform: translateY(-50%) scaleX(-1); }
+
+/* =======================================================================
+   35. MOBILE PASS — إعادة ضبط تجربة الجوال بالكامل
+   -----------------------------------------------------------------------
+   المشاكل التي يعالجها هذا القسم:
+   1. طبقة التعتيم في الهيرو كانت أفقية (فاتحة يمينًا) — على شاشة ضيقة
+      لا يوجد "يمين"، فتصبح الصورة سوداء بالكامل.
+   2. مقاسات الخطوط كانت درجات ثابتة تقفز بين المقاسات.
+   3. تبويبات الهيرو الأربعة كانت تأكل نصف الشاشة.
+   4. أزرار الهيرو تتزاحم في سطر واحد.
+   5. شارة «صورة مؤقتة» كانت بحجم سطح المكتب.
+   ======================================================================= */
+
+/* ---------- 35.1 طبقة التعتيم: عمودية على الجوال ------------------------ */
+@media (max-width: 900px) {
+  .hero__slide::after,
+  [dir="rtl"] .hero__slide::after {
+    background:
+      linear-gradient(180deg,
+        rgba(6,35,29,.62) 0%,
+        rgba(6,35,29,.30) 26%,
+        rgba(6,35,29,.55) 62%,
+        rgba(6,35,29,.90) 100%),
+      linear-gradient(180deg, rgba(1,92,68,.16) 0%, rgba(70,137,200,.12) 100%);
+  }
+  .page-hero::after,
+  [dir="rtl"] .page-hero::after {
+    background: linear-gradient(180deg,
+      rgba(6,35,29,.45) 0%, rgba(6,35,29,.30) 40%, rgba(6,35,29,.88) 100%);
+  }
+}
+
+/* ---------- 35.2 مقياس خطوط مضغوط للجوال -------------------------------
+   القاعدة: كل مقاس أصغر بنحو 30% من سطح المكتب، وكل قاعدة هنا محبوسة
+   داخل استعلام وسائط — أي أن سطح المكتب لا يتأثر بحرف واحد.          */
+@media (max-width: 900px) {
+  :root { --sec-pad: 46px; --wrap-pad: 20px; --gap: 12px; }
+
+  body { font-size: 14.5px; line-height: 22px; }
+
+  .h-display   { font-size: clamp(21px, 5.6vw, 26px); line-height: 1.28; letter-spacing: -.2px; }
+  .h-section   { font-size: clamp(18px, 4.9vw, 23px); line-height: 1.28; letter-spacing: -.2px; }
+  .h-intro     { font-size: clamp(14.5px, 3.9vw, 17px); line-height: 1.58; }
+  .lede        { font-size: clamp(13px, 3.5vw, 15px); line-height: 1.62; }
+  .eyebrow     { font-size: 11px; line-height: 15px; letter-spacing: .8px; }
+  .small       { font-size: 11.5px; line-height: 17px; }
+
+  /* العربية: نفس المقاس تقريبًا مع تباعد أسطر أوسع لأن الحروف متصلة */
+  [lang="ar"] body       { font-size: 15px; line-height: 1.78; }
+  [lang="ar"] .h-display { font-size: clamp(21px, 5.6vw, 26px); line-height: 1.50; }
+  [lang="ar"] .h-section { font-size: clamp(18px, 4.9vw, 23px); line-height: 1.48; }
+  [lang="ar"] .h-intro   { font-size: clamp(15px, 4vw, 17.5px); line-height: 1.80; }
+  [lang="ar"] .lede      { font-size: clamp(13.5px, 3.6vw, 15.5px); line-height: 1.82; }
+  [lang="ar"] .eyebrow   { font-size: 11.5px; letter-spacing: 0; }
+
+  /* عناوين البطاقات */
+  .tile__txt h3       { font-size: 14.5px; line-height: 21px; }
+  .slide h4           { font-size: 13.5px; line-height: 20px; margin: 12px 0 8px; }
+  .mag-item h4        { font-size: 14.5px; line-height: 21px; margin: 12px 0 8px; }
+  .tri__card h3       { font-size: 15px; line-height: 22px; margin-bottom: 8px; }
+  .tri__card p        { font-size: 13px; line-height: 20px; margin-bottom: 14px; }
+  .split h3           { font-size: 17px; line-height: 25px; margin-bottom: 14px; }
+  .split p            { font-size: 13.5px; line-height: 21px; }
+  .news-card h3       { font-size: 14px; line-height: 21px; }
+  .news-card__meta    { font-size: 11px; letter-spacing: .4px; }
+  .link-arrow, .cta-circle { font-size: 12.5px; }
+  .doc__row > a:first-child { font-size: 14px; }
+  .doc__info          { font-size: 11.5px; }
+  .visit__grid figcaption { font-size: 11.5px; line-height: 17px; margin-top: 8px; }
+
+  /* «نظرة عامة» كانت تأخذ شاشة كاملة */
+  .stats { gap: 0; }
+  .stat  { padding: 14px 0; padding-inline-end: 0; }
+  .stat b { font-size: clamp(26px, 7.4vw, 33px); line-height: 1.1; display: block; }
+  .stat p { font-size: 12px; line-height: 17px; margin-top: 4px; }
+  [lang="ar"] .stat p { font-size: 12.5px; line-height: 19px; }
+  .glance h2 { margin-bottom: 22px; }
+
+  /* المسافات بين الأقسام وعناوينها */
+  .sec-head { gap: 16px; margin-bottom: 22px; }
+  .discover__intro .eyebrow, .believe__intro .eyebrow, .hero__panel .eyebrow { margin-bottom: 12px; }
+  .card-row.bleed { margin-top: 26px !important; }
+  .slider.bleed   { margin-top: 24px !important; }
+  .tri, .mag      { margin-top: 0; }
+  .scrollbar      { margin-top: 26px; }
+}
+
+/* ---------- 35.3 الصور: تصغير كل الارتفاعات والنسب --------------------- */
+@media (max-width: 900px) {
+  /* بطاقات Discover كانت بنسبة 361/545 — أي 522px ارتفاعًا على شاشة 390 */
+  .tile { aspect-ratio: 3 / 2; }
+  .tile__txt { padding: 18px; }
+  .tile__arrow { width: 30px; height: 30px; }
+
+  .slide { width: 200px; }
+  .slide:nth-child(odd)  img { height: 160px; }
+  .slide:nth-child(even) img { height: 130px; margin-top: 0; }
+
+  .mag--lead img, .mag__col img { height: 175px; }
+  .tri__card img  { height: 165px; }
+  .split img      { height: 180px; }
+  .visit__grid img { height: 155px; }
+  .news-card__media img { height: 150px; }
+  .about-banner   { height: 140px; }
+  .page-hero      { min-height: 190px; padding-bottom: 26px; }
+  .page-hero h1   { font-size: clamp(20px, 5.4vw, 25px); line-height: 1.32; }
+  [lang="ar"] .page-hero h1 { line-height: 1.52; }
+  .video-wrap h3  { font-size: 16px; line-height: 23px; max-width: 62%; }
+  .memmap__canvas { height: 260px; }
+}
+
+/* ---------- 35.4 الهيرو: ارتفاع ومسافات ودرج الأزرار -------------------- */
+@media (max-width: 900px) {
+  .hero__copy { padding: 96px 0 24px; }
+  .hero__copy .wrap { min-height: 0; }
+  .hero__panel .h-display { margin-bottom: 20px; }
+
+  /* الانتقال بين الشرائح كان يُبقي اللوحة الخارجة ظاهرة نصف ثانية فتتراكب
+     اللوحتان — نُخفيها فورًا على الجوال */
+  .hero__panel { transition: opacity .26s ease, transform .26s ease, visibility 0s linear .26s; }
+  .hero__panel.is-active { transition: opacity .42s ease .26s, transform .52s cubic-bezier(.22,1,.36,1) .26s, visibility 0s; }
+
+  /* الأزرار تنزل تحت بعض بدل ما تتزاحم في سطر */
+  /* label and circle stay side by side on one line — never stacked */
+  .hero__actions { flex-direction: row; align-items: center; gap: 12px; }
+  .cta-circle { gap: 12px; }
+  .cta-circle .circ { width: 44px; height: 44px; flex: none; }
+  
+  /* التبويبات: شبكة 2×2 — أربعة تبويبات في صف واحد يقطع الأخير عند الحافة،
+     وشريط التمرير الأفقي يبدو مكسورًا لأن آخر تبويب يظهر نصفه فقط. */
+  .hero__tabs { padding-bottom: 16px; }
+  .hero__tabs .wrap {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px 14px; overflow: visible;
+  }
+  .hero-tab {
+    min-width: 0; padding-bottom: 8px;
+    text-align: start;
+  }
+  .hero-tab span {
+    font-size: 11px; letter-spacing: .4px; line-height: 15px;
+    display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  [lang="ar"] .hero-tab span { font-size: 11.5px; letter-spacing: 0; }
+}
+
+/* ---------- 35.5 الشارة والأقسام الجديدة على الجوال --------------------- */
+@media (max-width: 900px) {
+
+  /* شريط الشركاء */
+  .partners { padding: 18px 0 16px; }
+  .partners__label { font-size: 11px; margin-bottom: 10px; }
+  [lang="ar"] .partners__label { font-size: 11.5px; }
+  .partners__track { gap: 28px; }
+  .partner span { font-size: 14px; }
+
+  /* الجوائز */
+  .awards__panel { padding: 32px 18px; gap: 26px; }
+  .awards__cats li { grid-template-columns: 28px 1fr; column-gap: 8px; padding: 13px 0; }
+  .awards__cats h3 { font-size: 14px; line-height: 21px; }
+  .awards__cats p  { font-size: 11.5px; line-height: 18px; margin-top: 4px; }
+  .awards__no { font-size: 11px; }
+
+  /* الزيارة */
+  .visit__video { margin-top: 26px; }
+  .visit__video .video-play { width: 52px; height: 52px; }
+  .visit__vcap { font-size: 11px; inset: auto auto 10px 12px; }
+  [dir="rtl"] .visit__vcap { inset: auto 12px 10px auto; }
+
+  /* أسهم السلايدر: مساحة لمس ≥44px مع مظهر أصغر */
+  .slider-nav { margin-top: 20px; gap: 8px; }
+  .slider-nav__btn { width: 44px; height: 44px; }
+
+  /* الخريطة */
+  .memmap { margin: 22px 0 30px; }
+  .memmap__head { margin-bottom: 14px; }
+  .memmap__head h3 { font-size: 16px; line-height: 23px; }
+  .memmap__head p  { font-size: 12px; line-height: 18px; }
+  .memmap__foot { flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 12px; }
+  .memmap__legend { gap: 12px; }
+  .memmap__legend li { font-size: 11px; }
+  .memmap__src { font-size: 11px; }
+
+  /* المعرض */
+  .gallery { gap: 8px; }
+  .gallery__head { margin-bottom: 18px; }
+  .gallery__head h3 { font-size: 17px; line-height: 24px; }
+  .gallery__head p  { font-size: 12px; line-height: 18px; }
+  .gallery figcaption { font-size: 11px; padding: 18px 8px 8px; opacity: 1; transform: none; }
+
+  /* تبويبات المركز الإعلامي: نفس علّة تبويبات الهيرو — أربعة تبويبات
+     في شريط تمرير أفقي يظهر آخرها مقطوعًا. شبكة 2×2 تحلّها. */
+  .tabs {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 4px 16px; overflow: visible; margin-bottom: 26px;
+  }
+  .tab {
+    white-space: normal; font-size: 12.5px; padding: 0 0 10px;
+    text-align: start; min-width: 0;
+  }
+  [lang="ar"] .tab { font-size: 13.5px; }
+
+  /* وصف المستند كان nowrap فينقطع على الشاشة الضيقة */
+  .doc__info { white-space: normal; }
+
+  /* الفوتر والوثائق */
+  .foot-cols { gap: 26px; }
+  .foot-col h4 { font-size: 13px; }
+  .foot-col a  { font-size: 13px; }
+  .docs { padding: 16px 8px 12px; }
+  .doc__row { padding: 14px 4px; }
+}
+
+/* ---------- 35.6 الشاشات الضيقة جدًا (≤480px) --------------------------- */
+@media (max-width: 480px) {
+  :root { --sec-pad: 38px; --wrap-pad: 16px; }
+  .hero__copy { padding: 88px 0 20px; }
+  .hero__tabs .wrap { grid-template-columns: 1fr 1fr; gap: 8px 10px; }
+  .hero-tab span { font-size: 11px; }
+  [lang="ar"] .hero-tab span { font-size: 11.5px; }
+  .site-head .brand .tagline { display: none; }
+  /* أُزيلت: كانت تسحق الشعار في مربّع 34×34 — انظر القسم 58 */
+  .site-head .brand .wordmark { font-size: 16px; }
+  .partner span { font-size: 13px; }
+  .awards__panel { padding: 26px 14px; }
+  .tile { aspect-ratio: 16 / 10; }
+  .visit__grid img { height: 140px; }
+  .mag--lead img, .mag__col img { height: 155px; }
+  .tri__card img { height: 150px; }
+  .split img { height: 160px; }
+  .memmap__canvas { height: 230px; }
+  .about-banner { height: 120px; }
+  .stat b { font-size: clamp(24px, 7vw, 30px); }
+}
+
+/* ---------- 35.6 اللمس: لا تأثيرات hover على الأجهزة اللمسية ------------ */
+@media (hover: none) {
+  .tile:hover .tile__arrow,
+  .gallery figure:hover img,
+  .visit__grid figure:hover img { transform: none; background: none; }
+  .gallery figcaption { opacity: 1; transform: none; }
+  /* الشريط المتحرك لا يتوقف باللمس، فنبقيه يعمل */
+  .partners__viewport:hover .partners__track { animation-play-state: running; }
+}
+
+/* =======================================================================
+   36. توحيد بطاقات الأخبار ومركز الرؤى
+   -----------------------------------------------------------------------
+   كانت بطاقة واحدة من أربع تحمل صورة والباقي فارغ، فيبدو الصف غير متّسق
+   والبطاقات الفارغة تظهر كمساحات بيضاء كبيرة. الآن كلها تحمل صورة،
+   ونثبّت نسبة الصورة وارتفاع المتن حتى تتطابق البطاقات تمامًا.
+   ======================================================================= */
+.news-card__media { overflow: hidden; flex: none; }
+.news-card__media img {
+  width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; display: block;
+  transition: transform .8s cubic-bezier(.22, 1, .36, 1);
+}
+.news-card:hover .news-card__media img { transform: scale(1.05); }
+/* المتن يتمدّد ليدفع السهم لأسفل البطاقة مهما اختلف طول العنوان */
+.news-card__body { display: flex; flex-direction: column; }
+.news-card__body h3 { margin-top: 8px; }
+
+/* مركز الرؤى: البطاقتان الجانبيتان بنفس النسبة، والكبيرة أطول */
+.mag-item figure { overflow: hidden; }
+.mag-item img { transition: transform .9s cubic-bezier(.22, 1, .36, 1); }
+.mag-item:hover img { transform: scale(1.04); }
+
+@media (max-width: 900px) {
+  .news-card__media img { aspect-ratio: 16 / 9; height: auto; }
+  .news-card__body { padding: 16px 16px 0; }
+  .news-card__foot { padding: 0 16px 16px; }
+}
+
+/* =======================================================================
+   37. لافتة الانضمام + قسم الجوائز — إعادة تصميم بهوية سافتا
+   -----------------------------------------------------------------------
+   اللافتة كانت طبقة رمادية rgba(0,0,0,.32) فوق الصورة ونصًا رفيعًا
+   بوزن 400 — باهتة وبلا هوية. والجوائز كانت قائمة نصية طويلة تشبه
+   الجدول. الآن: تدرّج الهوية + نقشة الورقة + خط أبيض عريض + بطاقات.
+   ======================================================================= */
+
+/* ---------- 37.1 زر الهوية (مشترك) ------------------------------------- */
+.btn-brand {
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 0 26px; height: 50px; border-radius: 100px;
+  background: var(--g-brand); color: #06231D;
+  font-size: 14px; font-weight: 700; letter-spacing: .2px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, .22);
+  transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s, filter .35s;
+}
+.btn-brand svg { flex: none; transition: transform .35s cubic-bezier(.22,1,.36,1); }
+.btn-brand:hover { transform: translateY(-2px); filter: brightness(1.07); box-shadow: 0 10px 28px rgba(0,0,0,.3); }
+.btn-brand:hover svg { transform: translateX(5px); }
+[dir="rtl"] .btn-brand svg { transform: scaleX(-1); }
+[dir="rtl"] .btn-brand:hover svg { transform: scaleX(-1) translateX(5px); }
+[lang="ar"] .btn-brand { font-size: 15px; letter-spacing: 0; }
+
+/* ---------- 37.2 لافتة «انضم إلى التحالف» ------------------------------ */
+.about-banner { height: 340px; padding-inline: var(--wrap-pad); }
+.about-banner img { filter: saturate(.85); }
+/* طبقة الهوية بدل الرمادي: أخضر عميق → تركوازي → أزرق */
+.about-banner::after {
+  background:
+    linear-gradient(135deg, rgba(1,50,38,.90) 0%, rgba(1,92,68,.80) 45%, rgba(47,165,140,.62) 100%),
+    linear-gradient(180deg, rgba(6,35,29,.35) 0%, rgba(6,35,29,.55) 100%);
+}
+/* لا نقشة شعار على اللافتة — الصورة والتدرّج يكفيان (طلب العميل) */
+.about-banner::before { content: none !important; }
+.about-banner__in { display: grid; justify-items: center; gap: 0; max-width: 720px; }
+.about-banner .eyebrow { margin-bottom: 14px; opacity: .9; }
+.about-banner h2 {
+  font-family: var(--f-head);
+  font-size: clamp(32px, 4vw, 52px); line-height: 1.12;
+  font-weight: 700; letter-spacing: -.6px; color: #fff;
+  margin-bottom: 12px;
+  text-shadow: 0 2px 24px rgba(0,0,0,.35);
+}
+[lang="ar"] .about-banner h2 { letter-spacing: 0; line-height: 1.35; }
+.about-banner__lede {
+  font-size: 16px; line-height: 26px; color: rgba(255,255,255,.9);
+  margin-bottom: 26px; max-width: 46ch;
+}
+[lang="ar"] .about-banner__lede { font-size: 16.5px; line-height: 30px; }
+/* شريط التدرّج أعلى اللافتة يربطها ببقية الهوية */
+.about-banner__in::after { content: none; }
+.about-banner { border-top: 3px solid transparent; border-image: var(--g-brand) 1; }
+
+/* ---------- 37.3 قسم الجوائز ------------------------------------------- */
+.awards__panel {
+  display: block; position: relative; overflow: hidden;
+  padding: 74px 68px 78px;
+  background: var(--c-text, #0B2C25);
+  background-image: var(--g-brand); background-size: 100% 4px;
+  background-repeat: no-repeat; background-position: 0 0;
+}
+/* لا نقشة شعار داخل لوحة الجوائز — تشوّش على البطاقات (طلب العميل) */
+.awards__panel::before { content: none !important; }
+.awards__head { position: relative; z-index: 1; max-width: 760px; margin-bottom: 52px; }
+.awards__head .eyebrow { margin-bottom: 16px; }
+.awards__head .h-section {
+  color: #fff; font-weight: 700; margin: 0 0 18px;
+}
+.awards__head .lede { color: rgba(255,255,255,.76); margin: 0 0 30px; max-width: 62ch; }
+
+/* البطاقات: شبكة مرتّبة بدل قائمة نصية */
+.awards__cats {
+  position: relative; z-index: 1;
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px;
+}
+.award {
+  position: relative; padding: 26px 22px 24px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 3px; overflow: hidden;
+  transition: background .4s, border-color .4s, transform .4s cubic-bezier(.22,1,.36,1);
+}
+.award:hover { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.2); transform: translateY(-4px); }
+.award__no {
+  display: block; font-family: var(--f-head);
+  font-size: 34px; line-height: 1; font-weight: 700;
+  color: transparent; -webkit-text-stroke: 1px rgba(99,189,105,.75);
+  margin-bottom: 16px; letter-spacing: 1px;
+}
+.award h3 {
+  font-size: 16.5px; line-height: 24px; font-weight: 700; color: #fff;
+  margin: 0 0 8px;
+}
+[lang="ar"] .award h3 { font-size: 17.5px; line-height: 28px; }
+.award p {
+  font-size: 13px; line-height: 20px; color: rgba(255,255,255,.62); margin: 0;
+}
+[lang="ar"] .award p { font-size: 13.5px; line-height: 24px; }
+/* خط التدرّج ينمو عند المرور */
+.award__rule {
+  position: absolute; inset: auto 0 0 0; height: 2px;
+  background: var(--g-brand);
+  transform: scaleX(0); transform-origin: 0 50%;
+  transition: transform .5s cubic-bezier(.22,1,.36,1);
+}
+[dir="rtl"] .award__rule { transform-origin: 100% 50%; }
+.award:hover .award__rule { transform: scaleX(1); }
+
+/* ---------- 37.4 الجوال ------------------------------------------------- */
+@media (max-width: 900px) {
+  .about-banner { height: 260px; }
+  .about-banner h2 { font-size: clamp(24px, 6.4vw, 32px); margin-bottom: 10px; }
+  .about-banner__lede { font-size: 13.5px; line-height: 21px; margin-bottom: 20px; }
+  [lang="ar"] .about-banner__lede { font-size: 14px; line-height: 24px; }
+  .btn-brand { height: 46px; padding: 0 20px; font-size: 13px; }
+  [lang="ar"] .btn-brand { font-size: 14px; }
+
+  .awards__panel { padding: 40px 20px 44px; }
+  .awards__head { margin-bottom: 28px; }
+  .awards__head .lede { margin-bottom: 22px; }
+  .awards__cats { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .award { padding: 18px 14px 17px; }
+  .award__no { font-size: 26px; margin-bottom: 10px; }
+  .award h3 { font-size: 14px; line-height: 20px; }
+  [lang="ar"] .award h3 { font-size: 14.5px; line-height: 23px; }
+  .award p { font-size: 11.5px; line-height: 17px; }
+  [lang="ar"] .award p { font-size: 12px; line-height: 20px; }
+}
+/* عمود واحد تحت 420px فقط — بين 420 و900 يبقى عمودان */
+@media (max-width: 480px) {
+  .about-banner { height: 230px; }
+  .award { padding: 16px 14px; }
+}
+@media (max-width: 420px) {
+  .awards__cats { grid-template-columns: 1fr; }
+}
+
+/* =======================================================================
+   38. ثلاثة إصلاحات: الفيديو الملوّن · خلفية الجوائز · شريط الشركاء
+   ======================================================================= */
+
+/* ---------- 38.1 إلغاء الأبيض والأسود عن فيديو «مسيرتنا» --------------- */
+/* كان `grayscale(1)` موروثًا من تصميم أرامكو — لا علاقة له بهوية سافتا */
+.video-wrap img,
+.video-wrap__player,
+.video-wrap.is-playing .video-wrap__player { filter: none; }
+
+/* ---------- 38.2 قسم الجوائز: خلفية ممتدة بلا شريط أبيض ---------------- */
+/* `.awards { padding-block: 0 }` كان يترك خلفية الصفحة البيضاء تظهر
+   حول اللوحة الداكنة. نجعل خلفية القسم نفسه داكنة فتمتد لعرض الشاشة. */
+.awards {
+  padding-block: 0;
+  background: var(--c-text, #0B2C25);
+  position: relative;
+}
+.awards__panel { background-color: transparent; }
+/* شريط التدرّج يمتد على كامل عرض القسم لا اللوحة فقط */
+.awards::before {
+  content: ''; position: absolute; inset: 0 0 auto 0; height: 4px;
+  background: var(--g-brand); z-index: 2;
+}
+.awards__panel { background-image: none; }
+
+/* ---------- 38.3 شريط الشركاء: أوضح وأعلى تباينًا -------------------- */
+.partners { padding: 40px 0 36px; background: var(--c-grey-bg, #F2F7F4); }
+.partners__label {
+  font-size: 12px; font-weight: 600; letter-spacing: .18em;
+  color: var(--c-text); opacity: .75; margin-bottom: 26px;
+}
+[lang="ar"] .partners__label { font-size: 14px; letter-spacing: 0; }
+.partners__track { gap: 56px; align-items: center; }
+.partner {
+  opacity: 1;                       /* كان .62 فيبدو باهتًا */
+  padding: 0; max-width: none;
+  display: grid; justify-items: center; gap: 6px;
+  filter: none; transition: transform .35s cubic-bezier(.22,1,.36,1);
+}
+.partner:hover { transform: translateY(-3px); }
+/* شعار افتراضي: مربّع بهوية التحالف يحمل الاختصار */
+.partner__mark {
+  width: 84px; height: 84px; border-radius: 14px;
+  display: grid; place-items: center;
+  background: #fff; border: 1px solid var(--c-grey-line);
+  box-shadow: 0 2px 10px rgba(11, 44, 37, .06);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 17px; font-weight: 700; letter-spacing: .5px;
+  color: var(--c-green-deep, #015C44);
+  transition: box-shadow .35s, border-color .35s;
+}
+.partner:hover .partner__mark { box-shadow: 0 8px 22px rgba(11,44,37,.14); border-color: #63BD69; }
+.partner span { font-size: 0; }     /* الاختصار انتقل داخل المربّع */
+.partner small {
+  display: block; font-size: 12px; line-height: 17px; font-weight: 500;
+  color: var(--c-text); opacity: .78; max-width: 128px; text-align: center;
+  white-space: normal;
+}
+[lang="ar"] .partner small { font-size: 12.5px; line-height: 20px; }
+
+@media (max-width: 900px) {
+  .partners { padding: 26px 0 24px; }
+  .partners__label { font-size: 11px; margin-bottom: 18px; }
+  [lang="ar"] .partners__label { font-size: 12.5px; }
+  .partners__track { gap: 34px; }
+  .partner__mark { width: 62px; height: 62px; border-radius: 11px; font-size: 13px; }
+  .partner small { font-size: 11px; line-height: 15px; max-width: 96px; }
+  [lang="ar"] .partner small { font-size: 11px; line-height: 17px; }
+}
+
+/* =======================================================================
+   39. شريط الشركاء بالشعارات — يلغي المربّعات النصية السابقة
+   ======================================================================= */
+.partners { padding: 44px 0 40px; background: #fff; border-block: 1px solid var(--c-grey-line); }
+.partners__label {
+  font-size: 12px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--c-text); opacity: .55; margin-bottom: 30px;
+}
+[lang="ar"] .partners__label { font-size: 14px; letter-spacing: 0; text-transform: none; }
+.partners__track { gap: 64px; align-items: center; }
+.partner {
+  display: block; padding: 0; max-width: none; opacity: 1;
+  transition: transform .35s cubic-bezier(.22,1,.36,1);
+}
+.partner img { width: 150px; height: 75px; object-fit: contain; display: block; }
+.partner:hover { transform: translateY(-3px); }
+.partner .partner__mark, .partner span, .partner small { display: none; }
+/* الشعارات تمثيلية — تظليل خفيف جدًا لا يشوّش القراءة */
+
+@media (max-width: 900px) {
+  .partners { padding: 28px 0 26px; }
+  .partners__label { font-size: 11px; margin-bottom: 20px; }
+  [lang="ar"] .partners__label { font-size: 12.5px; }
+  .partners__track { gap: 40px; }
+  .partner img { width: 112px; height: 56px; }
+}
+@media (max-width: 480px) {
+  .partners__track { gap: 30px; }
+  .partner img { width: 96px; height: 48px; }
+}
+
+/* =======================================================================
+   40. تجربة الجوال — سلايدرات أفقية بدل التكديس العمودي
+   -----------------------------------------------------------------------
+   المشكلة: التصميم مبني على شبكات أفقية (4 بطاقات في صف). على الجوال
+   تنهار الشبكة لعمود واحد فتصير الصفحة 11 شاشة، 72% منها تكديس.
+
+   الحل: نفس نمط أرامكو — سلايدر أفقي بـscroll-snap، البطاقة 80% من
+   الشاشة وحافة التالية تطلّ فيعرف الزائر أن الصف ينسحب.
+
+   المحتوى لم يتغيّر إطلاقًا — التخطيط فقط، وكله داخل @media.
+   ======================================================================= */
+@media (max-width: 900px) {
+
+  /* ---------- 40.1 الأساس المشترك لكل السلايدرات ---------------------- */
+  .m-swipe {
+    display: flex !important;
+    flex-direction: row !important;
+    grid-template-columns: none !important;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline-start: var(--wrap-pad);
+    /* يمتد من حافة الشاشة للحافة، والحشوة تحفظ محاذاة أول بطاقة */
+    margin-inline: calc(var(--wrap-pad) * -1);
+    padding-inline: var(--wrap-pad);
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;   /* لا يسحب الصفحة معه */
+  }
+  .m-swipe::-webkit-scrollbar { display: none; }
+  .m-swipe > * {
+    flex: 0 0 80%;
+    min-width: 0;
+    scroll-snap-align: start;
+    margin-top: 0 !important;
+  }
+
+  /* ---------- 40.1b «ما نؤمن به» — تمرير أصلي بدل السحب بـtransform -----
+     على سطح المكتب يبقى السحب بالماوس (الوحدة 7). على الجوال نحوّله لتمرير
+     أصلي بإصبع مثل باقي الأقسام، ونُلغي الـtransform الذي يضعه الجافاسكربت. */
+  .slider {
+    overflow-x: auto !important;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline-start: var(--wrap-pad);
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+    cursor: auto;
+    touch-action: pan-x pan-y;
+  }
+  .slider::-webkit-scrollbar { display: none; }
+  .slider__track {
+    transform: none !important;   /* يبطل ما يكتبه JS inline */
+    will-change: auto;
+  }
+  .slide {
+    width: auto !important;
+    flex: 0 0 78%;
+    min-width: 0;
+    scroll-snap-align: start;
+  }
+  /* الأسهم والشريط القديم يستبدلهما شريط المؤشر الموحّد */
+  .believe .slider-nav { display: none; }
+  .believe .scrollbar { display: none; }
+
+  /* ---------- 40.2 تطبيقه على الأقسام الستة --------------------------- */
+  /* تعرّف على التحالف + الأخبار — كلاهما .card-row */
+  .card-row {
+    display: flex; flex-wrap: nowrap;
+    gap: 12px; overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline-start: var(--wrap-pad);
+    margin-inline: calc(var(--wrap-pad) * -1);
+    padding-inline: var(--wrap-pad); padding-bottom: 4px;
+    scrollbar-width: none; overscroll-behavior-x: contain;
+  }
+  .card-row::-webkit-scrollbar { display: none; }
+  .card-row > .tile,
+  .card-row > .news-card {
+    flex: 0 0 80% !important;
+    scroll-snap-align: start;
+    margin-top: 0 !important;
+  }
+  .card-row.bleed { margin-inline: calc(var(--wrap-pad) * -1); }
+
+  /* مركز الرؤى */
+  .mag {
+    display: flex; grid-template-columns: none; gap: 12px;
+    overflow-x: auto; scroll-snap-type: x mandatory;
+    scroll-padding-inline-start: var(--wrap-pad);
+    margin-inline: calc(var(--wrap-pad) * -1);
+    padding-inline: var(--wrap-pad); padding-bottom: 4px;
+    scrollbar-width: none; overscroll-behavior-x: contain;
+  }
+  .mag::-webkit-scrollbar { display: none; }
+  .mag > .mag-item, .mag > .mag__col { flex: 0 0 80%; scroll-snap-align: start; }
+  /* العمود الجانبي كان يحمل مقالين فوق بعض — نفكّه لبطاقتين مستقلتين */
+  .mag__col { display: contents; }
+  .mag__col > .mag-item { flex: 0 0 80%; scroll-snap-align: start; }
+
+  /* مرونة الموارد */
+  .tri {
+    display: flex; flex-direction: row; gap: 12px;
+    overflow-x: auto; scroll-snap-type: x mandatory;
+    scroll-padding-inline-start: var(--wrap-pad);
+    margin-inline: calc(var(--wrap-pad) * -1);
+    padding-inline: var(--wrap-pad); padding-bottom: 4px;
+    scrollbar-width: none; overscroll-behavior-x: contain;
+  }
+  .tri::-webkit-scrollbar { display: none; }
+  .tri > .tri__card { flex: 0 0 80%; scroll-snap-align: start; }
+
+  /* زيارة الكثبان */
+  .visit__grid {
+    display: flex; grid-template-columns: none; gap: 12px;
+    overflow-x: auto; scroll-snap-type: x mandatory;
+    scroll-padding-inline-start: var(--wrap-pad);
+    margin-inline: calc(var(--wrap-pad) * -1);
+    padding-inline: var(--wrap-pad); padding-bottom: 4px;
+    scrollbar-width: none; overscroll-behavior-x: contain;
+  }
+  .visit__grid::-webkit-scrollbar { display: none; }
+  .visit__grid > figure { flex: 0 0 72%; scroll-snap-align: start; }
+
+  /* الجوائز */
+  .awards__cats {
+    display: flex; grid-template-columns: none; gap: 12px;
+    overflow-x: auto; scroll-snap-type: x mandatory;
+    scroll-padding-inline-start: 0;
+    padding-bottom: 4px;
+    scrollbar-width: none; overscroll-behavior-x: contain;
+  }
+  .awards__cats::-webkit-scrollbar { display: none; }
+  .awards__cats > .award { flex: 0 0 74%; scroll-snap-align: start; }
+
+  /* ---------- 40.3 شريط التدرّج الذي يتتبّع الموقع -------------------- */
+  .m-bar {
+    height: 2px; background: var(--c-grey-line);
+    margin-top: 18px; position: relative; overflow: hidden;
+  }
+  .m-bar i {
+    position: absolute; inset: 0 auto 0 0; width: 30%;
+    background: var(--g-brand);
+    transition: transform .12s linear;
+  }
+  [dir="rtl"] .m-bar i { inset: 0 0 0 auto; }
+  /* داخل اللوحة الداكنة للجوائز */
+  .awards .m-bar { background: rgba(255,255,255,.18); margin-top: 16px; }
+
+  /* ---------- 40.4 نظرة عامة: شبكة عمودين ----------------------------- */
+  .stats { grid-template-columns: 1fr 1fr; gap: 0 18px; }
+  .stat { padding: 13px 0; }
+  .stat:nth-last-child(1):nth-child(odd) { grid-column: 1 / -1; }
+
+  /* ---------- 40.5 الفوتر: أكورديون ----------------------------------- */
+  .foot-cols { display: block; }
+  .foot-col { border-bottom: 1px solid rgba(255,255,255,.14); }
+  .foot-col h4 {
+    margin: 0; padding: 15px 0; cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 14px; user-select: none;
+  }
+  .foot-col h4::after {
+    content: ''; width: 9px; height: 9px; flex: none;
+    border-right: 1.6px solid currentColor; border-bottom: 1.6px solid currentColor;
+    transform: rotate(45deg); margin-top: -4px;
+    transition: transform .3s cubic-bezier(.22,1,.36,1);
+  }
+  .foot-col.is-open h4::after { transform: rotate(-135deg); margin-top: 2px; }
+  .foot-col ul {
+    overflow: hidden; height: 0;
+    transition: height .35s cubic-bezier(.22,1,.36,1);
+  }
+  .foot-col ul li:last-child { padding-bottom: 14px; }
+  .socials { margin-top: 22px; }
+}
+
+/* الشاشات الضيقة: البطاقة أعرض قليلًا حتى يتنفّس النص العربي */
+@media (max-width: 480px) {
+  .card-row > .tile, .card-row > .news-card,
+  .mag > .mag-item, .mag__col > .mag-item,
+  .tri > .tri__card { flex-basis: 84% !important; }
+  .visit__grid > figure { flex-basis: 78%; }
+  .awards__cats > .award { flex-basis: 80%; }
+}
+
+/* =======================================================================
+   42. بطاقات مجموعات العمل — بيانات حقيقية بدل البطاقات الفارغة
+   ======================================================================= */
+.wg-card { position: relative; }
+.wg-status {
+  position: absolute; inset-block-start: 20px; inset-inline-end: 20px;
+  display: inline-flex; align-items: center; height: 22px; padding: 0 10px;
+  border-radius: 11px; font-size: 11px; font-weight: 700; letter-spacing: .2px;
+  background: var(--c-grey-bg, #F2F7F4); color: var(--c-text);
+  white-space: nowrap; max-width: 45%; overflow: hidden; text-overflow: ellipsis;
+}
+[lang="ar"] .wg-status { font-size: 12px; }
+.wg-status--done  { background: rgba(1,92,68,.12);   color: #015C44; }
+.wg-status--prog  { background: rgba(70,137,200,.14); color: #2C5F8F; }
+.wg-status--track { background: rgba(99,189,105,.16); color: #2E7D3A; }
+.wg-card h3 { padding-inline-end: 84px; }
+.wg-meta { margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--c-grey-line); }
+.wg-meta p { margin: 0 0 6px; font-size: 12.5px; line-height: 18px; color: var(--c-text); }
+[lang="ar"] .wg-meta p { font-size: 13px; line-height: 21px; }
+.wg-meta p:last-child { margin-bottom: 0; }
+.wg-meta__k {
+  display: block; font-size: 11px; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; opacity: .5; margin-bottom: 1px;
+}
+[lang="ar"] .wg-meta__k { font-size: 11.5px; letter-spacing: 0; text-transform: none; }
+@media (max-width: 900px) {
+  .wg-status { inset-block-start: 16px; inset-inline-end: 16px; height: 20px; font-size: 11px; }
+  .wg-card h3 { padding-inline-end: 76px; }
+  .wg-meta p { font-size: 12px; line-height: 17px; }
+  [lang="ar"] .wg-meta p { font-size: 12.5px; line-height: 20px; }
+}
+.grid-empty {
+  margin-top: 28px; padding: 26px 22px; text-align: center;
+  border: 1px dashed var(--c-grey-line); border-radius: 10px;
+  background: var(--c-grey-bg, #F2F7F4);
+  font-size: 14px; color: var(--c-text); opacity: .75;
+}
+[lang="ar"] .grid-empty { font-size: 15px; }
+
+/* =======================================================================
+   43. صفحة تفصيل مجموعة العمل — working-group.html
+   ======================================================================= */
+.wgp__head { display: flex; align-items: flex-start; gap: 20px; margin-bottom: 22px; }
+.wgp__no {
+  flex: 0 0 auto; font-family: 'Space Grotesk', sans-serif;
+  font-size: 40px; line-height: 1; font-weight: 700; color: var(--c-brand-3, #63BD69);
+  letter-spacing: -1px; padding-top: 4px;
+}
+.wgp__ident { flex: 1 1 auto; min-width: 0; }
+.wgp__head .wg-status { position: static; flex: 0 0 auto; margin-top: 8px; max-width: none; }
+.wgp__scope { max-width: 74ch; margin-bottom: 30px; }
+
+.wgp__stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  gap: 0 22px; margin-bottom: 34px;
+  border-top: 1px solid var(--c-grey-line); padding-top: 26px;
+}
+.wgp__stat { padding-bottom: 20px; }
+.wgp__stat b {
+  display: block; font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(28px, 3.2vw, 40px); line-height: 1.05; font-weight: 700;
+  color: var(--c-green-deep, #015C44); letter-spacing: -1px; margin-bottom: 7px;
+}
+.wgp__stat span { display: block; font-size: 13px; line-height: 19px; color: var(--c-text); opacity: .72; }
+[lang="ar"] .wgp__stat span { font-size: 13.5px; line-height: 22px; }
+[lang="ar"] .wgp__stat b { letter-spacing: 0; }
+
+.wgp__sec { margin-top: 34px; }
+.h-sub {
+  font-family: var(--f-head); font-size: clamp(20px, 2.2vw, 26px);
+  font-weight: 600; letter-spacing: -.3px; margin-bottom: 20px;
+}
+[lang="ar"] .h-sub { letter-spacing: 0; line-height: 1.5; }
+.wgp__recs { list-style: none; counter-reset: wgr; margin: 0; padding: 0; }
+.wgp__rec {
+  counter-increment: wgr; position: relative;
+  padding: 18px 0 18px 0; padding-inline-start: 46px;
+  border-top: 1px solid var(--c-grey-line);
+}
+.wgp__rec:last-child { border-bottom: 1px solid var(--c-grey-line); }
+.wgp__rec::before {
+  content: counter(wgr, decimal-leading-zero);
+  position: absolute; inset-block-start: 20px; inset-inline-start: 0;
+  font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700;
+  color: var(--c-brand-3, #63BD69);
+}
+.wgp__rec h4 { font-size: 16px; font-weight: 600; margin: 0 0 6px; line-height: 1.35; }
+[lang="ar"] .wgp__rec h4 { font-size: 17px; line-height: 1.5; }
+.wgp__rec p { font-size: 14.5px; line-height: 24px; color: var(--c-text); opacity: .8; margin: 0; max-width: 78ch; }
+[lang="ar"] .wgp__rec p { font-size: 15px; line-height: 28px; }
+
+.wgp__note {
+  margin-top: 30px; padding: 20px 24px; border-radius: 10px;
+  background: var(--c-grey-bg, #F2F7F4); border-inline-start: 4px solid var(--c-brand-3, #63BD69);
+  font-size: 15px; line-height: 26px; max-width: 80ch;
+}
+[lang="ar"] .wgp__note { font-size: 15.5px; line-height: 30px; }
+.wgp__src { margin-top: 22px; font-size: 12px; color: var(--c-text); opacity: .55; }
+[lang="ar"] .wgp__src { font-size: 12.5px; }
+.wgp__nav { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 40px; }
+.fact--wide { grid-column: 1 / -1; }
+
+@media (max-width: 900px) {
+  .wgp__head { gap: 14px; flex-wrap: wrap; }
+  .wgp__no { font-size: 30px; }
+  .wgp__scope { margin-bottom: 22px; }
+  .wgp__stats { grid-template-columns: 1fr 1fr; gap: 0 16px; padding-top: 20px; margin-bottom: 24px; }
+  .wgp__stat { padding-bottom: 16px; }
+  .wgp__stat b { font-size: 26px; }
+  .wgp__stat span { font-size: 12px; line-height: 17px; }
+  [lang="ar"] .wgp__stat span { font-size: 12.5px; line-height: 20px; }
+  .wgp__rec { padding-inline-start: 36px; padding-block: 15px; }
+  .wgp__rec h4 { font-size: 15px; }
+  .wgp__rec p { font-size: 13.5px; line-height: 22px; }
+  [lang="ar"] .wgp__rec p { font-size: 14px; line-height: 25px; }
+  .wgp__note { padding: 15px 17px; font-size: 13.5px; line-height: 23px; }
+  [lang="ar"] .wgp__note { font-size: 14px; line-height: 26px; }
+  .wgp__nav .btn-pill { flex: 1 1 100%; text-align: center; }
+}
+} }
+
+/* =======================================================================
+   46. نموذج التواصل — الحقول التسعة
+   ======================================================================= */
+.field .req { color: #C0392B; font-weight: 700; margin-inline-start: 3px; }
+.field .hint--top {
+  margin: -4px 0 8px; font-size: 11.5px; line-height: 17px;
+  color: var(--c-text-soft); text-transform: none; letter-spacing: 0;
+}
+[lang="ar"] .field .hint--top { font-size: 12px; line-height: 19px; }
+[lang="ar"] .field label { text-transform: none; letter-spacing: 0; font-size: 13.5px; font-weight: 600; }
+.field label { line-height: 1.45; }
+.field input[type="tel"] { direction: ltr; text-align: start; }
+[dir="rtl"] .field input[type="tel"] { text-align: right; }
+.field input[dir], .field input#c-url { direction: ltr; }
+[dir="rtl"] .field input#c-url { text-align: right; }
+
+/* اختيار ملف بمظهر متسق */
+/* يبدو كبقية الحقول: صندوق واحد، الزر داخله */
+.filepick {
+  display: flex; align-items: center; gap: 12px;
+  min-height: 52px; padding: 7px; padding-inline-end: 16px;
+  background: var(--c-grey-bg, #F7FAF9);
+  border: 1px solid transparent; border-radius: 12px;
+  transition: border-color .25s, background .25s, box-shadow .25s;
+}
+.filepick:hover { border-color: var(--c-grey-line); }
+.filepick:focus-within { background: #fff; border-color: var(--c-green-deep, #015C44); box-shadow: 0 0 0 3px rgba(99,189,105,.20); }
+.filepick input[type="file"] {
+  position: absolute; width: 1px; height: 1px; padding: 0;
+  margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+/* ‎.field label‎ أعلى تخصيصًا — نطابقه حتى لا يفرض display:block وحجمًا صغيرًا */
+.filepick .filepick__btn,
+.field .filepick__btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  flex: 0 0 auto; align-self: center;
+  height: 38px; padding: 0 18px; border-radius: 19px;
+  border: 1px solid var(--c-grey-line); background: #fff;
+  font-size: 13.5px; line-height: 1; font-weight: 600; color: var(--c-text);
+  cursor: pointer; margin: 0 !important; text-transform: none; letter-spacing: 0;
+  white-space: nowrap;
+  transition: border-color .25s, background .25s;
+}
+[lang="ar"] .filepick .filepick__btn,
+[lang="ar"] .field .filepick__btn { font-size: 14px; line-height: 1; }
+.filepick .filepick__btn::before {
+  content: ''; width: 15px; height: 15px; flex: 0 0 auto;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8'%3E%3Cpath d='M12 16V4m0 0L7 9m5-5l5 5M4 20h16'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8'%3E%3Cpath d='M12 16V4m0 0L7 9m5-5l5 5M4 20h16'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.filepick .filepick__btn:hover { border-color: var(--c-text); background: var(--c-grey-bg, #F2F7F4); }
+.filepick input[type="file"]:focus-visible + .filepick__btn { outline: 2px solid var(--c-brand, #015C44); outline-offset: 2px; }
+.filepick__name { flex: 1 1 auto; font-size: 13px; color: var(--c-text-soft); min-width: 0; overflow-wrap: anywhere; }
+.filepick__name.is-set { color: var(--c-green-deep, #015C44); font-weight: 600; }
+[lang="ar"] .filepick__name { font-size: 13.5px; }
+
+@media (max-width: 900px) {
+  .filepick { min-height: 46px; padding: 6px; padding-inline-end: 12px; gap: 9px; }
+  .filepick .filepick__btn { height: 34px; padding: 0 13px; font-size: 12px; }
+  .filepick__name { font-size: 12px; }
+  .field .hint--top { font-size: 11px; line-height: 16px; }
+  [lang="ar"] .field label { font-size: 13px; }
+}
+
+/* ---------- 46.1 قسم التواصل في صفحة العضو ---------- */
+.mcontact {
+  margin-top: 56px; padding: 34px 38px; border-radius: 14px;
+  background: var(--c-grey-bg, #F2F7F4);
+  border-inline-start: 4px solid var(--c-brand-3, #63BD69);
+  display: grid; grid-template-columns: 1fr auto; gap: 30px 44px; align-items: center;
+}
+.mcontact__txt .eyebrow { margin-bottom: 10px; }
+.mcontact__txt h2 {
+  font-family: var(--f-head); font-size: clamp(20px, 2.2vw, 26px);
+  font-weight: 600; letter-spacing: -.3px; margin: 0 0 10px; line-height: 1.25;
+}
+[lang="ar"] .mcontact__txt h2 { letter-spacing: 0; line-height: 1.5; }
+.mcontact__txt p { font-size: 14.5px; line-height: 24px; color: var(--c-text); opacity: .8; margin: 0; max-width: 62ch; }
+[lang="ar"] .mcontact__txt p { font-size: 15px; line-height: 28px; }
+.mcontact__acts { display: grid; gap: 14px; justify-items: start; }
+.mcontact__mail {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-size: 13.5px; font-weight: 600; color: var(--c-green-deep, #015C44);
+  text-decoration: none; direction: ltr;
+}
+.mcontact__mail:hover { text-decoration: underline; }
+@media (max-width: 900px) {
+  .mcontact { grid-template-columns: 1fr; padding: 24px 20px; gap: 20px; margin-top: 40px; }
+  .mcontact__acts { justify-items: stretch; }
+  .mcontact__acts .btn-solid { justify-content: center; }
+  .mcontact__txt p { font-size: 13.5px; line-height: 22px; }
+  [lang="ar"] .mcontact__txt p { font-size: 14px; line-height: 25px; }
+}
+
+/* =======================================================================
+   47. بطاقات المتحالفين — شعار حقيقي + شريط لون مميّز
+   ======================================================================= */
+.member-card__logo {
+  width: 78px; height: 62px; border-radius: 10px; padding: 7px 9px;
+  background: #fff; border: 1px solid var(--c-grey-line);
+  display: grid; place-items: center; overflow: hidden;
+}
+.member-card__logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+/* شريط علوي ملوّن يميّز كل بطاقة */
+.member-card { position: relative; }
+.member-card::before {
+  content: ''; position: absolute; inset-block-start: 0; inset-inline: 0;
+  height: 4px; background: var(--mc, #63BD69);
+  transition: height .3s cubic-bezier(.22,1,.36,1);
+}
+.member-card:hover::before { height: 7px; }
+.member-card--a { --mc: #015C44; }   /* أخضر عميق */
+.member-card--b { --mc: #2FA58C; }   /* تركوازي */
+.member-card--c { --mc: #4689C8; }   /* أزرق */
+.member-card--d { --mc: #7A6BC4; }   /* بنفسجي */
+.member-card--e { --mc: #63BD69; }   /* أخضر فاتح */
+.member-card--f { --mc: #D08A2E; }   /* عنبري */
+/* التصنيف يأخذ نفس اللون */
+.member-card .member-card__cat { color: var(--mc, var(--c-text-soft)); font-weight: 600; opacity: .9; }
+.member-card:hover { border-color: var(--mc, var(--c-grey-line)); }
+
+/* صفحة العضو: شعار كبير */
+.member-head .member-card__logo {
+  width: 132px; height: 104px; padding: 12px 14px; margin: 0; border-radius: 14px;
+}
+.member-head .member-card__logo img { width: 100%; height: 100%; object-fit: contain; }
+
+@media (max-width: 900px) {
+  .member-card__logo { width: 66px; height: 52px; padding: 6px 7px; margin-bottom: 15px; }
+  .member-head .member-card__logo { width: 104px; height: 82px; padding: 10px; }
+}
+
+/* =======================================================================
+   48. صفحة المقال — article.html
+   ======================================================================= */
+.art__hero { position: relative; min-height: 62vh; display: flex; align-items: flex-end; padding-bottom: 58px; overflow: hidden; }
+.art__hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.art__scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(6,35,29,.30) 0%, rgba(6,35,29,.62) 55%, rgba(6,35,29,.86) 100%); }
+.art__hero .wrap { position: relative; z-index: 2; color: #fff; }
+.art__hero .crumbs { color: rgba(255,255,255,.8); margin-bottom: 18px; }
+.art__hero .crumbs a { color: rgba(255,255,255,.8); }
+.art__hero .crumbs a:hover { color: #fff; }
+.art__hero h1 {
+  font-family: var(--f-head); font-size: clamp(28px, 4.4vw, 56px);
+  line-height: 1.1; font-weight: 700; letter-spacing: -1px; color: #fff;
+  max-width: 20ch; margin: 0 0 20px;
+}
+[lang="ar"] .art__hero h1 { letter-spacing: 0; line-height: 1.35; max-width: 24ch; }
+.art__meta { display: flex; align-items: center; gap: 14px; font-size: 13.5px; color: rgba(255,255,255,.82); }
+.art__meta i { width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: .6; }
+[lang="ar"] .art__meta { font-size: 14px; }
+
+.art { background: var(--c-white); }
+.art__body { max-width: 74ch; margin: 66px auto 0; }
+.art__lede { font-size: clamp(18px, 1.9vw, 22px); line-height: 1.62; font-weight: 500; color: var(--c-text); margin: 0 0 40px; }
+[lang="ar"] .art__lede { line-height: 1.9; }
+.art__body h2 {
+  font-family: var(--f-head); font-size: clamp(20px, 2.2vw, 27px);
+  font-weight: 600; letter-spacing: -.3px; margin: 44px 0 14px; line-height: 1.28;
+}
+[lang="ar"] .art__body h2 { letter-spacing: 0; line-height: 1.5; }
+.art__body p { font-size: 16px; line-height: 30px; color: var(--c-text); opacity: .88; margin: 0 0 18px; }
+[lang="ar"] .art__body p { font-size: 16.5px; line-height: 34px; }
+
+.art__quote {
+  margin: 46px 0; padding: 30px 34px; border-radius: 12px;
+  background: var(--c-grey-bg, #F2F7F4);
+  border-inline-start: 4px solid var(--c-brand-3, #63BD69);
+}
+.art__quote blockquote {
+  margin: 0 0 12px; font-family: var(--f-head);
+  font-size: clamp(18px, 2vw, 23px); line-height: 1.5; font-weight: 500; color: var(--c-text);
+}
+[lang="ar"] .art__quote blockquote { line-height: 1.75; }
+.art__quote figcaption { font-size: 13px; color: var(--c-text-soft); font-weight: 600; }
+[lang="ar"] .art__quote figcaption { font-size: 13.5px; }
+
+.art__tags { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 44px; padding-top: 26px; border-top: 1px solid var(--c-grey-line); }
+.art__tag {
+  display: inline-flex; align-items: center; height: 29px; padding: 0 14px; border-radius: 15px;
+  background: var(--c-grey-bg, #F2F7F4); font-size: 12.5px; font-weight: 600; color: var(--c-green-deep, #015C44);
+}
+[lang="ar"] .art__tag { font-size: 13px; }
+.art__nav { display: flex; flex-wrap: wrap; gap: 12px; max-width: 74ch; margin: 52px auto 0; }
+
+/* صفحة استعادة كلمة المرور */
+.page-hero--slim { min-height: auto; padding-block: calc(var(--header-h) + 62px) 54px; background: var(--c-green-deep, #015C44); color: #fff; }
+.page-hero--slim .crumbs, .page-hero--slim .crumbs a { color: rgba(255,255,255,.8); }
+.page-hero--slim h1 { color: #fff; }
+.page-hero--slim .lede { color: rgba(255,255,255,.9); max-width: 58ch; }
+.auth-card {
+  max-width: 520px; margin: 0 auto; padding: 40px 44px; border-radius: 14px;
+  background: #fff; border: 1px solid var(--c-grey-line); box-shadow: 0 6px 30px rgba(11,44,37,.07);
+}
+.auth-alt { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--c-grey-line); font-size: 13.5px; }
+.auth-alt a { color: var(--c-green-deep, #015C44); font-weight: 600; }
+.auth-alt span { opacity: .4; }
+
+@media (max-width: 900px) {
+  .art__hero { min-height: 46vh; padding-bottom: 34px; }
+  .art__hero h1 { font-size: clamp(22px, 6.6vw, 32px); margin-bottom: 14px; }
+  .art__meta { font-size: 12px; gap: 10px; }
+  .art__body { margin-top: 36px; }
+  .art__lede { font-size: 16px; margin-bottom: 26px; }
+  .art__body h2 { margin: 30px 0 10px; }
+  .art__body p { font-size: 14.5px; line-height: 26px; }
+  [lang="ar"] .art__body p { font-size: 15px; line-height: 29px; }
+  .art__quote { padding: 20px 20px; margin: 30px 0; }
+  .art__nav .btn-pill { flex: 1 1 100%; text-align: center; }
+  .auth-card { padding: 26px 20px; }
+}
+/* عنوان وثيقة بلا ملف تحميل — يبقى بنفس مظهر الرابط دون سلوكه */
+.doc__title { font-size: inherit; font-weight: 600; color: var(--c-text); }
+
+/* =======================================================================
+   49. صفحة التواصل — حواف منحنية وترتيب أوضح
+   ======================================================================= */
+.form-shell { gap: 56px; align-items: start; }
+.contact-page .form-shell { grid-template-columns: minmax(0,1fr) 380px; }
+
+/* لوح النموذج */
+.contact-page .form {
+  background: #fff; border: 1px solid var(--c-grey-line); border-radius: 18px;
+  padding: 40px 42px; gap: 24px;
+  box-shadow: 0 10px 40px rgba(11,44,37,.06);
+}
+.contact-page .field input,
+.contact-page .field select,
+.contact-page .field textarea {
+  border-radius: 12px; padding: 13px 16px; font-size: 14.5px;
+  background: var(--c-grey-bg, #F7FAF9); border-color: transparent;
+}
+.contact-page .field input:hover,
+.contact-page .field select:hover,
+.contact-page .field textarea:hover { border-color: var(--c-grey-line); }
+.contact-page .field input:focus,
+.contact-page .field select:focus,
+.contact-page .field textarea:focus {
+  background: #fff; border-color: var(--c-green-deep, #015C44);
+  box-shadow: 0 0 0 3px rgba(99,189,105,.20);
+}
+.contact-page .field textarea { min-height: 132px; }
+.contact-page .field ::placeholder { color: #A8B5B0; opacity: 1; }
+.contact-page .btn-solid { border-radius: 26px; height: 50px; padding: 0 32px; }
+.contact-page .filepick .filepick__btn { background: #fff; }
+.contact-page .check { padding-top: 4px; }
+.contact-page .form-actions { margin-top: 6px; }
+
+/* البطاقة الجانبية */
+.aside-card {
+  border-radius: 18px; padding: 34px 32px;
+  background: var(--c-green-deep, #015C44); color: #fff;
+  position: sticky; inset-block-start: 108px;
+}
+.aside-card h3 { color: #fff; font-size: 21px; font-weight: 600; margin-bottom: 10px; }
+.aside-card__lede { font-size: 14px; line-height: 23px; color: rgba(255,255,255,.78); margin-bottom: 26px; }
+[lang="ar"] .aside-card__lede { font-size: 14.5px; line-height: 26px; }
+.aside-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 20px; }
+.aside-list li { display: flex; gap: 13px; align-items: flex-start; margin: 0; color: #fff; }
+.aside-list__ico {
+  flex: 0 0 auto; width: 34px; height: 34px; border-radius: 10px;
+  display: grid; place-items: center;
+  background: rgba(255,255,255,.12); color: #9FE3B0;
+}
+.aside-list b { display: block; font-size: 12px; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: rgba(255,255,255,.62); margin-bottom: 3px; }
+[lang="ar"] .aside-list b { font-size: 12.5px; letter-spacing: 0; text-transform: none; }
+.aside-list a, .aside-list__txt {
+  font-size: 14.5px; line-height: 21px; color: #fff; font-weight: 500;
+  text-decoration: none; border-bottom: 1px solid rgba(255,255,255,.3); padding-bottom: 1px;
+}
+.aside-list__txt { border-bottom: 0; font-weight: 400; color: rgba(255,255,255,.9); }
+.aside-list a:hover { border-bottom-color: #fff; }
+.aside-card__social { margin-top: 30px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.16); }
+.aside-card__social p { font-size: 12px; letter-spacing: .06em; text-transform: uppercase;
+  color: rgba(255,255,255,.62); margin-bottom: 12px; }
+[lang="ar"] .aside-card__social p { font-size: 12.5px; letter-spacing: 0; text-transform: none; }
+.aside-card__social div { display: flex; gap: 10px; }
+.aside-card__social div a {
+  width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
+  background: rgba(255,255,255,.12); color: #fff; transition: background .25s;
+}
+.aside-card__social div a:hover { background: rgba(255,255,255,.24); }
+
+@media (max-width: 1100px) {
+  .contact-page .form-shell { grid-template-columns: 1fr; gap: 32px; }
+  .aside-card { position: static; }
+}
+@media (max-width: 900px) {
+  .contact-page .form { padding: 24px 20px; border-radius: 14px; gap: 18px; }
+  .contact-page .row-2 { grid-template-columns: 1fr; gap: 18px; }
+  .aside-card { padding: 24px 20px; border-radius: 14px; }
+  .aside-card h3 { font-size: 18px; }
+  .contact-page .btn-solid { width: 100%; justify-content: center; }
+  .contact-page .form-actions { flex-direction: column; align-items: stretch; gap: 14px; }
+}
+
+/* =======================================================================
+   50. حارس الخلفيات — لا يظهر أي شيء من خلف المحتوى
+   -----------------------------------------------------------------------
+   الهيرو الداخلي يحمل صورة مطلقة. أي قسم بعده بلا خلفية صريحة يكشف
+   ما تحته إن اختلّت قاعدة. نجعل الخلفية صريحة لا مفترضة.
+   ======================================================================= */
+main > section:not(.hero):not(.page-hero):not(.ribbon--grey):not(.awards):not(.partners),
+main > .art { background: var(--c-white); }
+.ribbon { background: var(--c-white); }
+.ribbon--grey { background: var(--c-grey-bg); }
+.awards { background: var(--c-text, #0B2C25); }
+.partners { background: var(--c-grey-bg, #F2F7F4); }
+/* ⚠ الفوتر أبيض بالتصميم الأصلي — لا تصبغه، فنصّه داكن ويختفي. */
+
+/* =======================================================================
+   51. لافتة الانضمام بلا صورة — أخضر سادة يُبرز النص
+   ======================================================================= */
+.about-banner--plain { background: var(--c-green-deep, #015C44); }
+.about-banner--plain::after {
+  background: linear-gradient(135deg, #01503B 0%, #016B4F 52%, #01805E 100%);
+}
+
+/* ---------- 51.1 خطوات «ماذا بعد» في بطاقة سجّل اهتمامك ---------- */
+.aside-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; counter-reset: st; }
+.aside-steps li { display: flex; gap: 13px; align-items: flex-start; margin: 0; color: #fff; }
+.aside-steps__no {
+  flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: rgba(255,255,255,.14); color: #9FE3B0;
+  font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700;
+}
+.aside-steps b {
+  display: block; font-size: 12px; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: rgba(255,255,255,.62); margin-bottom: 3px;
+}
+[lang="ar"] .aside-steps b { font-size: 12.5px; letter-spacing: 0; text-transform: none; }
+.aside-steps__txt { font-size: 14px; line-height: 21px; color: rgba(255,255,255,.92); }
+[lang="ar"] .aside-steps__txt { font-size: 14.5px; line-height: 24px; }
+.aside-card__mail {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; min-width: 0;
+  font-size: 14px; font-weight: 500; color: #fff; text-decoration: none;
+  background: rgba(255,255,255,.10); border-radius: 10px;
+  padding: 11px 14px; direction: ltr;
+  transition: background .25s;
+}
+[dir="rtl"] .aside-card__mail { justify-content: flex-end; }
+.aside-card__mail svg { flex: 0 0 auto; color: #9FE3B0; }
+.aside-card__mail span { min-width: 0; overflow-wrap: anywhere; }
+.aside-card__mail:hover { background: rgba(255,255,255,.18); }
+@media (max-width: 900px) {
+  .aside-steps { gap: 14px; }
+  .aside-steps__no { width: 26px; height: 26px; font-size: 12px; }
+  .aside-steps__txt { font-size: 13px; line-height: 19px; }
+  [lang="ar"] .aside-steps__txt { font-size: 13.5px; line-height: 22px; }
+}
+
+/* =======================================================================
+   52. الهيدر بعد ملاحظات العميل — الشعار الرسمي وقائمة الهمبرغر دائمًا
+   -----------------------------------------------------------------------
+   المطلوب: شعار سافتا الأصلي · زر «سجّل اهتمامك» فقط · قائمة ☰ على كل
+   المقاسات تضم ثمانية روابط.
+   ======================================================================= */
+.brand img { width: auto; height: 52px; display: block; }
+.brand { display: inline-flex; align-items: center; }
+
+/* الهمبرغر يظهر على سطح المكتب أيضًا */
+.nav-toggle {
+  display: grid; place-items: center;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(255,255,255,.10); color: inherit;
+  border: 1px solid rgba(255,255,255,.22);
+  cursor: pointer; flex: 0 0 auto;
+  transition: background .25s, border-color .25s;
+}
+.nav-toggle:hover { background: rgba(255,255,255,.20); }
+.nav-toggle:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.site-head.is-stuck .nav-toggle,
+.site-head--solid .nav-toggle { background: rgba(255,255,255,.12); }
+.nav-actions { gap: 12px; }
+
+/* روابط الدرج الثمانية */
+.drawer__nav { display: block; }
+.drawer__nav a { display: block; }
+.drawer a.is-current { color: #9FE3B0; }
+.drawer a.is-current::after {
+  content: ''; display: block; width: 26px; height: 2px;
+  background: #9FE3B0; margin-top: 6px; border-radius: 1px;
+}
+
+@media (max-width: 900px) {
+  .brand img { height: 40px; }
+  .nav-toggle { width: 40px; height: 40px; }
+  .nav-actions { gap: 8px; }
+}
+@media (max-width: 480px) {
+  .brand img { height: 34px; }
+  .drawer a { font-size: 19px; padding: 13px 0; }
+}
+/* شعار الفوتر — النسخة الأفقية بنص داكن (الفوتر أبيض) */
+.site-foot .brand img { height: 44px; width: auto; }
+@media (max-width: 900px) { .site-foot .brand img { height: 36px; } }
+
+/* =======================================================================
+   53. الهيرو بعد ملاحظات المراجعة
+   -----------------------------------------------------------------------
+   الجوال : كل الشرائح في مكان واحد والنص متمركز — لا يقفز عند التبديل.
+   الكمبيوتر: حجم يتدرّج مع عرض الشاشة والنص ملتصق بطرف الصفحة.
+   ======================================================================= */
+
+/* ---------- الكمبيوتر: ترتيب الهيرو الأصلي كما كان ---------- */
+/* لا تجاوزات على .hero__copy .wrap ولا على .hero__panel —
+   يعود للحاوية المركزية 1632 وعرض اللوحة 700px وخط 58px كما في التصميم القديم. */
+
+/* ---------- الجوال ---------- */
+@media (max-width: 900px) {
+  /* مسرح واحد لكل الشرائح: ارتفاع ثابت فلا يقفز النص بين شريحة وأخرى */
+  .hero__copy { padding: calc(var(--header-h) + 26px) 0 30px; }
+  .hero__copy .wrap {
+    min-height: 300px;
+    display: grid; align-content: center; justify-items: stretch;
+  }
+  .hero__panel {
+    grid-area: 1 / 1;
+    width: 100%; max-width: none;
+    margin-inline: 0;
+    text-align: start;                  /* يمين في العربي، يسار في الإنجليزي */
+  }
+  .hero__panel .eyebrow { margin-bottom: 12px; }
+  .hero__panel .h-display { margin-bottom: 20px; text-wrap: balance; }
+  .hero__actions { display: flex; justify-content: flex-start; }
+  .hero__panel .cta-circle { gap: 14px; }
+  /* التبويبات في عمودين × صفّين */
+  .hero__tabs .wrap { grid-template-columns: repeat(2, 1fr); gap: 14px 28px; }
+  .hero-tab span { font-size: 11px; line-height: 15px; }
+}
+@media (max-width: 480px) {
+  .hero__copy .wrap { min-height: 268px; }
+  .hero__tabs .wrap { grid-template-columns: repeat(2, 1fr); gap: 12px 20px; }
+  .hero-tab span { font-size: 11px; }
+  [lang="ar"] .hero-tab span { font-size: 11.5px; }
+}
+}
+
+
+/* =======================================================================
+   55. معاينة: الشعار والهمبرغر في الزاوية بحجم أكبر
+   -----------------------------------------------------------------------
+   الشريط وحده يمتد لعرض الشاشة، والهيرو يبقى على حاويته المركزية.
+   ======================================================================= */
+.navbar .wrap {
+  max-width: none;
+  padding-inline: clamp(24px, 3vw, 64px);
+}
+.brand img { height: clamp(52px, 4.4vw, 86px); width: auto; }
+.nav-toggle {
+  width: clamp(52px, 3.8vw, 68px);
+  height: clamp(52px, 3.8vw, 68px);
+  border-width: 1.5px;
+}
+.nav-toggle svg { width: clamp(26px, 1.9vw, 34px); height: clamp(26px, 1.9vw, 34px); }
+.nav-actions { gap: clamp(12px, 1.2vw, 22px); }
+
+@media (max-width: 900px) {
+  .navbar .wrap { padding-inline: var(--wrap-pad); }
+  .brand img { height: 44px; }
+  .nav-toggle { width: 46px; height: 46px; }
+  .nav-toggle svg { width: 24px; height: 24px; }
+}
+@media (max-width: 480px) {
+  .brand img { height: 38px; }
+  .nav-toggle { width: 42px; height: 42px; }
+}
+
+/* =======================================================================
+   56. معاينة — ملاحظات الجولة الثالثة
+   ======================================================================= */
+
+/* ---------- 56.1 الدرج: 30% من الشاشة لا كامل الشاشة ---------- */
+.drawer {
+  /* الهمبرغر داخل .nav-actions وله margin-inline-start:auto — أي أنه في
+     نهاية السطر: يسار في العربية، يمين في الإنجليزية. الدرج يفتح من نفس
+     الجهة، وهذا يطابق اتجاه الـtransform الأصلي. */
+  inset: 0 0 0 auto;                 /* LTR: يمين — جهة الهمبرغر */
+  width: min(30vw, 420px);
+  min-width: 320px;
+  padding: 96px 40px 40px;
+  box-shadow: 0 0 60px rgba(0,0,0,.42);
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+}
+[dir="rtl"] .drawer { inset: 0 auto 0 0; }   /* RTL: يسار — جهة الهمبرغر */
+.drawer__nav { flex: 1 1 auto; }
+.drawer a { font-size: 17px; padding: 13px 0; }
+.drawer .drawer-cta {
+  margin-top: auto; border: 0; padding: 22px 0 0; display: grid; gap: 11px;
+  border-top: 1px solid rgba(255,255,255,.14);
+}
+.drawer .drawer-cta a {
+  border: 0; border-radius: 100px; height: 46px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14.5px; font-weight: 600; padding: 0;
+}
+.drawer .drawer-cta .is-solid { background: var(--g-brand); color: #06231D; }
+.drawer .drawer-cta .is-ghost { border: 1px solid rgba(255,255,255,.45); }
+/* زر الإغلاق في الزاوية العليا للوحة نفسها */
+.drawer__close { top: 26px; right: auto; left: auto; inset-inline-start: 28px; }
+[dir="rtl"] .drawer__close { inset-inline-start: 28px; }
+/* ستارة خلف الدرج */
+.drawer::before { content: none; }
+body.drawer-open::after {
+  content: ''; position: fixed; inset: 0; z-index: 290;
+  background: rgba(6,35,29,.55); backdrop-filter: blur(2px);
+}
+@media (max-width: 900px) {
+  .drawer { width: min(78vw, 360px); min-width: 0; padding: 84px 26px 32px; }
+  .drawer a { font-size: 17px; }
+}
+
+/* ---------- 56.2 الهيرو: صندوق واحد ثابت لكل الشرائح ----------
+   المشكلة: اللوحات مختلفة الارتفاع، و‎align-items:center‎ يوسّط كلًّا منها
+   داخل الخلية، فيتحرّك النص رأسيًا بين شريحة وأخرى.
+   الحل: صندوق بمقاس ثابت — عرض ثابت، ارتفاع أدنى ثابت، والمحتوى يبدأ
+   من أعلى الصندوق دائمًا. */
+.hero__copy .wrap { justify-items: start; align-items: center; }
+.hero__panel {
+  justify-self: start;
+  width: min(700px, 100%);
+  max-width: none;
+  min-height: 340px;                 /* ارتفاع الصندوق الثابت */
+  display: grid;
+  align-content: start;              /* المحتوى يبدأ من الأعلى دائمًا */
+}
+@media (max-width: 900px) {
+  .hero__copy .wrap { justify-items: stretch; }
+  .hero__panel {
+    justify-self: stretch;
+    width: 100%;
+    max-width: 100%;                 /* العرض الكامل — لا تضييق بوحدة ch */
+    min-height: 236px; align-content: start; justify-items: stretch;
+  }
+}
+@media (max-width: 480px) {
+  .hero__panel { min-height: 208px; max-width: 100%; }
+}
+
+/* ---------- 56.3 الأيقونات: أنزل وأصغر 20% ---------- */
+:root { --head-drop: 0.4in; }   /* ≈38px — فرق بسيط لا يوحي ببداية جديدة */
+.site-head { padding-block-start: var(--head-drop); }
+.site-head.is-stuck, .site-head--solid { padding-block-start: 0; }
+.brand img { height: clamp(63px, 5.25vw, 104px); }        /* +50% */
+.nav-toggle {
+  width: clamp(42px, 3vw, 54px);                          /* 68 → 54 */
+  height: clamp(42px, 3vw, 54px);
+}
+.nav-toggle svg { width: clamp(21px, 1.5vw, 27px); height: clamp(21px, 1.5vw, 27px); }
+@media (max-width: 900px) {
+  :root { --head-drop: 0px; }
+  .brand img {
+    height: 68px;                                   /* 54 → 68 ليُقرأ على الجوال */
+    filter: drop-shadow(0 2px 10px rgba(0,0,0,.55)); /* يفصله عن الخلفية المزدحمة */
+  }
+  .nav-toggle { width: 40px; height: 40px; }
+  .nav-toggle svg { width: 21px; height: 21px; }
+}
+@media (max-width: 480px) {
+  .brand img { height: 62px; }
+}
+
+/* =======================================================================
+   57. حارس التجاوز الأفقي
+   -----------------------------------------------------------------------
+   أي عنصر يتجاوز عرض الشاشة يخلق تمريرًا أفقيًا ويقصّ النص. هذا الحارس
+   يمنع الظاهرة من جذرها بدل ملاحقة كل حالة على حدة.
+   ======================================================================= */
+html, body { max-width: 100%; overflow-x: hidden; }
+@media (max-width: 900px) {
+  .wrap { max-width: 100%; }
+  .hero__panel, .hero__panel * { max-width: 100%; }
+  .h-display, .h-section, .h-intro, .lede { overflow-wrap: break-word; }
+}
+
+/* =======================================================================
+   58. الجوال: الشعار بنسبته الطبيعية · والهيرو في صندوق وسطي ثابت
+   -----------------------------------------------------------------------
+   هذا آخر قسم في الملف عمدًا: يحسم التعارض مع القواعد القديمة الأعلى
+   خصوصية بدل مصارعة الترتيب.
+
+   ١ · الشعار: قواعد قديمة كانت تفرض 34×34 (مربّع) على شعار نسبته 295×173
+       فيظهر مضغوطًا. هنا العرض تلقائي والارتفاع وحده هو المتحكّم.
+   ٢ · الهيرو: الشرائح الثلاث تشغل الخلية نفسها ‎grid-area: 1/1‎ وبعرض
+       كامل ونص متوسّط — فلا يتنقّل الكلام يمينًا ثم وسطًا ثم يسارًا،
+       ولا يتجاوز الشاشة مهما طال.
+   ======================================================================= */
+@media (max-width: 900px) {
+
+  /* ---------- ١ · الشعار ---------- */
+  .site-head .brand img,
+  .site-foot .brand img,
+  .brand img {
+    width: auto;
+    height: 66px;
+    max-width: 48vw;
+    object-fit: contain;          /* لا تشويه مهما ضاقت المساحة */
+    flex: 0 0 auto;               /* لا ينكمش داخل شريط flex */
+  }
+  .site-head .brand { flex: 0 0 auto; min-width: 0; margin-inline-end: auto; }
+  .site-foot .brand img { height: 44px; }
+
+  /* ---------- ٢ · الهيرو ---------- */
+  .hero__copy .wrap {
+    width: 100%; max-width: 100%;
+    display: grid;
+    justify-items: stretch;
+    align-content: center;
+  }
+  .hero__panel {
+    grid-area: 1 / 1;                   /* الشرائح الثلاث في الخلية نفسها */
+    justify-self: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;         /* الشاشة هي الحدّ — لا وحدة ch */
+    margin-inline: 0 !important;
+    text-align: start !important;       /* يمين في العربي، يسار في الإنجليزي */
+    align-content: start;
+    justify-items: stretch;             /* الأبناء بعرض الصندوق فلا يتمدّدون */
+  }
+  .hero__panel > * {
+    max-width: 100% !important;
+    width: auto;
+    margin-inline: 0;
+    min-width: 0;                       /* يسمح للنص بالانكسار داخل الشبكة */
+    overflow-wrap: break-word;
+  }
+  .hero__panel .h-display,
+  .hero__panel .lede,
+  .hero__panel .eyebrow {
+    text-align: start !important;
+    max-width: 100% !important;
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;                    /* لا تقطيع بشرطات في العناوين */
+  }
+  .hero__actions,
+  .hero__panel .cta-circle { justify-content: flex-start; }
+}
+
+@media (max-width: 480px) {
+  .site-head .brand img,
+  .brand img { height: 58px; max-width: 54vw; }
+  .site-foot .brand img { height: 38px; }
+}
+
+/* =======================================================================
+   59. الهيرو: الصندوق يأخذ عرض الحاوية كاملًا
+   -----------------------------------------------------------------------
+   كان الصندوق 700px على الكمبيوتر و«عرض الشاشة» على الجوال، لكن الشبكة
+   كانت تُقلّصه إلى عمود ضيّق فتنكسر الكلمات بشرطات (member-ship).
+
+   الحل: الصندوق = عرض الحاوية كاملًا في الحالتين، بموضع واحد ثابت
+   للشرائح الثلاث، وبلا أي تقطيع للكلمات.
+   ======================================================================= */
+
+/* -----------------------------------------------------------------------
+   القاعدة النهائية للهيرو — هذه الكتلة هي المرجع، وتأتي بعد كل ما سبقها.
+   المبدأ واحد في اللغتين: النص ملتصق ببداية السطر (يمين في العربي، يسار في
+   الإنجليزي)، بعرض مريح، والزر في سطر واحد، والتبويبات في عمودين.
+   ----------------------------------------------------------------------- */
+
+/* ---------- الكمبيوتر ---------- */
+@media (min-width: 901px) {
+  .hero__copy .wrap {
+    display: grid;
+    justify-items: stretch;          /* لا تُقلّص اللوحة إلى محتواها */
+    align-items: center;
+  }
+  .hero__panel {
+    grid-area: 1 / 1;
+    justify-self: stretch !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 340px;
+    display: block;                  /* لا شبكة داخلية تُضيّق الأبناء */
+    text-align: start !important;
+    margin-inline: 0 !important;
+  }
+  .hero__panel .eyebrow,
+  .hero__panel .h-display,
+  .hero__panel .lede,
+  .hero__panel .hero__actions { text-align: start !important; margin-inline: 0 !important; }
+  .hero__panel .h-display {
+    max-width: 17ch;                 /* سطران أو ثلاثة — لا عمود ضيّق */
+    margin-inline-end: auto;
+  }
+  [lang="ar"] .hero__panel .h-display { max-width: 20ch; }
+  .hero__panel .eyebrow,
+  .hero__panel .lede { max-width: 46ch; }
+  /* التبويبات: ثلاثة أعمدة بعدد الشرائح الثلاث */
+  .hero__tabs .wrap { grid-template-columns: repeat(3, 1fr); gap: 24px; }
+}
+
+/* ---------- الجوال ---------- */
+@media (max-width: 900px) {
+  .hero__copy .wrap {
+    justify-items: stretch !important;
+  }
+  .hero__panel {
+    display: block !important;       /* الشبكة كانت تُقلّص النص لعمود ضيّق */
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 236px;               /* صندوق ثابت فلا يقفز النص بين الشرائح */
+    text-align: start !important;    /* لا توسيط — النص يبدأ من طرف الصفحة */
+    margin-inline: 0 !important;
+  }
+  .hero__panel > * {
+    width: auto !important;
+    max-width: 100% !important;
+    margin-inline: 0 !important;
+  }
+  .hero__panel .eyebrow,
+  .hero__panel .h-display,
+  .hero__panel .lede { text-align: start !important; }
+  .hero__panel .h-display {
+    max-width: 100% !important;      /* يستخدم عرض العمود كاملًا */
+    hyphens: none;
+    word-break: normal;
+    overflow-wrap: normal;
+    text-wrap: balance;              /* أسطر متقاربة الطول */
+  }
+  /* الزر: النص ثم الدائرة، في سطر واحد، ملتصق بالبداية */
+  .hero__panel .hero__actions {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    justify-content: flex-start !important;
+    gap: 14px;
+  }
+  .hero__panel .cta-circle {
+    flex-direction: row !important;  /* النص أولًا ثم الدائرة — ينعكس تلقائيًا في RTL */
+    justify-content: flex-start !important;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: nowrap;
+  }
+  .hero__panel .cta-circle > span:not(.circ) { white-space: nowrap; }
+  .hero__panel .cta-circle .circ { flex: 0 0 auto; }
+
+  /* التبويبات: عمودان × صفّان، كل تبويب بمحاذاة بدايته */
+  .hero__tabs .wrap {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 14px 28px !important;
+    overflow: visible !important;
+  }
+  .hero-tab {
+    flex: initial !important;
+    min-width: 0;
+    text-align: start;
+    padding-bottom: 10px;
+  }
+  .hero-tab span {
+    display: block;
+    white-space: normal;             /* النص العربي الطويل يلتفّ بدل أن يُقصّ */
+    overflow: visible;
+    text-overflow: clip;
+  }
+}
+@media (max-width: 480px) { .hero__panel { min-height: 208px; } }
+
+/* =======================================================================
+   60. الهيرو — إصلاح جذري لموضع النص
+   -----------------------------------------------------------------------
+   سببان اثنان كانا وراء «النص يتحرّك ويُقصّ من الأطراف»:
+
+   ١) العنصر في الصفحة مكتوب هكذا:  <div class="wrap hero__copy">
+      أي أن الصنفين على العنصر نفسه. لذلك كل قاعدة كُتبت بالشكل
+      ".hero__copy .wrap" تبحث عن ‎.wrap‎ *داخل* ‎.hero__copy‎ — وهو غير
+      موجود — فلم تُطبَّق أيٌّ منها إطلاقًا (عشر قواعد ميتة).
+
+   ٢) ‎.hero__copy‎ كانت ‎display:flex‎، والشرائح الثلاث أبناء مباشرون لها.
+      فاصطفّت الثلاث *جنبًا إلى جنب*، وأخذت كل واحدة ثلث العرض تقريبًا:
+         الشريحة ٠ في الثلث الأول · ١ في الأوسط · ٢ في الأخير
+      ومن هنا: عمود نصّ ضيّق، وقفزة أفقية عند كل تبديل، ونصّ مقطوع عند
+      حافة الشاشة. أما ‎grid-area:1/1‎ فلا أثر له داخل حاوية flex.
+
+   الحل: شبكة بخلية واحدة — الشرائح الثلاث في الموضع نفسه تمامًا، بعرض
+   الحاوية كاملًا، فلا يتحرّك شيء ولا يُقصّ؛ يتغيّر النص فقط.
+   ======================================================================= */
+
+.hero__copy {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;  /* عمود واحد يقبل الانكماش */
+  grid-template-rows: auto !important;
+  align-content: center;
+  justify-items: stretch !important;
+}
+
+.hero__panel {
+  grid-area: 1 / 1 !important;      /* الشرائح الثلاث فوق بعضها في الخلية ذاتها */
+  justify-self: stretch !important;
+  align-self: start;
+  width: 100% !important;
+  min-width: 0 !important;          /* يسمح للنص بالالتفاف بدل تمديد الخلية */
+  max-width: 100% !important;
+  margin-inline: 0 !important;
+}
+
+/* النص نفسه: يبدأ من طرف الحاوية ويستخدم عرضها، ولا يخرج عنها أبدًا */
+.hero__panel > * { max-width: 100% !important; min-width: 0; }
+.hero__panel .eyebrow,
+.hero__panel .h-display,
+.hero__panel .lede {
+  text-align: start !important;
+  margin-inline: 0 !important;
+  overflow-wrap: break-word;
+  hyphens: none;
+}
+
+/* عرض قراءة مريح — سطران إلى ثلاثة، لا عمود ضيّق ولا سطر ممتد */
+@media (min-width: 901px) {
+  .hero__panel .h-display { max-width: 17ch !important; }
+  [lang="ar"] .hero__panel .h-display { max-width: 20ch !important; }
+}
+@media (max-width: 900px) {
+  .hero__panel .h-display { max-width: 100% !important; }
+}
+
+/* ارتفاع ثابت للصندوق فلا يقفز النص رأسيًا بين شريحة وأخرى */
+@media (min-width: 901px) { .hero__panel { min-height: 340px; } }
+@media (max-width: 900px) { .hero__panel { min-height: 236px; } }
+@media (max-width: 480px) { .hero__panel { min-height: 208px; } }
+
+/* =======================================================================
+   ★ تعديل ١+٢ — شريط تبويبات الهيرو
+   -----------------------------------------------------------------------
+   المشكلة: ثماني قواعد متعارضة لـ‎.hero__tabs .wrap‎ على الجوال، آخرها
+   يفرض عمودين، فتنزل التبويبة الثالثة إلى سطر ثانٍ.
+
+   الحل: كتلة واحدة أخيرة تحسم الأمر — ثلاثة أعمدة على سطر واحد كما في
+   الكمبيوتر، ولون واحد للخط هو الأخضر الغامق من الهوية.
+   ======================================================================= */
+
+/* ---------- ١ · سطر واحد: ثلاث تبويبات جنبًا إلى جنب ---------- */
+@media (max-width: 900px) {
+  .hero__tabs .wrap {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0 10px !important;
+    overflow: visible !important;
+    margin-inline: 0 !important;
+  }
+  .hero-tab {
+    min-width: 0;
+    padding-bottom: 10px;
+    text-align: center !important;
+  }
+  .hero-tab span {
+    display: block;
+    white-space: nowrap !important;      /* لا التفاف — سطر واحد دائمًا */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+    font-size: clamp(8.5px, 2.7vw, 11px) !important;
+    letter-spacing: .3px !important;
+    line-height: 1.3 !important;
+  }
+  [lang="ar"] .hero-tab span {
+    font-size: clamp(9.5px, 3vw, 12px) !important;
+    letter-spacing: 0 !important;
+  }
+}
+@media (max-width: 480px) {
+  .hero__tabs .wrap { gap: 0 8px !important; }
+}
+
+/* ---------- ٢ · لون واحد: الأخضر الغامق من الهوية ---------- */
+/* كان تدرّجًا أخضر→أزرق (‎--g-brand‎)، والآن لون صلب واحد */
+.hero-tab i { background: var(--c-green-deep) !important; }
+
+/* =======================================================================
+   ★ تعديل ٣ — إبعاد نص الهيرو عن طرف الشاشة (الجوال)
+   -----------------------------------------------------------------------
+   الحاوية تعطي 16px فقط، فيبدو النص ملتصقًا بالحافة.
+   نضيف 14px (≈ 0.15in) فيصير مجموع الإبعاد 30px — حركة أقل من ربع إنش.
+   خاصية منطقية: في العربية تبعده عن اليمين، وفي الإنجليزية عن اليسار.
+   ======================================================================= */
+@media (max-width: 900px) {
+  .hero__panel { padding-inline: 14px !important; }
+}
+
+/* =======================================================================
+   ★ تعديل ٤ — قسم «تعرّف على التحالف» على الكمبيوتر بمقاس الجوال
+   -----------------------------------------------------------------------
+   كانت البطاقتان تمتدّان بعرض الحاوية كاملًا بنسبة طولية (361/545)،
+   فتبدوان ضخمتين. الآن بطاقة صغيرة مربّعة النزعة بنفس مقاييس الجوال:
+   نسبة 16/10 · عرض ثابت 360px · العنوان يلتفّ سطرين · محاذاة البداية.
+   ======================================================================= */
+@media (min-width: 901px) {
+  .discover .card-row {
+    justify-content: flex-start;
+    gap: 20px;
+    margin-inline: 0;                 /* ألغِ التمدّد خارج الحاوية */
+    margin-top: 40px !important;
+  }
+  .discover .tile {
+    flex: 0 0 360px !important;
+    width: 360px;
+    max-width: 360px;
+    aspect-ratio: 16 / 10;            /* نفس نسبة الجوال */
+    margin-top: 0 !important;         /* ألغِ إزاحة البطاقتين 3 و4 */
+  }
+  .discover .tile__txt { padding: 18px !important; }
+  .discover .tile__txt .eyebrow {
+    font-size: 10px; letter-spacing: 1px; margin-bottom: 6px;
+  }
+  .discover .tile__txt h3 {
+    font-size: 15px !important;
+    line-height: 1.38 !important;
+    max-width: 24ch;                  /* يلتفّ سطرين كما في الجوال */
+  }
+  [lang="ar"] .discover .tile__txt h3 { font-size: 15.5px !important; line-height: 1.6 !important; }
+  .discover .tile__arrow { width: 34px; height: 34px; }
+  .discover .tile__arrow svg { width: 13px; height: 13px; }
+}
+
+/* =======================================================================
+   ★ تعديل ٥ — مضاعفة حجم بطاقتَي «تعرّف على التحالف» (الكمبيوتر فقط)
+   -----------------------------------------------------------------------
+   360px كانت صغيرة على شاشات الكمبيوتر. المضاعفة إلى 720px تملأ العرض
+   بتناسب مريح (بطاقتان × 720 + فجوة 20 = 1460 داخل حاوية 1632).
+   النسبة 16/10 والنصوص تكبر معها. نسخة الجوال لم تُمَس إطلاقًا.
+   ======================================================================= */
+@media (min-width: 901px) {
+  .discover .tile {
+    flex: 0 0 720px !important;
+    width: 720px;
+    max-width: 720px;
+  }
+  .discover .tile__txt { padding: 30px !important; }
+  .discover .tile__txt .eyebrow { font-size: 11.5px; letter-spacing: 1.2px; margin-bottom: 10px; }
+  .discover .tile__txt h3 {
+    font-size: 24px !important;
+    line-height: 1.34 !important;
+    max-width: 26ch;
+  }
+  [lang="ar"] .discover .tile__txt h3 { font-size: 25px !important; line-height: 1.55 !important; }
+  .discover .tile__arrow { width: 46px; height: 46px; }
+  .discover .tile__arrow svg { width: 17px; height: 17px; }
+}
+/* شاشات أضيق من مجموع البطاقتين: تتقلّصان بالتساوي بلا تجاوز */
+@media (min-width: 901px) and (max-width: 1520px) {
+  .discover .tile { flex: 1 1 0 !important; width: auto; max-width: none; }
+}
+
+/* =======================================================================
+   ★ تعديل ٦ — قسم «التحديات»: شكل واحد موحّد لكل البطاقات
+   -----------------------------------------------------------------------
+   كان التصميم متعرّجًا: البطاقة الفردية بارتفاع 320px والزوجية 228px
+   مع إزاحة 46px للأسفل — فتبدو الخمس مختلفة الأحجام والمواضع.
+
+   الآن: مستطيل عرضي واحد بنسبة 16/11 لكل البطاقات، بلا إزاحة ولا فروق.
+   ======================================================================= */
+.challenges .slide:nth-child(odd)  img,
+.challenges .slide:nth-child(even) img {
+  height: auto !important;
+  margin-top: 0 !important;
+}
+.challenges .slide figure {
+  aspect-ratio: 16 / 11;              /* المستطيل العرضي المعتمد */
+  overflow: hidden;
+}
+.challenges .slide figure img {
+  width: 100%;
+  height: 100% !important;
+  object-fit: cover;
+  display: block;
+}
+/* المحاذاة: كل البطاقات تبدأ من نفس الخط العلوي */
+.challenges .slider__track { align-items: flex-start; }
+.challenges .slide { align-self: flex-start; }
+
+/* =======================================================================
+   ★ تعديل ٧ — «جوائز التميّز» بحالة قريبًا
+   -----------------------------------------------------------------------
+   القسم يُغشّى بطبقة بيضاء شفّافة فيبهت محتواه، ويُشدّ عليه شريط أخضر
+   مائل من الزاوية العلوية اليمنى إلى السفلية اليسرى — كشريط «ممنوع
+   الاقتراب» — مكتوب عليه Soon · قريبًا بالتناوب.
+   ورابط القسم في القائمة الجانبية مُعطّل ومكتوب جنبه «قريبًا».
+   ======================================================================= */
+
+/* ---------- ١ · تغشية القسم ---------- */
+.awards--soon .awards__panel {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.awards--soon .awards__panel > *:not(.soon-veil) {
+  filter: blur(1.4px) saturate(.55);
+  opacity: .42;
+  pointer-events: none;               /* لا ضغط على أي شيء بالداخل */
+  user-select: none;
+}
+.soon-veil {
+  position: absolute; inset: 0; z-index: 5;
+  display: grid;
+  grid-template: 1fr / 1fr;           /* خلية واحدة يقع الشريط في مركزها */
+  place-items: center;
+  background: rgba(255,255,255,.30);
+  backdrop-filter: blur(1px);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* ---------- ٢ · الشريط الأخضر المائل ---------- */
+.soon-tape {
+  --tape-h: 62px;
+  /* التوسيط بالشبكة لا بالتموضع المطلق: لا يتأثّر باتجاه اللغة إطلاقًا.
+     (‎inset-inline-start‎ مع ‎translate‎ كان يدفع الشريط خارج الإطار في RTL) */
+  grid-area: 1 / 1;
+  justify-self: center;
+  align-self: center;
+  width: 150%;
+  height: var(--tape-h);
+  /* من الزاوية العلوية اليمنى إلى السفلية اليسرى */
+  transform: rotate(-18deg);
+  display: flex; align-items: center; justify-content: center; gap: 26px;
+  background: linear-gradient(90deg,
+              var(--c-green-deep) 0%, #0A7A5A 50%, var(--c-green-deep) 100%);
+  border-block: 3px solid rgba(255,255,255,.85);
+  box-shadow: 0 10px 34px rgba(0,0,0,.34);
+  direction: ltr;                     /* ترتيب الكلمات ثابت في اللغتين */
+}
+
+.soon-tape b {
+  font: 800 clamp(15px, 2.1vw, 26px)/1 var(--f-head, system-ui), sans-serif;
+  letter-spacing: clamp(2px, .5vw, 6px);
+  text-transform: uppercase;
+  color: #fff;
+  white-space: nowrap;
+}
+.soon-tape i {
+  font-style: normal;
+  color: var(--c-green-light);
+  font-size: clamp(14px, 2vw, 24px);
+  opacity: .9;
+}
+
+@media (max-width: 900px) {
+  .soon-tape { --tape-h: 58px; width: 190%; transform: rotate(-30deg); gap: 18px; }
+  .soon-tape b { letter-spacing: 2px; }
+  .soon-tape b:nth-of-type(n+3) { display: none; }   /* تكرار أقل على الضيق */
+  .soon-tape i:nth-of-type(n+2)  { display: none; }
+  .awards--soon .awards__panel > *:not(.soon-veil) { filter: blur(1.1px) saturate(.6); }
+}
+@media (max-width: 480px) {
+  .soon-tape { --tape-h: 52px; width: 215%; transform: rotate(-34deg); }
+  .soon-tape b { font-size: 14px; letter-spacing: 1.4px; }
+}
+
+/* ---------- ٣ · رابط القائمة الجانبية معطّل ---------- */
+.drawer__nav a.is-soon,
+.nav-links a.is-soon {
+  opacity: .42;
+  pointer-events: none;
+  cursor: not-allowed;
+  display: inline-flex; align-items: center; gap: 10px;
+}
+.soon-tag {
+  font-style: normal;
+  font: 700 10.5px/1 var(--f-body, system-ui), sans-serif;
+  letter-spacing: .8px; text-transform: uppercase;
+  color: var(--c-green-light);
+  border: 1px solid currentColor;
+  border-radius: 99px;
+  padding: 3px 9px;
+  opacity: 1;
+  white-space: nowrap;
+}
+@media (max-width: 900px) { .soon-tag { font-size: 10px; padding: 2px 8px; } }
+
+/* ---------- الجوال: شريط واحد أسمك وأحدّ زاوية بدل شريطين ---------- */
+/* الشريطان كانا يزدحمان في مساحة ضيّقة — واحد أوضح وأنظف */
+.soon-tape--2 { display: none !important; }
+
+/* =======================================================================
+   ★ تعديل ٨ — الشريط العلوي: ثابت دائمًا والشعار داخل حزامه
+   -----------------------------------------------------------------------
+   المشكلتان:
+   ١) الشريط كان ‎position: absolute‎ ولا يصير ‎fixed‎ إلا بعد التمرير،
+      فيختفي عند أعلى الصفحة.
+   ٢) الشعار ‎clamp(63px, 5.25vw, 104px)‎ أطول من الشريط (88px)، فيخرج
+      من فوقه ويبدو مقطوعًا.
+
+   الحل: شريط مثبّت وصلب من أول لحظة، وارتفاع الشعار مشتقّ من ارتفاع
+   الشريط نفسه فلا يتجاوزه مهما اتّسعت الشاشة.
+   ======================================================================= */
+
+:root { --head-drop: 0px; }
+
+.site-head,
+.site-head--solid {
+  position: fixed !important;
+  inset: 0 0 auto 0;
+  z-index: 300;
+  background: var(--c-header-dark) !important;
+  padding-block-start: 0 !important;
+  border-block-end: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 2px 18px rgba(0,0,0,.22);
+}
+
+.navbar { height: var(--header-h); }
+.navbar .wrap {
+  height: 100%;
+  display: flex;
+  align-items: center;                /* كل شيء متمركز رأسيًا داخل الحزام */
+}
+
+/* الشعار: ارتفاعه مشتقّ من الشريط — لا يخرج منه أبدًا */
+.brand { height: 100%; display: inline-flex; align-items: center; }
+.brand img,
+.site-head .brand img {
+  height: min(58px, calc(var(--header-h) - 26px)) !important;
+  width: auto !important;
+  max-height: calc(var(--header-h) - 20px);
+  object-fit: contain;
+  flex: 0 0 auto;
+  display: block;
+  filter: none;                       /* لا ظل — الخلفية صلبة أصلًا */
+}
+
+/* أزرار الجهة المقابلة متمركزة ومتباعدة بانتظام */
+.nav-actions { display: flex; align-items: center; gap: 14px; }
+.nav-toggle  { flex: 0 0 auto; }
+
+@media (max-width: 900px) {
+  :root { --header-h: 68px; }
+  .navbar { height: var(--header-h); }
+  .brand img,
+  .site-head .brand img { height: min(46px, calc(var(--header-h) - 22px)) !important; }
+  .nav-actions { gap: 10px; }
+}
+@media (max-width: 480px) {
+  :root { --header-h: 62px; }
+  .brand img,
+  .site-head .brand img { height: 40px !important; }
+  .nav-actions { gap: 8px; }
+}
+
+/* صفحة المقال: غلافها لم يكن يحسب مساحة الشريط */
+.art__hero { padding-block-start: calc(var(--header-h) + 20px); }
+
+/* =======================================================================
+   ★ تعديل ٩ — إخفاء عناوين الشرائح أعلى الهيرو
+   -----------------------------------------------------------------------
+   «رؤى سافتا · الشراكات · الإعلانات» تُخفى من أعلى الهيرو وتبقى في
+   الشريط السفلي وحده.
+
+   مهم: ‎visibility: hidden‎ لا ‎display: none‎ — فالعنصر يبقى شاغلًا
+   مكانه بالضبط، ولا يتحرّك العنوان ولا الزر ولا أي شيء تحته بمقدار
+   بكسل واحد. المكان يبقى فارغًا كما طُلب.
+   ======================================================================= */
+.hero__panel > .eyebrow--light {
+  visibility: hidden !important;
+}
+
+/* =======================================================================
+   ★ تعديل ١٠ — بطاقة مجموعة العمل: صورة · اسم · نبذة
+   -----------------------------------------------------------------------
+   حُذفت من البطاقة: الرقم · تصنيف «مجموعة عمل» · الجهة القائدة ·
+   سهم «التفاصيل». ولم يعد للبطاقة رابط لأنه لم يبقَ ما يُفتح.
+   ======================================================================= */
+#groupGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 34px 24px;
+  margin-top: 44px;
+}
+.wg-item { min-width: 0; }
+.wg-item__media {
+  margin: 0 0 18px;
+  aspect-ratio: 16 / 10;              /* نفس نسبة بطاقات الموقع */
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--c-grey-bg, #F2F7F4);
+}
+.wg-item__media img {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+  transition: transform .8s cubic-bezier(.22,1,.36,1);
+}
+.wg-item:hover .wg-item__media img { transform: scale(1.04); }
+
+/* ★ لوحة توضيحية بديلة عن الصورة الوهمية — أيقونة الموضوع + رقم المجموعة */
+.wg-item__media--art {
+  position: relative;
+  display: grid; place-items: center;
+  color: rgba(255,255,255,.92);
+  isolation: isolate;
+}
+.wg-item__media--art::after {           /* لمسة ضوء ناعمة في الزاوية */
+  content: ""; position: absolute; inset: 0; z-index: 0;
+  background: radial-gradient(120% 90% at 82% 12%, rgba(255,255,255,.18), transparent 55%);
+}
+.wg-item__icon {
+  position: relative; z-index: 1;
+  width: 44%; max-width: 96px; height: auto;
+  opacity: .96;
+  transition: transform .8s cubic-bezier(.22,1,.36,1);
+}
+.wg-item:hover .wg-item__icon { transform: scale(1.06); }
+.wg-item__no {
+  position: absolute; z-index: 1;
+  inset-block-start: 12px; inset-inline-start: 14px;
+  font-size: 13px; font-weight: 700; letter-spacing: .12em;
+  color: rgba(255,255,255,.72);
+  font-variant-numeric: tabular-nums;
+}
+.wg-item__media--art::before {          /* خط سفلي رفيع بلون الأخضر الفاتح */
+  content: ""; position: absolute; z-index: 1;
+  inset-inline: 0; inset-block-end: 0; height: 4px;
+  background: var(--c-green-light, #63BD69);
+}
+.wg-item__name {
+  font-size: 19px; line-height: 1.4; font-weight: 600;
+  margin: 0 0 10px; color: var(--c-text, #0B2C25);
+}
+.wg-item__desc {
+  font-size: 14.5px; line-height: 1.65;
+  color: var(--c-text-soft, #4B5A55); margin: 0;
+}
+[lang="ar"] .wg-item__name { font-size: 20px; line-height: 1.55; }
+[lang="ar"] .wg-item__desc { font-size: 15px; line-height: 1.8; }
+
+@media (max-width: 1150px) { #groupGrid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 700px) {
+  #groupGrid { grid-template-columns: 1fr; gap: 28px; margin-top: 30px; }
+  .wg-item__name { font-size: 17px; }
+  .wg-item__desc { font-size: 14px; }
+  [lang="ar"] .wg-item__name { font-size: 18px; }
+  [lang="ar"] .wg-item__desc { font-size: 14.5px; }
+}
+
+/* =======================================================================
+   ★ تعديل ١١ — «نظرة عامة» بحالة قريبًا
+   -----------------------------------------------------------------------
+   نفس معالجة قسم الجوائز: تغشية بيضاء + ضباب خفيف + شريط أخضر مائل.
+   الفرق أن الخلفية هنا فاتحة، فالتغشية أقوى قليلًا ليظهر التمييز.
+   الصفحة نفسها تبقى ظاهرة كاملة — القسم وحده هو المُعطَّل.
+   ======================================================================= */
+.glance--soon .glance__panel {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  padding-block: 22px;
+}
+.glance--soon .glance__panel > *:not(.soon-veil) {
+  filter: blur(1.6px) saturate(.45);
+  opacity: .34;
+  pointer-events: none;
+  user-select: none;
+}
+.glance--soon .soon-veil {
+  background: rgba(255,255,255,.46);   /* أقوى: الخلفية هنا فاتحة */
+}
+.glance--soon .soon-tape {
+  --tape-h: 50px;
+  rotate: 0deg;
+  transform: rotate(-9deg);            /* القسم عريض ومنخفض: زاوية أقل */
+  width: 130%;
+}
+@media (max-width: 900px) {
+  .glance--soon .soon-tape { --tape-h: 44px; transform: rotate(-16deg); width: 165%; }
+  .glance--soon .glance__panel > *:not(.soon-veil) { filter: blur(1.2px) saturate(.5); }
+}
+@media (max-width: 480px) {
+  .glance--soon .soon-tape { --tape-h: 40px; transform: rotate(-22deg); width: 195%; }
+}
+
+/* =======================================================================
+   ★ تعديل ١٢ — مشغّل الفيديو بالضغط (صفحة عن التحالف)
+   -----------------------------------------------------------------------
+   المقطع 4.7 ميجابايت و20 ثانية — تشغيله تلقائيًا يُثقل الصفحة على
+   الجوال وشبكات البيانات. فالصفحة تُحمّل صورة غلاف 100KB فقط، ولا
+   يُطلب الفيديو من الخادم إلا بعد ضغط الزائر.
+   ======================================================================= */
+.vplay {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--c-green-deep, #015C44);
+  isolation: isolate;
+}
+.vplay__poster,
+.vplay__video {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+.vplay__video { z-index: 3; background: #000; }
+.vplay::after {
+  content: ''; position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(180deg, rgba(1,44,33,.10) 0%, rgba(1,44,33,.52) 100%);
+  transition: opacity .3s;
+}
+.vplay.is-playing::after,
+.vplay.is-playing .vplay__poster,
+.vplay.is-playing .vplay__btn,
+.vplay.is-playing .vplay__meta { opacity: 0; pointer-events: none; }
+
+/* الزر */
+.vplay__btn {
+  position: absolute; inset-block-start: 50%; inset-inline-start: 50%;
+  transform: translate(-50%, -50%); z-index: 2;
+  display: inline-flex; align-items: center; gap: 11px;
+  height: 54px; padding: 0 26px 0 22px;
+  border: 0; border-radius: 99px; cursor: pointer;
+  background: rgba(255,255,255,.94);
+  color: var(--c-green-deep, #015C44);
+  font: 700 14.5px/1 var(--f-body, system-ui), sans-serif;
+  box-shadow: 0 10px 34px rgba(0,0,0,.32);
+  transition: transform .22s cubic-bezier(.22,1,.36,1), background .22s;
+}
+[dir="rtl"] .vplay__btn { padding: 0 22px 0 26px; }
+[dir="rtl"] .vplay__btn svg { transform: scaleX(-1); }
+.vplay__btn:hover { background: #fff; transform: translate(-50%, -50%) scale(1.05); }
+.vplay__btn:active { transform: translate(-50%, -50%) scale(.98); }
+
+/* سطر المدة */
+.vplay__meta {
+  position: absolute; z-index: 2;
+  inset-block-end: 16px; inset-inline-start: 18px;
+  font: 600 11.5px/1 var(--f-body, system-ui), sans-serif;
+  letter-spacing: .6px; color: rgba(255,255,255,.9);
+  background: rgba(0,0,0,.32); border-radius: 99px; padding: 6px 12px;
+  backdrop-filter: blur(3px);
+}
+
+@media (max-width: 900px) {
+  .vplay__btn { height: 46px; padding: 0 20px 0 17px; font-size: 13px; gap: 9px; }
+  .vplay__btn svg { width: 22px; height: 22px; }
+  .vplay__meta { font-size: 10.5px; inset-block-end: 12px; inset-inline-start: 12px; }
+}
+@media (max-width: 480px) {
+  .vplay__btn span { display: none; }        /* أيقونة فقط على الضيق */
+  .vplay__btn { width: 56px; height: 56px; padding: 0; justify-content: center; }
+  [dir="rtl"] .vplay__btn { padding: 0; }
+}
+
+/* =======================================================================
+   ★ تعديل ١٣ — بطاقة المتحالف: شعار كبير متوسّط والاسم تحته
+   -----------------------------------------------------------------------
+   حُذف من الصفحة: زر «انضم كعضو» · شرائح التصنيف · خريطة المتحالفين
+   ووسيلة إيضاحها. وحُذف من البطاقة: تصنيف القطاع · النبذة · «عرض الملف».
+   ======================================================================= */
+#memberGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+  margin-top: 40px;
+}
+.mcard {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  min-height: 0 !important;
+  padding: 38px 24px 32px !important;
+  text-align: center;
+  background: #fff;
+  border: 1px solid var(--c-line, #E2E8E5);
+  border-radius: 6px;
+  transition: border-color .25s, box-shadow .25s, transform .25s;
+}
+.mcard:hover {
+  border-color: var(--c-green-light, #63BD69);
+  box-shadow: 0 10px 30px rgba(1,92,68,.10);
+  transform: translateY(-3px);
+}
+/* الشعار — أكبر ومتوسّط */
+.mcard .member-card__logo {
+  position: static !important;
+  width: 132px !important;
+  height: 88px !important;
+  display: grid !important;
+  place-items: center;
+  padding: 0 !important;
+  background: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.mcard .member-card__logo img {
+  max-width: 100%; max-height: 100%;
+  width: auto; height: auto;
+  object-fit: contain; display: block;
+}
+/* الاسم — واضح تحت الشعار */
+.mcard h3 {
+  margin: 0 !important;
+  font-size: 15.5px; line-height: 1.5; font-weight: 600;
+  color: var(--c-text, #0B2C25);
+  text-align: center;
+}
+[lang="ar"] .mcard h3 { font-size: 16px; line-height: 1.65; }
+
+@media (max-width: 1150px) { #memberGrid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 820px)  { #memberGrid { grid-template-columns: repeat(2, 1fr); gap: 16px; } }
+@media (max-width: 900px) {
+  .mcard { padding: 28px 16px 24px !important; gap: 16px; }
+  .mcard .member-card__logo { width: 104px !important; height: 68px !important; }
+  .mcard h3 { font-size: 14px; }
+  [lang="ar"] .mcard h3 { font-size: 14.5px; }
+}
+@media (max-width: 420px) {
+  #memberGrid { grid-template-columns: 1fr; }
+  .mcard .member-card__logo { width: 120px !important; height: 78px !important; }
+}
+
+/* =======================================================================
+   ★ تعديل ١٤ — المركز الإعلامي بلا قائمة علوية
+   -----------------------------------------------------------------------
+   حُذفت القائمة (الأخبار · الرؤى · سجل الصور · الفعاليات) وتُعرض
+   الأقسام الأربعة متتابعة. لكل قسم مرساة (‎#news‎ …) فتبقى روابط
+   القائمة الجانبية تعمل كما هي.
+   ======================================================================= */
+.tab-panel.is-open { display: block !important; }
+.tab-panel.is-open + .tab-panel.is-open { margin-top: 72px; }
+.tab-panel.is-open { scroll-margin-top: calc(var(--header-h) + 24px); }
+@media (max-width: 900px) {
+  .tab-panel.is-open + .tab-panel.is-open { margin-top: 46px; }
+}
+
+/* ★ تعديل ١٥ (v5) — تبويبات صفحة الأخبار والفعاليات */
+.mtabs {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  border-block-end: 1px solid var(--c-grey-line, #D3E0DA);
+  margin: 0 0 34px; padding: 0;
+}
+.mtab {
+  appearance: none; background: none; border: 0; cursor: pointer;
+  font: inherit; font-size: 16px; font-weight: 600;
+  color: var(--c-text-soft, #4B6660);
+  padding: 14px 6px; margin-block-end: -1px;
+  border-block-end: 3px solid transparent;
+  transition: color .25s, border-color .25s;
+}
+.mtab:hover { color: var(--c-green-deep, #015C44); }
+.mtab.is-active {
+  color: var(--c-green-deep, #015C44);
+  border-block-end-color: var(--c-green-deep, #015C44);
+}
+.mtab-panel[hidden] { display: none !important; }
+[lang="ar"] .mtab { font-size: 17px; }
+@media (max-width: 480px) { .mtab { font-size: 14.5px; padding: 12px 4px; } }
+
+/* ★ تعديل ١٦ (v5) — زر «Launching Soon» بديلًا عن الشريط المائل */
+.soon-pill {
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 9px 18px; margin: 0 0 18px;
+  border-radius: 999px;
+  background: rgba(1, 92, 68, .10);
+  border: 1px solid rgba(1, 92, 68, .22);
+  color: var(--c-green-deep, #015C44);
+  font-size: 14px; font-weight: 700; letter-spacing: .01em;
+  line-height: 1;
+}
+.soon-pill__dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--c-green-light, #63BD69);
+  box-shadow: 0 0 0 4px rgba(99, 189, 105, .22);
+  flex: 0 0 auto;
+}
+/* على اللوحات الداكنة (الهيرو الأخضر) اجعل الزر فاتحًا */
+.awards .soon-pill {
+  background: rgba(255, 255, 255, .14);
+  border-color: rgba(255, 255, 255, .30);
+  color: #fff;
+}
+@media (max-width: 480px) { .soon-pill { font-size: 13px; padding: 8px 15px; } }
+
+/* ★ v5 — ضمان إخفاء العناصر ذات hidden (بعض الأقسام تستخدم display:flex) */
+[hidden] { display: none !important; } /* v5-hidden-guard */
