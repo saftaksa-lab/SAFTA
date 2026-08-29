@@ -1,0 +1,15 @@
+---
+interface Props {
+  /** element to render — the markup's original tag */
+  as?: string;
+  /** content key, kept in data-cms so the admin can still target this node */
+  key: string;
+  value: string;
+  [attr: string]: unknown;
+}
+
+const { as: Tag = 'span', key, value, ...rest } = Astro.props;
+---
+{/* For untranslated scalar fields (a citation, a URL, a day-of-month) — there is no
+    Arabic counterpart to carry in data-ar, unlike Text.astro. */}
+<Tag data-cms={key} {...rest} set:html={value} />

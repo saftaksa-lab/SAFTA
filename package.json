@@ -11,8 +11,9 @@
     "hash-password": "node scripts/hash-password.mjs",
     "astro": "astro",
     "seed:content": "node scripts/seed-content.mjs",
-    "predev": "npm run seed:content",
-    "prebuild": "npm run seed:content"
+    "seed:collections": "node scripts/seed-collections.mjs",
+    "predev": "npm run seed:content && npm run seed:collections",
+    "prebuild": "npm run seed:content && npm run seed:collections"
   },
   "dependencies": {
     "@astrojs/node": "^11.1.4",

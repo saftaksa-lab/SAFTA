@@ -1,24 +1,15 @@
-import { readFile, rename, stat, unlink, writeFile } from 'node:fs/promises';
+import { unlink } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import type { FieldMap, TypedPageContent } from './schema/codec';
 import { getPageValidator, isEditablePage } from './schema/registry';
+import { readJsonCached, writeJsonAtomic } from './json-file';
 
 /**
- * Reads the site's editable content out of ./content/*.json at request time.
- *
- * The directory is gitignored — it is the admin's data store, not source — so it is read
- * from disk rather than imported. To keep that off the critical path of every request the
- * parsed JSON is cached in memory and only revalidated periodically: a cached page is
- * handed back untouched until REVALIDATE_MS has elapsed, after which one stat() decides
- * whether anything actually needs re-parsing.
+ * Reads the site's editable content out of ./content/*.json at request time, via the
+ * shared mtime-cached read/write helpers in ./json-file.ts.
  */
 
-const CONTENT_DIR = resolve(process.cwd(), 'content');
 const UPLOADS_DIR = resolve(process.cwd(), 'public', 'uploads');
-
-// Dev revalidates on every read so an edit shows up on the next reload; production trades
-// a few seconds of staleness for not touching the filesystem on every hit.
-const REVALIDATE_MS = import.meta.env.DEV ? 0 : 5_000;
 
 export interface TextField {
   en: string;
@@ -34,45 +25,16 @@ export interface ImageField {
 type Record_ = { en?: string; ar?: string; src?: string; alt?: string; alt_ar?: string };
 export type PageData = Record<string, Record_>;
 
-interface CacheEntry {
-  data: unknown;
-  mtimeMs: number;
-  checkedAt: number;
-}
-
-// Guarded on globalThis for the same reason as the session map: Vite re-evaluates this
-// module on every HMR update during `astro dev`, and a module-local Map would be thrown
-// away with it.
-const globalForContent = globalThis as unknown as { __saftaContentCache?: Map<string, CacheEntry> };
-const cache = (globalForContent.__saftaContentCache ??= new Map<string, CacheEntry>());
-
 export class MissingContentError extends Error {}
 
 async function readJson<T>(fileName: string): Promise<T> {
-  const path = join(CONTENT_DIR, fileName);
-  const cached = cache.get(path);
-  const now = Date.now();
-
-  if (cached && now - cached.checkedAt < REVALIDATE_MS) return cached.data as T;
-
-  let mtimeMs: number;
-  try {
-    ({ mtimeMs } = await stat(path));
-  } catch {
-    cache.delete(path);
-    throw new MissingContentError(
-      `content/${fileName} is missing. The content directory is gitignored — run \`npm run seed:content\` to recreate it from public/assets/content/.`,
-    );
-  }
-
-  if (cached && cached.mtimeMs === mtimeMs) {
-    cached.checkedAt = now;
-    return cached.data as T;
-  }
-
-  const data = JSON.parse(await readFile(path, 'utf8')) as T;
-  cache.set(path, { data, mtimeMs, checkedAt: now });
-  return data;
+  return readJsonCached<T>(
+    fileName,
+    () =>
+      new MissingContentError(
+        `content/${fileName} is missing. The content directory is gitignored — run \`npm run seed:content\` to recreate it from public/assets/content/.`,
+      ),
+  );
 }
 
 /**
@@ -98,15 +60,7 @@ export async function readPageData(page: string): Promise<PageData> {
  * the site reflects the edit immediately instead of waiting out the revalidate window.
  */
 export async function writePageData(page: string, data: PageData): Promise<void> {
-  const path = join(CONTENT_DIR, `${page}.json`);
-  const tmp = `${path}.${process.pid}.${Date.now()}.tmp`;
-  const json = JSON.stringify(data, null, 2) + '\n';
-
-  await writeFile(tmp, json, 'utf8');
-  await rename(tmp, path);
-
-  const { mtimeMs } = await stat(path);
-  cache.set(path, { data, mtimeMs, checkedAt: Date.now() });
+  await writeJsonAtomic(`${page}.json`, data);
 }
 
 /**

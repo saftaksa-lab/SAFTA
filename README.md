@@ -165,6 +165,46 @@ drift, so when it does, fix the source it reads from. `media`'s Events tab
 (`#eventsList`) stays wired to `assets/js/events-data.js`; it was never a `schema.js`
 field to begin with, so this migration doesn't touch it.
 
+## Collection content (`groups` / `articles` / `events`)
+
+`article`, `working-group`, `technologies` and `media`'s Events tab render from three
+repeating record sets — `working-group`/`technologies` share `assets/js/wg-data.js` (9
+programs), `article` reads `assets/js/article-data.js` (7 fixed articles), `media`'s Events
+tab reads `assets/js/events-data.js` (4 events) — none of which the schema modules above can
+express: `getPageContent`/`zodForFields` are flat, one value per key, with no notion of an
+array of similarly-shaped records.
+
+`src/lib/content/collections/` is the id-keyed counterpart: `codec.ts` adds the field kinds a
+page never needs (`value` for an untranslated scalar, `boolean`, and `list` — either a list of
+objects like `stats`/`recs`/`body`, or a list of `{en,ar}` pairs like `tags`), `registry.ts`
+maps `groups`/`articles`/`events` to a generated module the same way `schema/registry.ts` maps
+page names, and `store.ts` reads/writes `content/{groups,articles,events}.json` (also
+gitignored, seeded from the legacy `window.SAFTA_*` files by `npm run seed:collections`) with
+the same mtime-cache and atomic-write helpers page content uses (factored out into
+`src/lib/content/json-file.ts` so both share one implementation). `node
+scripts/generate-collection-schema.mjs <groups|articles|events>` reads `public/admin/schema.js`'s
+`_<name>` entry — the old admin UI's per-slot dot-path fields (`stats.0.n`, `body.1.p`) — and
+collapses them into one `list` field declaration per repeating structure, cross-validated
+against the seeded content the same way the page generator cross-validates `schema.js` against
+`content/<page>.json`.
+
+Unlike a page, removing an existing record id is never accepted regardless of `addable`
+(`_articles`' fixed 7-record set rejects it the same as `_groups`/`_events`) — the old admin's
+delete button only ever undid a not-yet-published add, never an already-saved record, and
+`validateCollectionUpdate` in `collections/store.ts` is what actually enforces that now (a bare
+`z.record(...)` validator has no opinion on a shrinking key set on its own — an empty `{}` body
+would otherwise silently wipe an addable collection). `src/pages/admin/api/collection/[name].ts`
+exposes the same GET/POST shape as the page content route, gated by the same `/admin` session
+middleware.
+
+**This is the storage/validation layer only — nothing renders from it yet.** No page template
+has been migrated onto it (`article.astro`/`working-group.astro`/`technologies.astro` still run
+the old client-side flow above), `public/admin/admin.js` doesn't call the new routes, and
+`_groups`/`_articles`/`_events` are deliberately left without `apiBacked` in `schema.js`. Prove
+the primitive with `node scripts/test-collections.mjs` (esbuild-bundles the collection modules
+and asserts against them directly, the same technique used to test the page validators, since
+there's no page consumer to exercise it through yet).
+
 **Known issue, unrelated to any of the above:** Vite's built-in `dotenv-expand` treats any
 `$word` in a `.env` value as a variable reference and blanks it if undefined. A
 `scrypt$<salt>$<hash>` value from `npm run hash-password` trips this whenever either hex
