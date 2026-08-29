@@ -1,10 +1,12 @@
 import { defineConfig } from 'astro/config';
+import node from '@astrojs/node';
 
 export default defineConfig({
-  // Routes are extensionless (`/en/about` -> dist/en/about.html) rather than directories
-  // with an index.html each. Pages live two segments deep now (/en/x, /ar/x); every relative
-  // `assets/...` reference still resolves because BaseLayout emits `<base href="/">`.
-  build: { format: 'file' },
+  // The admin panel needs a real server to check credentials against .env and enforce
+  // session cookies via middleware, so the whole site now renders on demand through a
+  // standalone Node process instead of shipping as prebuilt static files.
+  output: 'server',
+  adapter: node({ mode: 'standalone' }),
   trailingSlash: 'never',
 
   // Astro's default host is 'localhost', which Node 17+ resolves to ::1 first, so the

@@ -12,11 +12,7 @@
 
 /* ═══════════════════ 0 · ثوابت ═══════════════════ */
 
-var USER_HASH = '466a7067305c8c24b58b8bae2d1886fc40ba332633265a834ef8ae4715220f49';
-var PASS_HASH = '06b51cf25bdc12004dcea54fd6a681119b5760bd1a36962262fb7bfd4f981cb2';
-
 var LS_KEY   = 'safta.cms.draft';
-var SS_KEY   = 'safta.cms.session';
 var UPLOADS  = 'assets/img/uploads/';
 
 var SCHEMA = window.SAFTA_SCHEMA || {};
@@ -212,41 +208,14 @@ function escapeHtml(s) {
 }
 
 /* ═══════════════════ 5 · تسجيل الدخول ═══════════════════ */
-
-function sha256(str) {
-  var buf = new TextEncoder().encode(str);
-  return crypto.subtle.digest('SHA-256', buf).then(function (h) {
-    return Array.prototype.map.call(new Uint8Array(h), function (b) {
-      return ('0' + b.toString(16)).slice(-2);
-    }).join('');
-  });
-}
-
-var _lf = $('#loginForm');
-if (_lf) _lf.addEventListener('submit', function (e) {
-  e.preventDefault();
-  var u = $('#u').value.trim(), p = $('#p').value;
-  Promise.all([sha256(u), sha256(u + ':' + p)]).then(function (h) {
-    if (h[0] === USER_HASH && h[1] === PASS_HASH) {
-      try { sessionStorage.setItem(SS_KEY, '1'); } catch (er) {}
-      start();
-    } else {
-      $('#gateErr').hidden = false;
-      $('#p').value = '';
-      $('#p').focus();
-    }
-  });
-});
+/* الجلسة تُتحقّق منها على الخادم (middleware) قبل الوصول لهذه الصفحة أصلًا. */
 
 $('#btnOut').addEventListener('click', function () {
   if (dirtyCount() && !confirm('لديك تعديلات لم تُنشر بعد. هل تريد الخروج؟')) return;
-  try { sessionStorage.removeItem(SS_KEY); } catch (e) {}
-  location.replace('/login');
+  fetch('/logout', { method: 'POST' }).then(function () { location.href = '/en/login'; });
 });
 
 function start() {
-  $('#gate').hidden = true;
-  $('#app').hidden = false;
   loadDraft();
   renderSide();
   renderPane();
@@ -781,15 +750,11 @@ document.addEventListener('keydown', function (e) {
 });
 
 /* ═══════════════════ 14 · الإقلاع ═══════════════════ */
-/* أعضاء التحالف يدخلون من صفحة «دخول الأعضاء». لا شاشة دخول ثانية هنا:
-   بلا جلسة → تحويل إلى البوابة، ومعها → فتح اللوحة مباشرة. */
+/* أعضاء التحالف يدخلون من صفحة «دخول الأعضاء». الخادم (middleware) هو من
+   يتحقّق من الجلسة قبل أن تصل هذه الصفحة أصلًا، فلا حاجة لفحصٍ هنا. */
 
 (function boot() {
-  var ok = false;
-  try { ok = sessionStorage.getItem(SS_KEY) === '1'; } catch (e) {}
-  if (ok) { start(); return; }
-  if (window.SAFTA_ADMIN_NO_REDIRECT) return;      /* للاختبار الآلي */
-  location.replace('/login');
+  start();
 })();
 
 /* للاختبار الآلي */

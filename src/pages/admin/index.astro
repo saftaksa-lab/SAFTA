@@ -1,3 +1,7 @@
+---
+// Reached only when src/middleware.ts has already confirmed a valid admin
+// session — no client-side gate here.
+---
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
@@ -5,29 +9,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow, noarchive">
 <title>مركز تحكّم سافتا</title>
-<link rel="icon" href="../assets/img/logo-mark.png">
-<link rel="stylesheet" href="admin.css">
+<link rel="icon" href="/assets/img/logo-mark.png">
+<link rel="stylesheet" href="/admin/admin.css">
 </head>
 <body>
 
-<!-- شاشة انتقال: تظهر لحظةً قبل التحويل إلى بوابة أعضاء التحالف -->
-<div id="gate" class="gate">
-  <div class="gate__box">
-    <img src="../assets/img/logo-safta-dark.png" alt="سافتا" class="gate__logo">
-    <h1 class="gate__title">مركز تحكّم المحتوى</h1>
-    <p class="gate__sub">يجري تحويلك إلى صفحة دخول الأعضاء…</p>
-    <a class="gate__btn" href="/login"
-       style="display:grid;place-items:center;text-decoration:none">دخول الأعضاء</a>
-  </div>
-</div>
-
 <!-- ══════════════════ اللوحة ══════════════════ -->
-<div id="app" class="app" hidden>
+<div id="app" class="app">
 
   <!-- الشريط العلوي -->
   <header class="bar">
     <div class="bar__id">
-      <img src="../assets/img/logo-safta-dark.png" alt="سافتا">
+      <img src="/assets/img/logo-safta-dark.png" alt="سافتا">
       <span>مركز تحكّم المحتوى</span>
     </div>
 
@@ -93,8 +86,8 @@
 
 <div class="toast" id="toast" hidden></div>
 
-<script src="schema.js"></script>
-<script src="baseline.js"></script>
-<script src="admin.js"></script>
+<script is:inline src="/admin/schema.js"></script>
+<script is:inline src="/admin/baseline.js"></script>
+<script is:inline src="/admin/admin.js"></script>
 </body>
 </html>

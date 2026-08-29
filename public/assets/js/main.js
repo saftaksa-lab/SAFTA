@@ -735,7 +735,9 @@
   }
 
   /* ---- 15. FORMS (front-end validation + confirmation) ---- */
-  [['interestForm', 'riMsg'], ['contactForm', 'cMsg'], ['loginForm', 'lMsg']].forEach(function (pair) {
+  /* loginForm is excluded: it now does a real server-side POST (see
+     src/pages/[locale]/login.astro), so it must not be intercepted here. */
+  [['interestForm', 'riMsg'], ['contactForm', 'cMsg']].forEach(function (pair) {
     var form = document.getElementById(pair[0]);
     if (!form) return;
     form.addEventListener('submit', function (e) {

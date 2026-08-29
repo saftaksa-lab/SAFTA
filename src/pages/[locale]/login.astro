@@ -1,10 +1,44 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { verifyPassword } from '../../lib/auth/password.mjs';
+import { createSession } from '../../lib/auth/session';
 
 export function getStaticPaths() {
   return [{ params: { locale: 'en' } }, { params: { locale: 'ar' } }];
 }
 const { locale } = Astro.params;
+
+const SESSION_COOKIE = 'safta_admin_sid';
+
+let errorMessage: { en: string; ar: string } | null = null;
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const username = String(form.get('username') ?? '').trim();
+  const password = String(form.get('password') ?? '');
+  const keepSignedIn = form.get('keepSignedIn') === 'on';
+
+  const adminUsername = import.meta.env.ADMIN_USERNAME ?? '';
+  const adminPasswordHash = import.meta.env.ADMIN_PASSWORD_HASH ?? '';
+
+  if (username && password && username === adminUsername && verifyPassword(password, adminPasswordHash)) {
+    const sid = createSession();
+    const absoluteMinutes = Number(import.meta.env.SESSION_ABSOLUTE_TIMEOUT_MINUTES) || 480;
+    Astro.cookies.set(SESSION_COOKIE, sid, {
+      path: '/',
+      httpOnly: true,
+      secure: import.meta.env.PROD,
+      sameSite: 'strict',
+      ...(keepSignedIn ? { maxAge: absoluteMinutes * 60 } : {}),
+    });
+    return Astro.redirect('/admin');
+  }
+
+  errorMessage = {
+    en: 'Incorrect username or password.',
+    ar: 'اسم المستخدم أو كلمة المرور غير صحيحة.',
+  };
+}
 ---
 <BaseLayout
   locale={locale}
@@ -24,13 +58,15 @@ const { locale } = Astro.params;
 <p class="eyebrow" data-ar="منطقة الأعضاء" style="text-align:center">Members area</p>
 <h2 class="h-section" data-ar="تسجيل الدخول" style="text-align:center;margin-top:12px">Sign in</h2>
 <p class="lede" data-ar="دخول أعضاء التحالف إلى مركز تحكّم المحتوى." style="text-align:center;margin-top:14px">Alliance members sign in to the content control centre.</p>
-<form class="form" id="loginForm" novalidate="" style="margin-top:38px">
-<div class="field"><label data-ar="اسم المستخدم" for="l-user">Username</label><input autocapitalize="off" autocomplete="username" dir="ltr" id="l-user" required="" spellcheck="false" type="text"/></div>
-<div class="field"><label data-ar="كلمة المرور" for="l-pass">Password</label><input autocomplete="current-password" dir="ltr" id="l-pass" required="" type="password"/></div>
-<label class="check"><input type="checkbox"/><span data-ar="أبقني مسجّلاً على هذا الجهاز">Keep me signed in on this device</span></label>
+<form class="form" id="loginForm" method="POST" action={`/${locale}/login`} style="margin-top:38px">
+<div class="field"><label data-ar="اسم المستخدم" for="l-user">Username</label><input autocapitalize="off" autocomplete="username" dir="ltr" id="l-user" name="username" required="" spellcheck="false" type="text"/></div>
+<div class="field"><label data-ar="كلمة المرور" for="l-pass">Password</label><input autocomplete="current-password" dir="ltr" id="l-pass" name="password" required="" type="password"/></div>
+<label class="check"><input type="checkbox" name="keepSignedIn"/><span data-ar="أبقني مسجّلاً على هذا الجهاز">Keep me signed in on this device</span></label>
 <div class="form-actions" style="flex-direction:column;align-items:stretch">
 <button class="btn-solid" style="justify-content:center" type="submit"><span data-ar="تسجيل الدخول">Sign in</span><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></button>
-<span class="form-msg" hidden="" id="lMsg" style="justify-content:center"></span>
+{errorMessage && (
+<span class="form-msg" id="lMsg" data-ar={errorMessage.ar} style="justify-content:center;color:#D32F2F">{errorMessage.en}</span>
+)}
 </div>
 </form>
 <p class="login-note">Not a member yet? <a data-ar="سجّل اهتمامك" href={`/${locale}/register-interest`} style="color:var(--c-link)">Register your interest</a>  ·  <a data-ar="نسيت كلمة المرور" href={`/${locale}/forgot-password`} style="color:var(--c-link)">Forgot password</a></p>
@@ -38,5 +74,4 @@ const { locale } = Astro.params;
 </div>
 </section>
 </main>
-<script slot="scripts-late" is:inline src="assets/js/members-auth.js?v=28"></script>
 </BaseLayout>

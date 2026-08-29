@@ -7,4 +7,5 @@ Disallow: /
 
 # مركز التحكّم — محجوب دائمًا، حتى بعد الإطلاق. لا تحذف هذين السطرين.
 User-agent: *
+Disallow: /admin
 Disallow: /admin/

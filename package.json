@@ -7,9 +7,12 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "start": "node ./dist/server/entry.mjs",
+    "hash-password": "node scripts/hash-password.mjs",
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/node": "^11.1.4",
     "astro": "^7.2.9"
   }
 }
