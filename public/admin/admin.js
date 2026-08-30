@@ -24,7 +24,7 @@ var $$ = function (s, r) { return Array.prototype.slice.call((r || document).que
 /* ═══════════════════ 1 · الحالة ═══════════════════ */
 
 var S = {
-  cur:    { pages: {}, groups: {}, articles: {}, events: {} },   /* النسخة المعدّلة */
+  cur:    { pages: {}, groups: {}, articles: {}, events: {}, members: {} },   /* النسخة المعدّلة */
   images: {},                                        /* المسار → dataURL */
   view:   Object.keys(SCHEMA)[0] || 'index',
   query:  ''
@@ -34,7 +34,7 @@ function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
 function resetState() {
   S.cur = clone({ pages: BASE.pages || {}, groups: BASE.groups || {},
-                  articles: BASE.articles || {}, events: BASE.events || {} });
+                  articles: BASE.articles || {}, events: BASE.events || {}, members: BASE.members || {} });
   S.images = {};
 }
 
@@ -773,6 +773,7 @@ function previewTarget() {
   if (sc.kind !== 'data') return { file: sc.file, id: null };
   if (S.view === '_groups')   return { file: 'working-group.html', id: Object.keys(S.cur.groups)[0], view: S.view };
   if (S.view === '_events')   return { file: 'media.html', id: null, view: S.view };
+  if (S.view === '_members')  return { file: 'member.html', id: Object.keys(S.cur.members)[0], view: S.view };
   return { file: 'article.html', id: Object.keys(S.cur.articles)[0], view: S.view };
 }
 

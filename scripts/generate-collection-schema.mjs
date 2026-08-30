@@ -12,7 +12,7 @@ import { resolve } from 'node:path';
 import { deriveShape, reshapeRecord } from './lib/legacy-collection-shape.mjs';
 
 const name = process.argv[2];
-const KNOWN = { groups: '_groups', articles: '_articles', events: '_events' };
+const KNOWN = { groups: '_groups', articles: '_articles', events: '_events', members: '_members' };
 if (!name || !KNOWN[name]) {
   console.error(`usage: node scripts/generate-collection-schema.mjs <${Object.keys(KNOWN).join('|')}>`);
   process.exit(1);

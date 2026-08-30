@@ -2,6 +2,7 @@ import { zodForCollection } from './codec';
 import GROUPS_COLLECTION from './groups';
 import ARTICLES_COLLECTION from './articles';
 import EVENTS_COLLECTION from './events';
+import MEMBERS_COLLECTION from './members';
 
 /**
  * Every collection with a generated schema module — the id-keyed counterpart to
@@ -16,6 +17,7 @@ const COLLECTIONS = {
   groups: GROUPS_COLLECTION,
   articles: ARTICLES_COLLECTION,
   events: EVENTS_COLLECTION,
+  members: MEMBERS_COLLECTION,
 };
 
 export type CollectionName = keyof typeof COLLECTIONS;

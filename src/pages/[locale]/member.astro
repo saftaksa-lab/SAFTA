@@ -1,15 +1,38 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Text from '../../components/content/Text.astro';
+import Value from '../../components/content/Value.astro';
+import Image from '../../components/content/Image.astro';
+import { getCollectionContent } from '../../lib/content/collections/store';
+import { MEMBERS_FIELDS } from '../../lib/content/collections/members';
+import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
   return [{ params: { locale: 'en' } }, { params: { locale: 'ar' } }];
 }
 const { locale } = Astro.params;
+if (!isLocale(locale)) return new Response(null, { status: 404 });
+
+const members = await getCollectionContent<typeof MEMBERS_FIELDS>('members');
+const all = members.items();
+const id = Astro.url.searchParams.get('id');
+// Same fallback the old client-side lookup used: an unknown/missing id shows the first
+// record rather than a hard 404.
+const member = all.find((m) => m.id === id) ?? all[0];
+
+const name = member.text('name');
+const logo = member.image('logo');
+const ini = member.value('ini');
+const cat = member.text('cat');
+const role = member.text('role');
+const sector = member.text('sector');
+const since = member.value('since');
+const bio = member.text('bio');
 ---
 <BaseLayout
   locale={locale}
-  title="Member profile | SAFTA"
-  titleAr="ملف العضو | التحالف السعودي"
+  title={`${name.en} | SAFTA`}
+  titleAr={`${name.ar} | التحالف السعودي`}
 >
 <main>
 <section class="page-hero page-hero--plain">
@@ -22,20 +45,20 @@ const { locale } = Astro.params;
 <div class="wrap">
 <p class="demo-note"><svg fill="none" height="17" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="17"><circle cx="12" cy="12" r="9"></circle><path d="M12 8h.01M11 12h1v4h1"></path></svg><span data-cms="t004-بيانات-تجريبية-المدخلات-في" data-ar="&lt;b&gt;بيانات تجريبية.&lt;/b&gt; المدخلات في هذه الصفحة عناصر مبدئية لعرض التصميم فقط، ويجب استبدالها بسجلات التحالف الحقيقية قبل الإطلاق."><b data-ar="بيانات تجريبية.">Demo data.</b> The entries on this page are placeholders used to show the layout. Replace them with the Alliance’s real records before launch.</span></p>
 <div class="member-head reveal">
-<span class="member-card__logo" id="mLogo">MEWA</span>
+<span class="member-card__logo" id="mLogo">{logo.src ? <Image key="logo" field={{ src: logo.src, alt: name.en, altAr: name.ar }} /> : <Value as="span" key="ini" value={ini} />}</span>
 <div>
-<p data-cms="t005-حكومي" class="eyebrow" data-ar="حكومي" id="mCat">Government</p>
-<h2 data-cms="t006-وزارة-البيئة-والمياه-والزر" class="h-section" data-ar="وزارة البيئة والمياه والزراعة (MEWA)" id="mName" style="margin-top:10px">Ministry of Environment, Water &amp; Agriculture</h2>
+<Text as="p" class="eyebrow" id="mCat" key="cat" field={cat} />
+<Text as="h2" class="h-section" id="mName" style="margin-top:10px" key="name" field={name} />
 </div>
 </div>
 <div class="facts reveal">
-<div class="fact"><b data-cms="t007-الدور-في-التحالف" data-ar="الدور في التحالف">Role in the Alliance</b><span data-cms="t008-جهة-مؤسِّسة" data-ar="جهة مؤسِّسة" id="mRole">Founding entity</span></div>
-<div class="fact"><b data-cms="t009-مجال-التركيز" data-ar="مجال التركيز">Sector focus</b><span data-cms="t010-السياسات-والتنظيم" data-ar="السياسات والتنظيم" id="mSector">Policy &amp; regulation</span></div>
-<div class="fact"><b data-cms="t011-عضو-منذ" data-ar="عضو منذ">Member since</b><span id="mSince">2026</span></div>
+<div class="fact"><b data-cms="t007-الدور-في-التحالف" data-ar="الدور في التحالف">Role in the Alliance</b><Text as="span" id="mRole" key="role" field={role} /></div>
+<div class="fact"><b data-cms="t009-مجال-التركيز" data-ar="مجال التركيز">Sector focus</b><Text as="span" id="mSector" key="sector" field={sector} /></div>
+<div class="fact"><b data-cms="t011-عضو-منذ" data-ar="عضو منذ">Member since</b><Value as="span" id="mSince" key="since" value={since} /></div>
 </div>
 <div class="prose reveal" style="margin-top:72px">
 <h2 data-cms="t012-نبذة" data-ar="نبذة">Overview</h2>
-<p id="mBio">—</p>
+<Text as="p" id="mBio" key="bio" field={bio} />
 <h2 data-cms="t013-مجالات-التعاون" data-ar="مجالات التعاون">Areas of collaboration</h2>
 <ul>
 <li data-cms="t014-التبنّي-المنسّق-لتقنيات-ال" data-ar="التبنّي المنسّق لتقنيات الزراعة والغذاء على مستوى القطاع.">Coordinated adoption of agrifood technologies across the sector.</li>
@@ -66,7 +89,6 @@ const { locale } = Astro.params;
 </div>
 </div>
 </section>
-<script is:inline>window.SAFTA_MEMBERS = {"mewa": {"id": "mewa", "logo": "mewa.png", "ini": "MEWA", "cat": "Government", "name": "Ministry of Environment, Water &amp; Agriculture", "short": "The Alliance was established as an outcome of the Ministry’s Research and Innovation Executive Plan.", "role": "Founding entity", "sector": "Policy &amp; regulation", "since": "2026", "bio": "The Ministry of Environment, Water and Agriculture leads the Kingdom’s environment, water and agriculture portfolio. Its Research and Innovation Executive Plan established the Alliance and set the four institutional roles that guide its work.", "name_ar": "Ministry of Environment, Water &amp; Agriculture", "cat_ar": "حكومي", "role_ar": "جهة مؤسِّسة", "sector_ar": "السياسات والتنظيم", "bio_ar": "تقود وزارة البيئة والمياه والزراعة ملف البيئة والمياه والزراعة في المملكة. وقد أنشأت الخطة التنفيذية للبحث والابتكار التابعة لها هذا التحالف، ورسمت الأدوار المؤسسية الأربعة التي توجّه عمله."}, "gfsa": {"id": "gfsa", "logo": "gfsa.svg", "ini": "GFSA", "cat": "Government", "name": "General Food Security Authority", "short": "National body responsible for food security policy, reserves and supply resilience.", "role": "Strategic member", "sector": "Food security", "since": "2026", "bio": "Placeholder profile. Add the entity’s official description, focus areas and point of contact here.", "name_ar": "الهيئة العامة للأمن الغذائي (GFSA)", "cat_ar": "حكومي", "role_ar": "عضو استراتيجي", "sector_ar": "الأمن الغذائي", "bio_ar": "ملف تعريفي مبدئي. أضف هنا الوصف الرسمي للجهة ومجالات تركيزها وجهة الاتصال بها."}, "sfda": {"id": "sfda", "logo": "sfda.svg", "ini": "SFDA", "cat": "Government", "name": "Saudi Food &amp; Drug Authority", "short": "Regulatory authority for food safety standards and product approvals.", "role": "Regulatory member", "sector": "Standards &amp; safety", "since": "2026", "bio": "Placeholder profile. Add the entity’s official description, focus areas and point of contact here.", "name_ar": "Saudi Food &amp; Drug Authority", "cat_ar": "حكومي", "role_ar": "عضو تنظيمي", "sector_ar": "المواصفات والسلامة", "bio_ar": "ملف تعريفي مبدئي. أضف هنا الوصف الرسمي للجهة ومجالات تركيزها وجهة الاتصال بها."}, "kacst": {"id": "kacst", "logo": "kacst.svg", "ini": "KACST", "cat": "Academic", "name": "King Abdulaziz City for Science &amp; Technology", "short": "National research organisation supporting applied science and technology transfer.", "role": "Research member", "sector": "Applied research", "since": "2026", "bio": "Placeholder profile. Add the entity’s official description, focus areas and point of contact here.", "name_ar": "King Abdulaziz City for Science &amp; Technology", "cat_ar": "أكاديمي", "role_ar": "عضو بحثي", "sector_ar": "البحث التطبيقي", "bio_ar": "ملف تعريفي مبدئي. أضف هنا الوصف الرسمي للجهة ومجالات تركيزها وجهة الاتصال بها."}, "kaust": {"id": "kaust", "logo": "kaust.png", "ini": "KAUST", "cat": "Academic", "name": "King Abdullah University of Science &amp; Technology", "short": "Graduate research university with programmes in desert agriculture and marine food systems.", "role": "Research member", "sector": "Research &amp; innovation", "since": "2026", "bio": "Placeholder profile. Add the entity’s official description, focus areas and point of contact here.", "name_ar": "King Abdullah University of Science &amp; Technology", "cat_ar": "أكاديمي", "role_ar": "عضو بحثي", "sector_ar": "البحث والابتكار", "bio_ar": "ملف تعريفي مبدئي. أضف هنا الوصف الرسمي للجهة ومجالات تركيزها وجهة الاتصال بها."}, "ksu-agri": {"id": "ksu-agri", "logo": "ksu.svg", "ini": "KSU", "cat": "Academic", "name": "King Saud University — College of Food &amp; Agriculture", "short": "Academic partner contributing agronomy, food science and extension expertise.", "role": "Academic member", "sector": "Education", "since": "2026", "bio": "Placeholder profile. Add the entity’s official description, focus areas and point of contact here.", "name_ar": "King Saud University — College of Food &amp; Agriculture", "cat_ar": "أكاديمي", "role_ar": "عضو أكاديمي", "sector_ar": "التعليم", "bio_ar": "ملف تعريفي مبدئي. أضف هنا الوصف الرسمي للجهة ومجالات تركيزها وجهة الاتصال بها."}, "nadec": {"id": "nadec", "logo": "nadec.svg", "ini": "NAD", "cat": "Private sector", "name": "National Agricultural Development Co.", "short": "Integrated agrifood producer operating across dairy, crops and processing.", "role": "Industry member", "sector": "Production", "since": "2026", "bio": "Placeholder profile. Add the entity’s official description, focus areas and point of contact here.", "name_ar": "الشركة الوطنية للتنمية الزراعية (نادك)", "cat_ar": "قطاع خاص", "role_ar": "عضو صناعي", "sector_ar": "الإنتاج", "bio_ar": "ملف تعريفي مبدئي. أضف هنا الوصف الرسمي للجهة ومجالات تركيزها وجهة الاتصال بها."}, "almarai": {"id": "almarai", "logo": "almarai.png", "ini": "ALM", "cat": "Private sector", "name": "Almarai", "short": "Regional food and beverage manufacturer with an integrated supply chain.", "role": "Industry member", "sector": "Processing &amp; logistics", "since": "2026", "bio": "Placeholder profile. Add the entity’s official description, focus areas and point of contact here.", "name_ar": "المراعي", "cat_ar": "قطاع خاص", "role_ar": "عضو صناعي", "sector_ar": "التصنيع والخدمات اللوجستية", "bio_ar": "ملف تعريفي مبدئي. أضف هنا الوصف الرسمي للجهة ومجالات تركيزها وجهة الاتصال بها."}, "neom-food": {"id": "neom-food", "logo": "neom.svg", "ini": "NEOM", "cat": "Private sector", "name": "NEOM Food", "short": "Developing controlled-environment agriculture and alternative protein platforms.", "role": "Industry member", "sector": "AgTech", "since": "2026", "bio": "Placeholder profile. Add the entity’s official description, focus areas and point of contact here.", "name_ar": "نيوم للغذاء", "cat_ar": "قطاع خاص", "role_ar": "عضو صناعي", "sector_ar": "التقنية الزراعية", "bio_ar": "ملف تعريفي مبدئي. أضف هنا الوصف الرسمي للجهة ومجالات تركيزها وجهة الاتصال بها."}, "monshaat": {"id": "monshaat", "logo": "monshaat.svg", "ini": "MON", "cat": "Government", "name": "Monsha’at — SME Authority", "short": "Supports agrifood startups with funding pathways and enablement programmes.", "role": "Enablement member", "sector": "SME support", "since": "2026", "bio": "Placeholder profile. Add the entity’s official description, focus areas and point of contact here.", "name_ar": "منشآت — الهيئة العامة للمنشآت الصغيرة والمتوسطة", "cat_ar": "حكومي", "role_ar": "عضو تمكين", "sector_ar": "دعم المنشآت الصغيرة والمتوسطة", "bio_ar": "ملف تعريفي مبدئي. أضف هنا الوصف الرسمي للجهة ومجالات تركيزها وجهة الاتصال بها."}, "wateer": {"id": "wateer", "logo": "wateer.svg", "ini": "WTR", "cat": "Non-profit", "name": "Water Conservation Society", "short": "Non-profit advancing awareness and field programmes on irrigation efficiency.", "role": "Non-profit member", "sector": "Water", "since": "2026", "bio": "Placeholder profile. Add the entity’s official description, focus areas and point of contact here.", "name_ar": "جمعية ترشيد استهلاك المياه", "cat_ar": "غير ربحي", "role_ar": "عضو غير ربحي", "sector_ar": "المياه", "bio_ar": "ملف تعريفي مبدئي. أضف هنا الوصف الرسمي للجهة ومجالات تركيزها وجهة الاتصال بها."}, "foodbank": {"id": "foodbank", "logo": "etaam.svg", "ini": "ETA", "cat": "Non-profit", "name": "Saudi Food Bank (Eta’am)", "short": "Non-profit focused on reducing food waste and redistributing surplus food.", "role": "Non-profit member", "sector": "Food waste", "since": "2026", "bio": "Placeholder profile. Add the entity’s official description, focus areas and point of contact here.", "name_ar": "بنك الطعام السعودي (إطعام)", "cat_ar": "غير ربحي", "role_ar": "عضو غير ربحي", "sector_ar": "هدر الغذاء", "bio_ar": "ملف تعريفي مبدئي. أضف هنا الوصف الرسمي للجهة ومجالات تركيزها وجهة الاتصال بها."}};</script>
 </main>
 <script slot="scripts" is:inline src="assets/content/member.js?v=28"></script>
 <script slot="scripts" is:inline src="assets/js/cms.js?v=28"></script>

@@ -28,6 +28,7 @@ const SOURCES = {
   groups: { file: 'wg-data.js', global: 'SAFTA_GROUPS', schemaKey: '_groups' },
   articles: { file: 'article-data.js', global: 'SAFTA_ARTICLES', schemaKey: '_articles' },
   events: { file: 'events-data.js', global: 'SAFTA_EVENTS', schemaKey: '_events' },
+  members: { file: 'members-data.js', global: 'SAFTA_MEMBERS_FULL', schemaKey: '_members' },
 };
 
 const args = process.argv.slice(2);

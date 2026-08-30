@@ -720,19 +720,8 @@
   /* ---- 13. مُرشِّح مجموعات العمل — أُزيل مع شرائح التصفية ---- */
   /* الشبكة تُبنى الآن من wg-data.js في الوحدة 22، بلا تصفية. */
 
-  /* ---- 14. MEMBER PROFILE (reads ?id= from the URL) ---- */
-  if (window.SAFTA_MEMBERS) {
-    var id = new URLSearchParams(location.search).get('id');
-    var m = window.SAFTA_MEMBERS[id] || window.SAFTA_MEMBERS[Object.keys(window.SAFTA_MEMBERS)[0]];
-    var set = function (elId, val) { var el = document.getElementById(elId); if (el) el.innerHTML = val; };
-    var lg = document.getElementById('mLogo');
-    if (lg) lg.innerHTML = m.logo
-      ? '<img alt="" src="assets/img/partners/' + m.logo + '"/>'
-      : m.ini;
-    set('mCat', m.cat); set('mName', m.name);
-    set('mRole', m.role); set('mSector', m.sector); set('mSince', m.since); set('mBio', m.bio);
-    document.title = m.name.replace(/&amp;/g, '&') + ' | SAFTA';
-  }
+  /* ---- 14. مُرشِّح ملف العضو — أُزيل مع سجلّ SAFTA_MEMBERS المضمَّن ---- */
+  /* الصفحة تُصدَر الآن مباشرة من مجموعة members عبر src/pages/[locale]/member.astro. */
 
   /* ---- 15. FORMS (front-end validation + confirmation) ---- */
   /* loginForm is excluded: it now does a real server-side POST (see
@@ -763,29 +752,6 @@
   'use strict';
   var isRTL = function () { return document.documentElement.dir === 'rtl'; };
 
-  /* member profile: swap to the Arabic fields and keep them translatable */
-  function localizeMember() {
-    if (!window.SAFTA_MEMBERS) return;
-    var id = new URLSearchParams(location.search).get('id');
-    var m = window.SAFTA_MEMBERS[id] || window.SAFTA_MEMBERS[Object.keys(window.SAFTA_MEMBERS)[0]];
-    /* الشعار صورة لا نص — يُستثنى من التبديل اللغوي */
-    var lg = document.getElementById('mLogo');
-    if (lg) lg.innerHTML = m.logo
-      ? '<img alt="" src="assets/img/partners/' + m.logo + '"/>'
-      : m.ini;
-    var pairs = [['mCat', m.cat, m.cat_ar], ['mName', m.name, m.name_ar],
-                 ['mRole', m.role, m.role_ar], ['mSector', m.sector, m.sector_ar],
-                 ['mSince', m.since, m.since], ['mBio', m.bio, m.bio_ar]];
-    pairs.forEach(function (p) {
-      var el = document.getElementById(p[0]);
-      if (!el) return;
-      el.dataset.en = p[1];
-      el.dataset.ar = p[2];
-      el.innerHTML = isRTL() ? p[2] : p[1];
-    });
-    document.title = (isRTL() ? m.name_ar : m.name).replace(/&amp;/g, '&') + ' | SAFTA';
-  }
-
   /* the drag slider moves the other way in RTL */
   function refreshSlider() {
     var slider = document.getElementById('believeSlider');
@@ -798,13 +764,11 @@
   }
 
   document.addEventListener('safta:lang', function () {
-    localizeMember();
     refreshSlider();
     if (window.ScrollTrigger) ScrollTrigger.refresh();
   });
 
   document.addEventListener('DOMContentLoaded', function () {
-    localizeMember();
     refreshSlider();
   });
 })();
