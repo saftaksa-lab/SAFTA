@@ -51,10 +51,23 @@ function loadDraft() {
   try {
     var d = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
     if (d && d.cur) {
-      /* دمج بالمفتاح لا استبدال كامل — مسودة محفوظة قبل إضافة مخزن جديد
-         (مثل members) يجب ألا تمحوه من S.cur */
-      Object.keys(S.cur).forEach(function (k) {
-        if (d.cur[k] !== undefined) S.cur[k] = d.cur[k];
+      /* دمج بالسجلّ لا استبدال المخزن (groups/articles/events/members) كاملًا —
+         استبدال المخزن كاملًا بنسخة المسودة كان يمحو من اللوحة أي سجلّ حاضر على
+         الخادم لم تلمسه تلك المسودة (مثلًا بعد npm run seed:collections --force
+         التي تُعيد توليد content/*.json بمُعرِّفات جديدة)، ثم يرفض الخادم النشر
+         بخطأ 400 لأن تلك السجلّات الحاضرة فعليًا تبدو للتحقّق وكأنها حُذفت. مسودة
+         قديمة قد تحمل أيضًا مُعرِّفات لم تعد موجودة أصلًا — هذه تُهمَل ما لم تكن
+         سجلًّا جديدًا لم يُنشَر بعد (مُعرَّف بادئته newPrefix في مجموعة addable). */
+      if (d.cur.pages !== undefined) S.cur.pages = d.cur.pages;
+      Object.keys(SCHEMA).forEach(function (v) {
+        var sc = SCHEMA[v];
+        if (sc.kind !== 'data' || !d.cur[sc.store]) return;
+        var draftStore = d.cur[sc.store];
+        Object.keys(draftStore).forEach(function (id) {
+          var known = Object.prototype.hasOwnProperty.call(S.cur[sc.store], id);
+          var pendingNew = !known && sc.addable && id.indexOf(sc.newPrefix || 'wg-new-') === 0;
+          if (known || pendingNew) S.cur[sc.store][id] = draftStore[id];
+        });
       });
       S.images = d.images || {};
     }
