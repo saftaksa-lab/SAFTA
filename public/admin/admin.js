@@ -12,7 +12,13 @@
 
 /* ═══════════════════ 0 · ثوابت ═══════════════════ */
 
-var LS_KEY   = 'safta.cms.draft';
+/* رقم إصدار شكل المسودة — ارفعه متى صار شكل S.cur (حقول جديدة، مخزن جديد، إلخ)
+   غير متوافق مع مسودات محفوظة سابقًا بحيث لا يعود دمجها بالسجلّ (انظر loadDraft)
+   كافيًا؛ كل مسودة محفوظة تحت رقم أقدم تُحذف تلقائيًا من localStorage عند الإقلاع
+   بدل أن تبقى معلَّقة أو تُقرَأ بالخطأ. */
+var LS_PREFIX     = 'safta.cms.draft';
+var DRAFT_VERSION = 2;
+var LS_KEY        = LS_PREFIX + '.v' + DRAFT_VERSION;
 var UPLOADS  = 'assets/img/uploads/';
 
 var SCHEMA = window.SAFTA_SCHEMA || {};
@@ -46,8 +52,23 @@ function saveDraft() {
   }
 }
 
+/* يحذف أي مسودة محفوظة تحت مفتاح أقدم (بلا رقم إصدار، أو برقم إصدار غير الحالي) —
+   يُستدعى مرّة عند كل إقلاع قبل قراءة المسودة الحالية، فلا تبقى حالات محلية فاسدة
+   من نسخة أقدم من admin.js معلَّقة في متصفّح المستخدم إلى الأبد. */
+function purgeStaleDrafts() {
+  try {
+    var stale = [];
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k && k !== LS_KEY && (k === LS_PREFIX || k.indexOf(LS_PREFIX + '.v') === 0)) stale.push(k);
+    }
+    stale.forEach(function (k) { localStorage.removeItem(k); });
+  } catch (e) {}
+}
+
 function loadDraft() {
   resetState();
+  purgeStaleDrafts();
   try {
     var d = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
     if (d && d.cur) {
