@@ -50,7 +50,14 @@ function loadDraft() {
   resetState();
   try {
     var d = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
-    if (d && d.cur) { S.cur = d.cur; S.images = d.images || {}; }
+    if (d && d.cur) {
+      /* دمج بالمفتاح لا استبدال كامل — مسودة محفوظة قبل إضافة مخزن جديد
+         (مثل members) يجب ألا تمحوه من S.cur */
+      Object.keys(S.cur).forEach(function (k) {
+        if (d.cur[k] !== undefined) S.cur[k] = d.cur[k];
+      });
+      S.images = d.images || {};
+    }
   } catch (e) {}
 }
 
