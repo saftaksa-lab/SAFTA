@@ -1,10 +1,55 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollectionContent } from '../../lib/content/collections/store';
+import { GROUPS_FIELDS } from '../../lib/content/collections/groups';
+import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
   return [{ params: { locale: 'en' } }, { params: { locale: 'ar' } }];
 }
 const { locale } = Astro.params;
+if (!isLocale(locale)) return new Response(null, { status: 404 });
+
+// Ported verbatim from assets/js/main.js's former module 22 (grid-building IIFE) — icon
+// per working-group id, falling back to a theme-keyed icon when the id itself isn't
+// recognized, and a themed gradient tile per challenge category (g.ch) when no real photo
+// has been uploaded yet.
+const ICONS: Record<string, string> = {
+  'palm-weevil':  'M12 21c0-5 0-8 .3-10M12 11c-1.6-3-4.8-4.4-8-4 .8 3.3 3.4 5.6 6.7 5.7M12 11c1.6-3.2 4.9-4.7 8.2-4.3-.8 3.4-3.5 5.8-6.9 5.9M12 9c-.9-2.4-3.3-3.8-6-3.6M12 9c.9-2.5 3.4-3.9 6.1-3.7',
+  'cold-chain':   'M12 3v18M4.5 7.5l15 9M19.5 7.5l-15 9M12 3l-2.2 2.2M12 3l2.2 2.2M12 21l-2.2-2.2M12 21l2.2-2.2M4.5 7.5l.1 3M4.5 7.5l3-.9M19.5 16.5l-.1-3M19.5 16.5l-3 .9',
+  'algae':        'M7 21c-1.5-3 0-6 2-8M11 21c0-4 1.5-7 4.5-9.5M15 21c1-5 4-7 5-8M7 21c-2 0-4-1.5-4-4 2.5 0 4 1 4 4z',
+  'gm-crops':     'M9 6c3 0 6 2 6 5M15 6c-3 0-6 2-6 5M9 12c3 0 6 2 6 5M15 12c-3 0-6 2-6 5M8 6h8M8 17h8M12 3v2',
+  'traceability': 'M4 7h4v4H4zM16 13h4v4h-4zM8 9h5a3 3 0 013 3v1M12 4v3M12 4l-1.5 1.5M12 4l1.5 1.5',
+  'carbon':       'M7 15a4 4 0 01.5-8 5 5 0 019.5 1.5A3.5 3.5 0 0116 15zM12 21c-2-1.5-3.5-3.5-3.5-5.5M12 21c2-1.5 3.5-3.5 3.5-5.5',
+  'alt-protein':  'M8 8a4 4 0 108 0 4 4 0 00-8 0zM12 12v9M9 16h6M9.5 6.5l5 3M9.5 9.5l5-3',
+  'cea':          'M4 20V10l8-5 8 5v10M4 20h16M9 20v-6h6v6M3 10l9-6 9 6',
+  'solar-farms':  'M12 4V2M12 22v-2M5 5L3.5 3.5M20.5 20.5L19 19M4 12H2M22 12h-2M5 19l-1.5 1.5M20.5 3.5L19 5M8 12a4 4 0 118 0 4 4 0 01-8 0z',
+};
+const THEME: Record<string, string> = {
+  pests:   'linear-gradient(135deg,#0E5C46 0%,#1C7A57 100%)',
+  waste:   'linear-gradient(135deg,#0B5747 0%,#2C8C74 100%)',
+  climate: 'linear-gradient(135deg,#08624A 0%,#38A06B 100%)',
+  soil:    'linear-gradient(135deg,#0E4A3A 0%,#5A7A3A 100%)',
+};
+const ID_TO_CHALLENGE: Record<string, string> = { pests: 'palm-weevil', waste: 'cold-chain', climate: 'cea', soil: 'carbon' };
+function iconFor(id: string, ch: string) {
+  return ICONS[id] ?? ICONS[ID_TO_CHALLENGE[ch]] ?? ICONS.cea;
+}
+// Real photo only if the admin has actually uploaded one — the old static placeholder path
+// never counts, so a not-yet-replaced default renders as the themed icon tile instead.
+function realPhoto(src: string) {
+  return !!src && !/assets\/img\/groups\/wg-\d/.test(src);
+}
+
+const groups = await getCollectionContent<typeof GROUPS_FIELDS>('groups');
+const items = groups.items().map((g) => ({
+  id: g.id,
+  name: g.text('name'),
+  scope: g.text('scope'),
+  no: g.value('no'),
+  ch: g.value('ch'),
+  img: g.image('img'),
+}));
 ---
 <BaseLayout
   locale={locale}
@@ -32,11 +77,27 @@ const { locale } = Astro.params;
 </div>
 </div>
 <p class="demo-note"><svg fill="none" height="17" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="17"><circle cx="12" cy="12" r="9"></circle><path d="M12 8h.01M11 12h1v4h1"></path></svg><span data-cms="t007-المصدر-جدول-مجموعات-العمل-" data-ar="&lt;b&gt;المصدر:&lt;/b&gt; جدول مجموعات العمل الرسمي والتقرير السنوي الأول 2024–2025. أوراق السياسات نفسها لم تُعتمد للنشر العام بعد."><b data-ar="المصدر:">Source:</b> the official working-groups register and the First Annual Report 2024–2025. The policy notes themselves are not yet approved for public release.</span></p>
-<div class="grid-4" id="groupGrid"></div>
+<div class="grid-4" id="groupGrid">
+{items.map((g) => (
+  <article class="wg-item">
+  {realPhoto(g.img.src) ? (
+    <figure class="wg-item__media">
+      <img loading="lazy" alt={g.name.en} src={g.img.src} />
+    </figure>
+  ) : (
+    <figure class="wg-item__media wg-item__media--art" style={`background:${THEME[g.ch] ?? THEME.climate}`}>
+      <span class="wg-item__no">{g.no}</span>
+      <svg class="wg-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d={iconFor(g.id, g.ch)}></path></svg>
+    </figure>
+  )}
+    <h3 class="wg-item__name" data-ar={g.name.ar || g.name.en}>{g.name.en || g.name.ar}</h3>
+    <p class="wg-item__desc" data-ar={g.scope.ar || g.scope.en}>{g.scope.en || g.scope.ar}</p>
+  </article>
+))}
+</div>
 </div>
 </section>
 </main>
 <script slot="scripts" is:inline src="assets/content/technologies.js?v=28"></script>
 <script slot="scripts" is:inline src="assets/js/cms.js?v=28"></script>
-<script slot="scripts-late" is:inline src="assets/js/wg-data.js?v=28"></script>
 </BaseLayout>

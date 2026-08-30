@@ -1,35 +1,70 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Text from '../../components/content/Text.astro';
+import { getCollectionContent } from '../../lib/content/collections/store';
+import { ARTICLES_FIELDS } from '../../lib/content/collections/articles';
+import type { TextField } from '../../lib/content/store';
+import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
   return [{ params: { locale: 'en' } }, { params: { locale: 'ar' } }];
 }
 const { locale } = Astro.params;
+if (!isLocale(locale)) return new Response(null, { status: 404 });
+
+const articles = await getCollectionContent<typeof ARTICLES_FIELDS>('articles');
+const all = articles.items();
+const id = Astro.url.searchParams.get('id');
+// Same fallback the old client-side lookup used: an unknown/missing id shows the first
+// record rather than a hard 404.
+const article = all.find((a) => a.id === id) ?? all[0];
+
+const kind = article.text('kind');
+const title = article.text('title');
+const date = article.text('date');
+const read = article.text('read');
+const lede = article.text('lede');
+const quote = article.text('quote');
+const quoteBy = article.text('quoteBy');
+const heroImg = article.image('img');
+const body = article.list('body') as Array<{ h: TextField; p: TextField }>;
+const tags = article.list('tags') as TextField[];
 ---
 <BaseLayout
   locale={locale}
-  title="Article | SAFTA"
-  titleAr="مقال | التحالف السعودي"
+  title={`${title.en} | SAFTA`}
+  titleAr={`${title.ar} | التحالف السعودي`}
 >
 <main>
 <article class="art">
 
 <header class="art__hero">
-<img data-cms-img="i001-gd09rackshero" alt="" id="aImg" src="assets/img/green-dunes/gd-09-racks-hero.webp"/>
+<img data-cms-img="i001-gd09rackshero" alt="" id="aImg" src={heroImg.src || 'assets/img/green-dunes/gd-09-racks-hero.webp'}/>
 <div class="art__scrim"></div>
 <div class="wrap">
-<p class="crumbs"><a data-cms="t002-الرئيسية" data-ar="الرئيسية" href={`/${locale}`}>Home</a><span>/</span><a data-cms="t003-المركز-الإعلامي" data-ar="المركز الإعلامي" href={`/${locale}/media`}>Media</a><span>/</span><span id="aKind">News</span></p>
-<h1 id="aTitle">—</h1>
-<p class="art__meta"><span id="aDate">—</span><i></i><span id="aRead">—</span></p>
+<p class="crumbs"><a data-cms="t002-الرئيسية" data-ar="الرئيسية" href={`/${locale}`}>Home</a><span>/</span><a data-cms="t003-المركز-الإعلامي" data-ar="المركز الإعلامي" href={`/${locale}/media`}>Media</a><span>/</span><Text as="span" id="aKind" key="kind" field={kind} /></p>
+<Text as="h1" id="aTitle" key="title" field={title} />
+<p class="art__meta"><Text as="span" id="aDate" key="date" field={date} /><i></i><Text as="span" id="aRead" key="read" field={read} /></p>
 </div>
 </header>
 
 <div class="wrap">
 <div class="art__body reveal">
-<p class="art__lede" id="aLede">—</p>
-<div id="aSections"></div>
-<figure class="art__quote" hidden="" id="aQuote"><blockquote id="aQuoteTxt"></blockquote><figcaption id="aQuoteBy"></figcaption></figure>
-<div class="art__tags" id="aTags"></div>
+<Text as="p" class="art__lede" id="aLede" key="lede" field={lede} />
+<div id="aSections">
+{body.map((b, i) => (
+  <>
+    <Text as="h2" key={`body.${i}.h`} field={b.h} />
+    <Text as="p" key={`body.${i}.p`} field={b.p} />
+  </>
+))}
+</div>
+<figure class="art__quote" hidden={!quote.en} id="aQuote"><blockquote><Text as="span" id="aQuoteTxt" key="quote" field={quote} /></blockquote><figcaption><Text as="span" id="aQuoteBy" key="quoteBy" field={quoteBy} /></figcaption></figure>
+<div class="art__tags" id="aTags">
+{tags.map((t, i) => (
+  <Text as="span" class="art__tag" key={`tags.${i}`} field={t} />
+))}
+</div>
 </div>
 
 <div class="art__nav reveal">
@@ -42,5 +77,4 @@ const { locale } = Astro.params;
 </main>
 <script slot="scripts" is:inline src="assets/content/article.js?v=28"></script>
 <script slot="scripts" is:inline src="assets/js/cms.js?v=28"></script>
-<script slot="scripts-late" is:inline src="assets/js/article-data.js"></script>
 </BaseLayout>

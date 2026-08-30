@@ -4,6 +4,8 @@ import Text from '../../components/content/Text.astro';
 import Image from '../../components/content/Image.astro';
 import { getPageContent } from '../../lib/content/store';
 import { MEDIA_FIELDS } from '../../lib/content/schema/media';
+import { getCollectionContent } from '../../lib/content/collections/store';
+import { EVENTS_FIELDS } from '../../lib/content/collections/events';
 import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
@@ -13,6 +15,29 @@ const { locale } = Astro.params;
 if (!isLocale(locale)) return new Response(null, { status: 404 });
 
 const c = await getPageContent<typeof MEDIA_FIELDS>('media');
+
+// Ported verbatim from assets/js/main.js's former module 24 (events-list IIFE) — blocks
+// javascript:/data:/vbscript: hrefs on an admin-controlled link, defaulting to
+// register-interest instead.
+function safeHref(u: string) {
+  const trimmed = String(u ?? '').trim();
+  if (!trimmed) return '/register-interest';
+  if (/^\s*(javascript|data|vbscript):/i.test(trimmed)) return '/register-interest';
+  return trimmed;
+}
+function isExternal(u: string) {
+  return /^https?:\/\//i.test(u);
+}
+
+const events = await getCollectionContent<typeof EVENTS_FIELDS>('events');
+const eventItems = events.items().map((e) => ({
+  id: e.id,
+  day: e.value('day'),
+  month: e.text('month'),
+  title: e.text('title'),
+  desc: e.text('desc'),
+  href: safeHref(e.value('link')),
+}));
 ---
 <BaseLayout
   locale={locale}
@@ -55,7 +80,21 @@ const c = await getPageContent<typeof MEDIA_FIELDS>('media');
 </a></div>
 </div>
 <div class="mtab-panel" id="events" role="tabpanel" hidden>
-<div class="reveal" id="eventsList"></div>
+<div class="reveal" id="eventsList">
+{eventItems.map((e) => (
+  <div class="event">
+    <div class="event__date"><b>{e.day}</b><span data-ar={e.month.ar || e.month.en}>{e.month.en || e.month.ar}</span></div>
+    <div>
+      <h3 data-ar={e.title.ar || e.title.en}>{e.title.en || e.title.ar}</h3>
+      <p data-ar={e.desc.ar || e.desc.en}>{e.desc.en || e.desc.ar}</p>
+    </div>
+    <a class="cta-circle" href={e.href} target={isExternal(e.href) ? '_blank' : undefined} rel={isExternal(e.href) ? 'noopener' : undefined}>
+      <span data-ar="التفاصيل">Details</span>
+      <span class="circ"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span>
+    </a>
+  </div>
+))}
+</div>
 </div>
 
 
@@ -63,5 +102,4 @@ const c = await getPageContent<typeof MEDIA_FIELDS>('media');
 </div>
 </section>
 </main>
-<script slot="scripts-late" is:inline src="assets/js/events-data.js?v=28"></script>
 </BaseLayout>

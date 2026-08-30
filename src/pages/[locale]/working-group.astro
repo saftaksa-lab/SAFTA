@@ -1,22 +1,49 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Text from '../../components/content/Text.astro';
+import Value from '../../components/content/Value.astro';
+import { getCollectionContent } from '../../lib/content/collections/store';
+import { GROUPS_FIELDS } from '../../lib/content/collections/groups';
+import type { TextField } from '../../lib/content/store';
+import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
   return [{ params: { locale: 'en' } }, { params: { locale: 'ar' } }];
 }
 const { locale } = Astro.params;
+if (!isLocale(locale)) return new Response(null, { status: 404 });
+
+const groups = await getCollectionContent<typeof GROUPS_FIELDS>('groups');
+const all = groups.items();
+const id = Astro.url.searchParams.get('id');
+// Same fallback the old client-side lookup used: an unknown/missing id shows the first
+// record rather than a hard 404.
+const group = all.find((g) => g.id === id) ?? all[0];
+
+const no = group.value('no');
+const name = group.text('name');
+const status = group.text('status');
+const statusKey = group.value('statusKey');
+const lead = group.text('lead');
+const head = group.text('head');
+const orgs = group.text('orgs');
+const scope = group.text('scope');
+const note = group.text('note');
+const src = group.value('src');
+const stats = group.list('stats') as Array<{ n: string; l: TextField }>;
+const recs = group.list('recs') as Array<{ t: TextField; d: TextField }>;
 ---
 <BaseLayout
   locale={locale}
-  title="Working group | SAFTA"
-  titleAr="مجموعة عمل | التحالف السعودي"
+  title={`${name.en} | SAFTA`}
+  titleAr={`${name.ar} | التحالف السعودي`}
 >
 <main>
 <section class="page-hero">
 <img data-cms-img="i001-gd09rackshero" alt="" src="assets/img/green-dunes/gd-09-racks-hero.webp"/>
 <div class="wrap">
 <p class="crumbs"><a data-cms="t002-الرئيسية" data-ar="الرئيسية" href={`/${locale}`}>Home</a><span>/</span><a data-cms="t003-مجموعات-العمل" data-ar="مجموعات العمل" href={`/${locale}/technologies`}>Working groups</a><span>/</span><span data-cms="t004-تفاصيل-المجموعة" data-ar="تفاصيل المجموعة">Group</span></p>
-<h1 data-cms="t005-مجموعة-عمل" data-ar="مجموعة عمل" id="gTitle">Working group</h1>
+<Text as="h1" id="gTitle" key="name" field={name} />
 </div>
 </section>
 
@@ -24,32 +51,40 @@ const { locale } = Astro.params;
 <div class="wrap">
 
 <div class="wgp__head reveal">
-<span class="wgp__no" id="gNo">01</span>
+<Value as="span" class="wgp__no" id="gNo" key="no" value={no} />
 <div class="wgp__ident">
 <p data-cms="t006-مجموعة-عمل" class="eyebrow" data-ar="مجموعة عمل">Working group</p>
-<h2 class="h-section" id="gName" style="margin-top:8px">—</h2>
+<h2 class="h-section" id="gName" style="margin-top:8px"><Text as="span" key="name" field={name} /></h2>
 </div>
-<span class="wg-status" hidden="" id="gStatus"></span>
+<Text as="span" class={`wg-status${statusKey ? ' wg-status--' + statusKey : ''}`} id="gStatus" hidden={!status.en} key="status" field={status} />
 </div>
 
-<p class="lede wgp__scope reveal" id="gScope">—</p>
+<Text as="p" class="lede wgp__scope reveal" id="gScope" key="scope" field={scope} />
 
-<div class="wgp__stats reveal" id="gStats" hidden=""></div>
+<div class="wgp__stats reveal" id="gStats" hidden={!stats.length}>
+{stats.map((s, i) => (
+  <div class="wgp__stat"><b><Value as="span" key={`stats.${i}.n`} value={s.n} /></b><Text as="span" key={`stats.${i}.l`} field={s.l} /></div>
+))}
+</div>
 
 <div class="facts reveal">
-<div class="fact"><b data-cms="t007-قائد-المجموعة" data-ar="قائد المجموعة">Group lead</b><span id="gHead">—</span></div>
-<div class="fact"><b data-cms="t008-الجهة-القائدة" data-ar="الجهة القائدة">Lead entity</b><span id="gLead">—</span></div>
-<div class="fact fact--wide"><b data-cms="t009-الجهات-المشاركة" data-ar="الجهات المشاركة">Participating organizations</b><span id="gOrgs">—</span></div>
+<div class="fact"><b data-cms="t007-قائد-المجموعة" data-ar="قائد المجموعة">Group lead</b><Text as="span" id="gHead" key="head" field={head} /></div>
+<div class="fact"><b data-cms="t008-الجهة-القائدة" data-ar="الجهة القائدة">Lead entity</b><Text as="span" id="gLead" key="lead" field={lead} /></div>
+<div class="fact fact--wide"><b data-cms="t009-الجهات-المشاركة" data-ar="الجهات المشاركة">Participating organizations</b><Text as="span" id="gOrgs" key="orgs" field={orgs} /></div>
 </div>
 
-<div class="wgp__sec reveal" id="gRecsWrap" hidden="">
+<div class="wgp__sec reveal" id="gRecsWrap" hidden={!recs.length}>
 <h3 data-cms="t010-التوصيات" class="h-sub" data-ar="التوصيات">Recommendations</h3>
-<ol class="wgp__recs" id="gRecs"></ol>
+<ol class="wgp__recs" id="gRecs">
+{recs.map((r, i) => (
+  <li class="wgp__rec"><Text as="h4" key={`recs.${i}.t`} field={r.t} /><Text as="p" key={`recs.${i}.d`} field={r.d} /></li>
+))}
+</ol>
 </div>
 
-<p class="wgp__note reveal" id="gNote" hidden=""></p>
+<Text as="p" class="wgp__note reveal" id="gNote" hidden={!note.en} key="note" field={note} />
 
-<p class="wgp__src reveal" id="gSrc"></p>
+<p class="wgp__src reveal" id="gSrc" hidden={!src}><span data-ar="المصدر:">Source:</span> <Value as="span" key="src" value={src} /></p>
 
 <div class="wgp__nav reveal">
 <a data-cms="t011-كل-مجموعات-العمل" class="btn-pill" data-ar="كل مجموعات العمل" href={`/${locale}/technologies`}>All working groups</a>
@@ -61,5 +96,4 @@ const { locale } = Astro.params;
 </main>
 <script slot="scripts" is:inline src="assets/content/working-group.js?v=28"></script>
 <script slot="scripts" is:inline src="assets/js/cms.js?v=28"></script>
-<script slot="scripts-late" is:inline src="assets/js/wg-data.js"></script>
 </BaseLayout>

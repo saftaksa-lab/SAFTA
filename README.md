@@ -197,13 +197,29 @@ would otherwise silently wipe an addable collection). `src/pages/admin/api/colle
 exposes the same GET/POST shape as the page content route, gated by the same `/admin` session
 middleware.
 
-**This is the storage/validation layer only — nothing renders from it yet.** No page template
-has been migrated onto it (`article.astro`/`working-group.astro`/`technologies.astro` still run
-the old client-side flow above), `public/admin/admin.js` doesn't call the new routes, and
-`_groups`/`_articles`/`_events` are deliberately left without `apiBacked` in `schema.js`. Prove
-the primitive with `node scripts/test-collections.mjs` (esbuild-bundles the collection modules
-and asserts against them directly, the same technique used to test the page validators, since
-there's no page consumer to exercise it through yet).
+`article.astro`, `working-group.astro`, `technologies.astro` and `media.astro`'s Events tab now
+render server-side from this store via `getCollectionContent<F>(name)`, reusing `Text.astro`/
+`Image.astro` as-is (their `TextField`/`ImageField` prop shapes are exactly what `text()`/`image()`
+already return) plus the new `Value.astro` for untranslated scalars (`no`, `ch`'s theme, `src`,
+`day`, `link`). List fields (`stats`, `recs`, `body`, `tags`) have no typed accessor — each template
+casts `.list(key)` to that collection's own item shape and maps over it directly, since it's
+page-specific rendering logic with exactly one caller. The `?id=`/fallback-to-first-record lookup,
+the icon/theme grid tiles on `technologies.astro`, and the `safeHref` link-sanitizing on the events
+tab are all ported verbatim from the client-side IIFEs they replace (formerly modules 18, 21, 22,
+24 in `assets/js/main.js`, now deleted).
+
+**`public/admin/admin.js`'s edit flow for these three views was deliberately left untouched in this
+pass, and that is now a real drift risk worth knowing about.** The admin still edits `_groups`/
+`_articles`/`_events` against `public/assets/js/{wg-data,article-data,events-data}.js` (dot-path
+fields, "Save & Publish" downloads an updated copy of that file for manual commit) — but the pages
+above no longer read those files at all. Publishing an edit through the current admin UI no longer
+changes what the live site shows; the two are reconciled only by re-running
+`npm run seed:collections -- --force` afterward. Closing this gap — `apiBacked: true` on these
+three `schema.js` entries, an admin field engine that speaks the `{en,ar}`-object shape instead of
+the legacy dot-path one, and a POST through `/admin/api/collection/[name]` — is a separate,
+not-yet-scheduled pass. Prove the storage primitive on its own with
+`node scripts/test-collections.mjs` (esbuild-bundles the collection modules and asserts against
+them directly, the same technique used to test the page validators).
 
 **Known issue, unrelated to any of the above:** Vite's built-in `dotenv-expand` treats any
 `$word` in a `.env` value as a variable reference and blanks it if undefined. A
