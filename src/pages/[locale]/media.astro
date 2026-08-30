@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Text from '../../components/content/Text.astro';
+import Value from '../../components/content/Value.astro';
 import Image from '../../components/content/Image.astro';
 import { getPageContent } from '../../lib/content/store';
 import { MEDIA_FIELDS } from '../../lib/content/schema/media';
@@ -83,10 +84,10 @@ const eventItems = events.items().map((e) => ({
 <div class="reveal" id="eventsList">
 {eventItems.map((e) => (
   <div class="event">
-    <div class="event__date"><b>{e.day}</b><span data-ar={e.month.ar || e.month.en}>{e.month.en || e.month.ar}</span></div>
+    <div class="event__date"><Value as="b" key={`${e.id}.day`} value={e.day} /><Text as="span" key={`${e.id}.month`} field={e.month} /></div>
     <div>
-      <h3 data-ar={e.title.ar || e.title.en}>{e.title.en || e.title.ar}</h3>
-      <p data-ar={e.desc.ar || e.desc.en}>{e.desc.en || e.desc.ar}</p>
+      <Text as="h3" key={`${e.id}.title`} field={e.title} />
+      <Text as="p" key={`${e.id}.desc`} field={e.desc} />
     </div>
     <a class="cta-circle" href={e.href} target={isExternal(e.href) ? '_blank' : undefined} rel={isExternal(e.href) ? 'noopener' : undefined}>
       <span data-ar="التفاصيل">Details</span>

@@ -74,11 +74,36 @@ function setPath(obj, path, val) {
   o[p[p.length - 1]] = val;
 }
 
+/* يحدّد نوع حقل مجموعة (_groups/_articles/_events) من type/arPath — الاشتقاق نفسه الذي
+   تستخدمه scripts/lib/legacy-collection-shape.mjs، منقولًا هنا لأن كل قراءة/كتابة تحتاجه. */
+function fieldKind(f) {
+  if (f.type === 'image') return 'image';
+  if (f.type === 'boolean') return 'boolean';
+  if (f.arPath) return 'text';
+  return 'value';
+}
+
+/* يحوّل مسار الحقل القديم (المُعرَّف في schema.js تجاه الشكل المسطّح القديم) إلى مسار
+   الوصول داخل content/{groups,articles,events}.json المتداخل الفعلي — دون تغيير أي شيء في
+   schema.js. حقول القيمة/المنطقية تبقى بمسارها كما هو (كانت دومًا قيمة مباشرة في الشكلين). */
+function dataAccessPath(f, lang) {
+  var kind = fieldKind(f);
+  if (kind === 'text') {
+    if (lang === 'ar') return f.path + '.ar';
+    if (lang === 'en') return f.path + '.en';
+    return null;
+  }
+  if (kind === 'image') {
+    return lang === 'src' ? f.path + '.src' : null;
+  }
+  return (lang === 'ar' || lang === 'alt') ? null : f.path;
+}
+
 /* عنوان موحّد لكل حقل داخل مجموعة تحرير واحدة */
 function readField(viewKey, f, lang) {
   var sc = SCHEMA[viewKey];
   if (sc.kind === 'data') {
-    var path = (lang === 'ar') ? f.arPath : f.path;
+    var path = dataAccessPath(f, lang);
     if (!path) return null;
     return getPath(S.cur[sc.store][f.recId], path);
   }
@@ -91,7 +116,7 @@ function readField(viewKey, f, lang) {
 function writeField(viewKey, f, lang, val) {
   var sc = SCHEMA[viewKey];
   if (sc.kind === 'data') {
-    var path = (lang === 'ar') ? f.arPath : f.path;
+    var path = dataAccessPath(f, lang);
     if (!path) return;
     setPath(S.cur[sc.store][f.recId], path, val);
     return;
@@ -104,7 +129,7 @@ function writeField(viewKey, f, lang, val) {
 function baseField(viewKey, f, lang) {
   var sc = SCHEMA[viewKey];
   if (sc.kind === 'data') {
-    var path = (lang === 'ar') ? f.arPath : f.path;
+    var path = dataAccessPath(f, lang);
     if (!path) return null;
     var rec0 = BASE[sc.store][f.recId];
     return rec0 ? getPath(rec0, path) : null;
@@ -232,8 +257,11 @@ function apiBackedViews() {
    (src/lib/content/schema/*.ts) بدل الاعتماد فقط على النسخة اليدوية في schema.js —
    نجلبه هنا ونستبدل به قبل أي استخدام لـ SCHEMA، فيبقى schema.js احتياطًا محليًا فقط
    إن تعذّر الاتصال بالخادم. */
+/* مجموعات _groups/_articles/_events ليس لها مخطط خادمي منفصل — schema.js يبقى المرجع
+   الوحيد لحقولها (generate-collection-schema.mjs يفشل بصوت عالٍ لو اختلف عن
+   content/*.json)، فلا حاجة لجلب مخطط حيّ لها كما تفعل الصفحات المسطّحة. */
 function syncApiBackedSchema() {
-  var views = apiBackedViews();
+  var views = apiBackedViews().filter(function (v) { return SCHEMA[v].kind !== 'data'; });
   return Promise.all(views.map(function (v) {
     return fetch('/admin/api/schema/' + v)
       .then(function (r) { if (!r.ok) throw new Error('bad status'); return r.json(); })
@@ -247,9 +275,14 @@ function syncApiBackedSchema() {
 function syncApiBackedBaseline() {
   var views = apiBackedViews();
   return Promise.all(views.map(function (v) {
-    return fetch('/admin/api/content/' + v)
+    var sc = SCHEMA[v];
+    var url = sc.kind === 'data' ? '/admin/api/collection/' + sc.store : '/admin/api/content/' + v;
+    return fetch(url)
       .then(function (r) { if (!r.ok) throw new Error('bad status'); return r.json(); })
-      .then(function (data) { BASE.pages[v] = data; })
+      .then(function (data) {
+        if (sc.kind === 'data') BASE[sc.store] = data;
+        else BASE.pages[v] = data;
+      })
       .catch(function () {
         toast('تعذّر تحميل أحدث نسخة من «' + (SCHEMA[v].label || v) + '» — يُعرض آخر إصدار محفوظ محليًا');
       });
@@ -380,9 +413,10 @@ function renderSearch() {
 
 function fieldHtml(f, viewOverride) {
   var v = viewOverride || S.view;
+  var sc = SCHEMA[v];
   var dirty = fieldDirty(v, f);
   var uid = escapeHtml(f.uid);
-  var tag = { text: 'نص', long: 'فقرة', rich: 'نص منسّق', image: 'صورة', url: 'رابط' }[f.type] || 'نص';
+  var tag = { text: 'نص', long: 'فقرة', rich: 'نص منسّق', image: 'صورة', url: 'رابط', boolean: 'قيمة منطقية' }[f.type] || 'نص';
 
   var head = '<div class="f' + (dirty ? ' is-dirty' : '') + '" data-uid="' + uid + '" data-view="' + v + '">' +
     '<div class="f__top">' +
@@ -394,17 +428,30 @@ function fieldHtml(f, viewOverride) {
   if (f.type === 'image') {
     var src = readField(v, f, 'src') || '';
     var shown = S.images[src] || (src.indexOf('data:') === 0 ? src : '../' + src);
+    /* صور المجموعات (_groups/_articles) ليس لها وصف بديل في الشكل المخزَّن أصلًا — لا
+       داعٍ لعنصر تحرير يكتب إلى مسار غير موجود. */
+    var altBox = (sc.kind === 'data') ? '' :
+      '<div class="f__side"><i>الوصف البديل (للقارئ الآلي)</i>' +
+        '<textarea class="inp" rows="1" data-lang="alt" data-act="edit">' +
+          escapeHtml(readField(v, f, 'alt') || '') + '</textarea></div>';
     return head +
       '<div class="img">' +
         '<div class="img__prev" style="background-image:url(\'' + escapeHtml(shown) + '\')"></div>' +
         '<div class="img__side">' +
           '<label class="img__pick">اختر صورة بديلة<input type="file" accept="image/*" data-act="pick"></label>' +
           '<div class="img__path">' + escapeHtml(src) + '</div>' +
-          '<div class="f__side"><i>الوصف البديل (للقارئ الآلي)</i>' +
-            '<textarea class="inp" rows="1" data-lang="alt" data-act="edit">' +
-              escapeHtml(readField(v, f, 'alt') || '') + '</textarea></div>' +
+          altBox +
         '</div>' +
       '</div></div>';
+  }
+
+  if (f.type === 'boolean') {
+    var checked = !!readField(v, f, 'en');
+    var bd = Boolean(checked) !== Boolean(baseField(v, f, 'en')) ? ' is-dirty' : '';
+    return head +
+      '<div class="f__pair"><div class="f__side' + bd + '" style="grid-column:1/-1">' +
+        '<label class="chk"><input type="checkbox" data-act="toggle"' + (checked ? ' checked' : '') + '> مفعّل</label>' +
+      '</div></div></div>';
   }
 
   /* رابط: قيمة واحدة للّغتين، تُكتب من اليسار لليمين */
@@ -486,6 +533,22 @@ function bindPane() {
     if (!isRich) autosize(el);
   });
 
+  $$('[data-act="toggle"]', pane).forEach(function (el) {
+    var wrap = el.closest('.f');
+    var view = wrap.getAttribute('data-view');
+    var f = findField(wrap.getAttribute('data-uid'), view);
+    if (!f) return;
+    el.addEventListener('change', function () {
+      var val = el.checked;
+      writeField(view, f, 'en', val);
+      var chg = Boolean(val) !== Boolean(baseField(view, f, 'en'));
+      wrap.classList.toggle('is-dirty', chg);
+      saveDraft(); refreshChip();
+      var side = $('.side__item[data-view="' + view + '"]');
+      if (side) side.classList.toggle('is-dirty', dirtyInView(view) > 0);
+    });
+  });
+
   $$('[data-act="pick"]', pane).forEach(function (inp) {
     inp.addEventListener('change', function () {
       var file = inp.files && inp.files[0];
@@ -558,20 +621,115 @@ function bindPane() {
   });
 }
 
+/* ─── تحويل السجلّ الجديد من الشكل المسطّح القديم (newRecord في schema.js) إلى الشكل
+   المتداخل الذي يخزّنه content/{groups,articles,events}.json فعليًا — نفس منطق
+   scripts/lib/legacy-collection-shape.mjs منقولًا هنا (بلا اعتماد على Node). ─── */
+
+function deriveCollectionShape(sections) {
+  var allFields = [];
+  sections.forEach(function (s) {
+    (s.cards || []).forEach(function (c) { (c.fields || []).forEach(function (f) { allFields.push(f); }); });
+  });
+  var byTop = {};
+  allFields.forEach(function (f) {
+    var top = f.path.split('.')[0];
+    if (!byTop[top]) byTop[top] = [];
+    byTop[top].push(f);
+  });
+
+  var shape = {};
+  Object.keys(byTop).forEach(function (top) {
+    var fields = byTop[top];
+    var depths = {};
+    fields.forEach(function (f) { depths[f.path.split('.').length] = true; });
+
+    if (depths[1]) {
+      var f0 = fields.filter(function (x) { return x.path === top; })[0];
+      shape[top] = scalarDescriptor(f0);
+      return;
+    }
+    if (depths[2]) {
+      var first = fields.filter(function (x) { return x.path === top + '.0'; })[0] || fields[0];
+      shape[top] = { kind: 'list', itemKind: first.arPath ? 'text' : 'value' };
+      return;
+    }
+    if (depths[3]) {
+      var idx = firstListIndex(fields, top);
+      var itemFieldSource = fields.filter(function (x) { return x.path.indexOf(top + '.' + idx + '.') === 0; });
+      var itemFields = {};
+      itemFieldSource.forEach(function (x) {
+        var sub = x.path.split('.')[2];
+        itemFields[sub] = x.arPath ? { kind: 'text', arKey: x.arPath } : { kind: 'value' };
+      });
+      shape[top] = { kind: 'list', itemFields: itemFields };
+    }
+  });
+  return shape;
+}
+
+function scalarDescriptor(f) {
+  if (!f) return { kind: 'value' };
+  if (f.type === 'image') return { kind: 'image' };
+  if (f.type === 'boolean') return { kind: 'boolean' };
+  if (f.arPath) return { kind: 'text', arKey: f.arPath };
+  return { kind: 'value' };
+}
+
+function firstListIndex(fields, top) {
+  var indices = [];
+  var re = new RegExp('^' + top.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\.(\\d+)\\.');
+  fields.forEach(function (f) {
+    var m = f.path.match(re);
+    if (m) indices.push(Number(m[1]));
+  });
+  return indices.length ? Math.min.apply(null, indices) : 0;
+}
+
+function reshapeToNested(raw, shape) {
+  var out = {};
+  Object.keys(shape).forEach(function (key) { out[key] = reshapeValue(raw, key, shape[key]); });
+  return out;
+}
+
+function reshapeValue(raw, key, desc) {
+  switch (desc.kind) {
+    case 'text': return { en: raw[key] || '', ar: raw[desc.arKey] || '' };
+    case 'value': return raw[key] != null ? raw[key] : '';
+    case 'boolean': return !!raw[key];
+    case 'image': return { src: raw[key] || '' };
+    case 'list': {
+      var arr = Array.isArray(raw[key]) ? raw[key] : [];
+      if (desc.itemKind === 'text') {
+        var arArr = Array.isArray(raw[key + '_ar']) ? raw[key + '_ar'] : [];
+        return arr.map(function (en, i) { return { en: en, ar: arArr[i] || '' }; });
+      }
+      if (desc.itemKind === 'value') return arr.slice();
+      return arr.map(function (item) { return reshapeToNested(item, desc.itemFields); });
+    }
+    default: return null;
+  }
+}
+
 /* ─── إضافة/حذف سجلّ (مجموعات العمل فقط) ─── */
 
 function addRecord() {
   var sc = SCHEMA[S.view];
   if (!sc || !sc.addable) return;
   var id = (sc.newPrefix || 'wg-new-') + Date.now().toString(36);
-  var rec = clone(sc.newRecord || {});
+  var rec = (sc.kind === 'data')
+    ? reshapeToNested(clone(sc.newRecord || {}), deriveCollectionShape(sc.sections))
+    : clone(sc.newRecord || {});
   if (!S.cur[sc.store]) S.cur[sc.store] = {};
   S.cur[sc.store][id] = rec;
 
   var cardLbl = sc.cardLabel || 'المحتوى';
+  var titleField = (sc.kind === 'data') ? (rec.title || rec.name) : null;
+  var label = (sc.kind === 'data')
+    ? ((titleField && (titleField.ar || titleField.en)) || 'سجلّ جديد')
+    : (rec.title_ar || rec.name_ar || rec.title || rec.name || 'سجلّ جديد');
   sc.sections.push({
     key: id,
-    label: rec.title_ar || rec.name_ar || rec.title || rec.name || 'سجلّ جديد',
+    label: label,
     fields: [],
     cards: [{ key: id, label: cardLbl, fields: clone(sc.sections[0].cards[0].fields) }]
   });
@@ -613,9 +771,48 @@ $('#q').addEventListener('input', function () {
 function previewTarget() {
   var sc = SCHEMA[S.view];
   if (sc.kind !== 'data') return { file: sc.file, id: null };
-  if (S.view === '_groups')   return { file: 'working-group.html', id: Object.keys(S.cur.groups)[0] };
-  if (S.view === '_events')   return { file: 'media.html', id: null };
-  return { file: 'article.html', id: Object.keys(S.cur.articles)[0] };
+  if (S.view === '_groups')   return { file: 'working-group.html', id: Object.keys(S.cur.groups)[0], view: S.view };
+  if (S.view === '_events')   return { file: 'media.html', id: null, view: S.view };
+  return { file: 'article.html', id: Object.keys(S.cur.articles)[0], view: S.view };
+}
+
+/* بناء قاموس بديل «data-cms → قيمة» لسجلّ واحد من مجموعة (المجموعات/المقالات، حيث تُعرض
+   نسخة واحدة بمُعرِّف ?id= في كل مرة) — المفاتيح هي مسارات schema.js نفسها، وهي أيضًا
+   مفاتيح data-cms التي يرسمها Text/Value/Image في الصفحة (انظر article.astro مثلًا). */
+function collectionPatchDict(view, id) {
+  var sc = SCHEMA[view];
+  var rec = (S.cur[sc.store] || {})[id];
+  if (!rec) return {};
+  var dict = {};
+  flatFields(view).forEach(function (f) {
+    if (f.recId !== id) return;
+    dict[f.path] = fieldPatchValue(f, rec);
+  });
+  return dict;
+}
+
+/* نفس الفكرة لكن لكل سجلّات المجموعة معًا (الفعاليات: media.astro يعرض كل الفعاليات في
+   آنٍ واحد، لا سجلًّا واحدًا بمُعرِّف) — كل مفتاح مسبوق بمُعرِّف السجلّ. */
+function collectionPatchDictAll(view) {
+  var sc = SCHEMA[view];
+  var dict = {};
+  Object.keys(S.cur[sc.store] || {}).forEach(function (id) {
+    var rec = S.cur[sc.store][id];
+    flatFields(view).forEach(function (f) {
+      if (f.recId !== id) return;
+      dict[id + '.' + f.path] = fieldPatchValue(f, rec);
+    });
+  });
+  return dict;
+}
+
+function fieldPatchValue(f, rec) {
+  var kind = fieldKind(f);
+  if (kind === 'image') return { src: getPath(rec, f.path + '.src') };
+  if (kind === 'text') return { en: getPath(rec, f.path + '.en'), ar: getPath(rec, f.path + '.ar') };
+  /* قيمة/منطقي: لا مقابل عربي — تُغلَّف بـ{en:...} فقط لتُطابق شرط سكربت الترقيع الحالي
+     (r.en) دون تعديله. */
+  return { en: getPath(rec, f.path) };
 }
 
 $('#btnPreview').addEventListener('click', function () {
@@ -655,18 +852,34 @@ function buildPreview(t, lang, width) {
       );
     }
 
+    /* مجموعات _groups/_articles/_events: نفس آلية الترقيع أعلاه لكن بقاموس مبنيّ من
+       مسارات schema.js نفسها — article.astro/working-group.astro/media.astro تُصدر
+       data-cms/data-cms-img بهذه المسارات ذاتها عبر Text/Value/Image. لا سكربت بيانات
+       نستبدله كما في الصفحات القديمة (wg-data.js وغيرها لم يعودا موجودَين في القالب). */
+    if (t.view && SCHEMA[t.view] && SCHEMA[t.view].kind === 'data') {
+      var cdict = (t.view === '_events') ? collectionPatchDictAll(t.view) : collectionPatchDict(t.view, t.id);
+      var cpatch = '<script>(function(){' +
+        'var C=' + JSON.stringify(cdict) + ';' +
+        'document.querySelectorAll("[data-cms]").forEach(function(el){' +
+          'var r=C[el.getAttribute("data-cms")];if(!r)return;' +
+          'if(typeof r.en==="string")el.innerHTML=r.en;' +
+          'if(typeof r.ar==="string")el.setAttribute("data-ar",r.ar);' +
+        '});' +
+        'document.querySelectorAll("[data-cms-img]").forEach(function(el){' +
+          'var r=C[el.getAttribute("data-cms-img")];if(!r)return;' +
+          'if(r.src)el.setAttribute("src",r.src);' +
+        '});' +
+      '})();<\/script>';
+      html = html.replace(
+        /<script[^>]*src="\/?assets\/js\/i18n\.js(\?v=\d+)?"[^>]*><\/script>/,
+        function (m) { return cpatch + m; }
+      );
+    }
+
     /* المحتوى المعدّل بدل الملف المنشور (الصفحات القديمة فقط) */
     var inject = '<script>window.SAFTA_C=window.SAFTA_C||{};window.SAFTA_C[' +
       JSON.stringify(page) + ']=' + JSON.stringify(withImages(S.cur.pages[page] || {})) + ';<\/script>';
     html = html.replace(/<script[^>]*src="\/?assets\/content\/[\w-]+\.js(\?v=\d+)?"[^>]*><\/script>/, inject);
-
-    /* بيانات المجموعات والمقالات المعدّلة */
-    html = html.replace(/<script[^>]*src="\/?assets\/js\/wg-data\.js(\?v=\d+)?"[^>]*><\/script>/,
-      '<script>window.SAFTA_GROUPS=' + JSON.stringify(S.cur.groups) + ';<\/script>');
-    html = html.replace(/<script[^>]*src="\/?assets\/js\/article-data\.js(\?v=\d+)?"[^>]*><\/script>/,
-      '<script>window.SAFTA_ARTICLES=' + JSON.stringify(S.cur.articles) + ';<\/script>');
-    html = html.replace(/<script[^>]*src="\/?assets\/js\/events-data\.js(\?v=\d+)?"[^>]*><\/script>/,
-      '<script>window.SAFTA_EVENTS=' + JSON.stringify(S.cur.events) + ';<\/script>');
 
     html = html.replace(/localStorage\.getItem\(KEY\)/, 'null');
     html = html.replace(/<\/body>/i,
@@ -729,32 +942,9 @@ function changedFiles() {
     });
   });
 
-  /* بيانات المجموعات */
-  if (dirtyInView('_groups')) {
-    out.push({
-      name: 'wg-data.js', to: 'assets/js/wg-data.js', n: dirtyInView('_groups'),
-      text: '/* بيانات مجموعات العمل التسع — يولّدها مركز التحكّم. لا تُحرَّر يدويًا. */\n' +
-            'window.SAFTA_GROUPS = ' + JSON.stringify(S.cur.groups, null, 2) + ';\n'
-    });
-  }
-
-  /* بيانات المقالات */
-  if (dirtyInView('_articles')) {
-    out.push({
-      name: 'article-data.js', to: 'assets/js/article-data.js', n: dirtyInView('_articles'),
-      text: '/* الأخبار والمقالات — يولّدها مركز التحكّم. لا تُحرَّر يدويًا. */\n' +
-            'window.SAFTA_ARTICLES = ' + JSON.stringify(S.cur.articles, null, 2) + ';\n'
-    });
-  }
-
-  /* بيانات الفعاليات */
-  if (dirtyInView('_events')) {
-    out.push({
-      name: 'events-data.js', to: 'assets/js/events-data.js', n: dirtyInView('_events'),
-      text: '/* الفعاليات والمعارض — يولّدها مركز التحكّم. لا تُحرَّر يدويًا. */\n' +
-            'window.SAFTA_EVENTS = ' + JSON.stringify(S.cur.events, null, 2) + ';\n'
-    });
-  }
+  /* بيانات _groups/_articles/_events تُنشَر مباشرة عبر الخادم الآن (انظر
+     publishApiBacked) — لم تعد تحتاج تنزيلًا يدويًا لـwg-data.js/article-data.js/
+     events-data.js، ولم تعد القوالب تقرأ هذه الملفات أصلًا. */
 
   /* الصور المرفوعة المستخدَمة فعليًا */
   var used = {};
@@ -806,10 +996,13 @@ function publishApiBacked() {
   var views = apiBackedViews().filter(function (v) { return dirtyInView(v) > 0; });
   if (!views.length) return Promise.resolve([]);
   return Promise.all(views.map(function (v) {
-    return fetch('/admin/api/content/' + v, {
+    var sc = SCHEMA[v];
+    var url = sc.kind === 'data' ? '/admin/api/collection/' + sc.store : '/admin/api/content/' + v;
+    var body = sc.kind === 'data' ? S.cur[sc.store] : S.cur.pages[v];
+    return fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(S.cur.pages[v])
+      body: JSON.stringify(body)
     })
       .then(function (r) { return r.json().then(function (j) { return { view: v, ok: r.ok, j: j }; }); })
       .catch(function () { return { view: v, ok: false, j: {} }; });
@@ -830,8 +1023,12 @@ $('#btnPublish').addEventListener('click', function () {
     btn.disabled = false;
     var saved = [], failed = [];
     results.forEach(function (r) {
-      if (r.ok) { BASE.pages[r.view] = clone(S.cur.pages[r.view]); saved.push(SCHEMA[r.view].label); }
-      else failed.push((SCHEMA[r.view] && SCHEMA[r.view].label) || r.view);
+      var sc = SCHEMA[r.view];
+      if (r.ok) {
+        if (sc.kind === 'data') BASE[sc.store] = clone(S.cur[sc.store]);
+        else BASE.pages[r.view] = clone(S.cur.pages[r.view]);
+        saved.push(sc.label);
+      } else failed.push((sc && sc.label) || r.view);
     });
     saveDraft(); refreshChip(); renderSide(); renderPane();
 
