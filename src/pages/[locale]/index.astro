@@ -3,7 +3,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Text from '../../components/content/Text.astro';
 import Image from '../../components/content/Image.astro';
 import { getPageContent } from '../../lib/content/store';
+import { getCollectionContent } from '../../lib/content/collections/store';
 import { INDEX_FIELDS } from '../../lib/content/schema/index';
+import { PARTNERS_FIELDS } from '../../lib/content/collections/partners';
 import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
@@ -13,6 +15,17 @@ const { locale } = Astro.params;
 if (!isLocale(locale)) return new Response(null, { status: 404 });
 
 const c = await getPageContent<typeof INDEX_FIELDS>('index');
+
+// The partner logo strip is an addable/deletable collection (content/partners.json) rather
+// than fixed page fields, so the admin can add or remove a partner instead of only swapping
+// the seven original logos. See src/lib/content/collections/partners.ts.
+const partners = await getCollectionContent<typeof PARTNERS_FIELDS>('partners');
+const partnerItems = partners.items().map((p) => ({
+  id: p.id,
+  name: p.text('name'),
+  logo: p.image('logo'),
+  url: p.value('url'),
+}));
 ---
 <BaseLayout
   locale={locale}
@@ -220,13 +233,11 @@ const c = await getPageContent<typeof INDEX_FIELDS>('index');
 <p class="partners__label" data-ar="الشراكات الاستراتيجية">Strategic partnerships</p>
 <div class="partners__viewport">
 <div class="partners__track">
-<a class="partner" href={`/${locale}/members`} title="Ministry of Environment, Water &amp; Agriculture"><img alt="Ministry of Environment, Water &amp; Agriculture" loading="lazy" src="assets/img/partners/mewa.png"/></a>
-<a class="partner" href={`/${locale}/members`} title="King Abdullah University of Science &amp; Technology"><img alt="King Abdullah University of Science &amp; Technology" loading="lazy" src="assets/img/partners/kaust.png"/></a>
-<a class="partner" href={`/${locale}/members`} title="National Research &amp; Development Center for Sustainable Agriculture (Estidamah)"><img alt="National Research &amp; Development Center for Sustainable Agriculture" loading="lazy" src="assets/img/partners/estidamah.png"/></a>
-<a class="partner" href={`/${locale}/members`} title="ARASCO"><img alt="ARASCO" loading="lazy" src="assets/img/partners/arasco.png"/></a>
-<a class="partner" href={`/${locale}/members`} title="Almarai"><img alt="Almarai" loading="lazy" src="assets/img/partners/almarai.png"/></a>
-<a class="partner" href={`/${locale}/members`} title="Tanmiah Food Group"><img alt="Tanmiah Food Group" loading="lazy" src="assets/img/partners/tanmiah.png"/></a>
-<a class="partner" href={`/${locale}/members`} title="NPRAS — National Platform of R&amp;I Analytics for Sustainability"><img alt="NPRAS — National Platform of R&amp;I Analytics for Sustainability" loading="lazy" src="assets/img/partners/npras.png"/></a>
+{partnerItems.map((p) => (
+  <a class="partner" href={p.url || `/${locale}/members`} title={p.name.en || p.name.ar}>
+    <img data-cms-img={`${p.id}.logo`} alt={p.name.en || p.name.ar} loading="lazy" src={p.logo.src} />
+  </a>
+))}
 </div>
 </div>
 <p class="partners__note" data-ar="الجهات الشريكة استراتيجيًا في تأسيس التحالف وتفعيل مجموعات عمله.">The strategic partners behind the Alliance's establishment and the activation of its working groups.</p>

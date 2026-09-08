@@ -31,6 +31,7 @@ export { default as GROUPS_COLLECTION } from './groups';
 export { default as ARTICLES_COLLECTION } from './articles';
 export { default as EVENTS_COLLECTION } from './events';
 export { default as ROLES_COLLECTION } from './roles';
+export { default as PARTNERS_COLLECTION } from './partners';
 `;
 
 async function main() {
@@ -66,6 +67,7 @@ async function runAssertions(mod) {
     ARTICLES_COLLECTION,
     EVENTS_COLLECTION,
     ROLES_COLLECTION,
+    PARTNERS_COLLECTION,
     validateCollectionUpdate,
     getCollectionContent,
   } = mod;
@@ -80,6 +82,7 @@ async function runAssertions(mod) {
     ['articles', ARTICLES_COLLECTION],
     ['events', EVENTS_COLLECTION],
     ['roles', ROLES_COLLECTION],
+    ['partners', PARTNERS_COLLECTION],
   ]) {
     const result = zodForItemFields(collection.fields).safeParse(collection.newItem);
     assert.equal(
@@ -148,10 +151,12 @@ async function runAssertions(mod) {
 
   // 4b. `deletable` collections (`_groups`/`_roles`) are the exception to "removal is never
   //     allowed": an already-seeded, previously-published record can be removed outright,
-  //     not just an unpublished addition — unlike articles/events above.
+  //     not just an unpublished addition — unlike articles/events above. `_partners` (the
+  //     homepage logo strip) is the third of them.
   for (const [label, collection] of [
     ['roles', ROLES_COLLECTION],
     ['groups', GROUPS_COLLECTION],
+    ['partners', PARTNERS_COLLECTION],
   ]) {
     const { readCollectionData } = mod;
     const existing = await readCollectionData(label);
