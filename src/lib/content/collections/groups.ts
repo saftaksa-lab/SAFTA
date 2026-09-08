@@ -32,9 +32,7 @@ const GROUPS_COLLECTION = {
   file: "assets/js/wg-data.js",
   store: "groups",
   addable: true,
-  deletable: false,
-  deletableOwn: true,
-  newPrefix: "wg-new-",
+  deletable: true,
   fields: GROUPS_FIELDS,
   newItem: {"name":{"en":"New working group","ar":"مجموعة عمل جديدة"},"status":{"en":"","ar":""},"lead":{"en":"","ar":""},"head":{"en":"","ar":""},"orgs":{"en":"","ar":""},"scope":{"en":"Short description of the working group.","ar":"نبذة مختصرة عن مجموعة العمل."},"stats":[],"recs":[],"note":{"en":"","ar":""},"img":{"src":""},"no":"","ch":"","statusKey":"","src":""},
 };
