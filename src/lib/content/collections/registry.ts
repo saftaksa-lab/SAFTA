@@ -30,7 +30,15 @@ export function getCollectionValidator(name: CollectionName) {
 
 export function getCollectionMeta(name: CollectionName) {
   const c = COLLECTIONS[name];
-  return { label: c.label, file: c.file, addable: c.addable, deletable: c.deletable, newItem: c.newItem };
+  return {
+    label: c.label,
+    file: c.file,
+    addable: c.addable,
+    deletable: c.deletable,
+    deletableOwn: 'deletableOwn' in c ? c.deletableOwn : false,
+    newPrefix: 'newPrefix' in c ? c.newPrefix : undefined,
+    newItem: c.newItem,
+  };
 }
 
 export function getCollectionFields(name: CollectionName) {

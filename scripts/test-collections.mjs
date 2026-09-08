@@ -182,6 +182,34 @@ async function runAssertions(mod) {
     assert.ok(addResult['role-new-test'], 'roles: adding an id should still be accepted (addable)');
   }
 
+  // 4c. `deletableOwn` collections (`_groups`) sit between "never removable" and fully
+  //     `deletable`: an already-published record whose id still carries the addable
+  //     `newPrefix` (i.e. an admin added it, never one of the 9 seeded defaults) can be
+  //     removed outright, but the seeded default set stays protected exactly like 4 above.
+  {
+    const { readCollectionData } = mod;
+    const existingGroups = await readCollectionData('groups');
+
+    const withAddedGroup = { ...existingGroups, 'wg-new-ownable': GROUPS_COLLECTION.newItem };
+    const removedOwnId = { ...withAddedGroup };
+    delete removedOwnId['wg-new-ownable'];
+    const ownResult = validateCollectionUpdate('groups', withAddedGroup, removedOwnId);
+    assert.ok(
+      !('wg-new-ownable' in ownResult),
+      'groups: removing an already-published admin-added group (wg-new- id) should be accepted',
+    );
+
+    const oneDefaultGroupId = Object.keys(existingGroups)[0];
+    const removedDefaultAndOwn = { ...withAddedGroup };
+    delete removedDefaultAndOwn['wg-new-ownable'];
+    delete removedDefaultAndOwn[oneDefaultGroupId];
+    assert.throws(
+      () => validateCollectionUpdate('groups', withAddedGroup, removedDefaultAndOwn),
+      new RegExp(oneDefaultGroupId),
+      'groups: removing a seeded default group should stay rejected even alongside a valid own-record removal',
+    );
+  }
+
   // 5. getCollectionContent()'s typed accessors match what's actually on disk.
   {
     const groups = await getCollectionContent('groups');

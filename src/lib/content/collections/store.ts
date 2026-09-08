@@ -61,9 +61,14 @@ export class InvalidCollectionError extends Error {}
  * before it is ever passed to writeCollectionData, then enforces the id-set rule zod itself
  * can't express: removing an existing id is allowed only for `deletable` collections (`_roles`
  * today — the old admin's delete button used to only ever undid a not-yet-published add for
- * every collection, never an already-saved record, until `_roles` opted into full deletion),
- * and adding a new id is allowed only for `addable` collections (`_groups`/`_events`/`_roles`)
- * — `_articles`' fixed 7-record set rejects both directions identically.
+ * every collection, never an already-saved record, until `_roles` opted into full deletion).
+ * `deletableOwn` collections (`_groups`) sit in between: the fixed default records (whatever
+ * exists on disk before this update was seeded/published) stay protected, but a record whose
+ * id still carries the collection's `newPrefix` — meaning it was created through the admin's
+ * "add record" button and never renamed — can be removed even after publishing, since that id
+ * always identifies something an admin added rather than a shipped default. Adding a new id is
+ * allowed only for `addable` collections (`_groups`/`_events`/`_roles`) — `_articles`' fixed
+ * 7-record set rejects both directions identically.
  */
 export function validateCollectionUpdate(
   name: string,
@@ -82,14 +87,21 @@ export function validateCollectionUpdate(
 
   const meta = getCollectionMeta(name);
 
-  // Removing an existing id is rejected unless the collection is `deletable` — a bare
-  // z.record(...) validator has no opinion on this at all (an empty {} trivially "validates"
-  // as zero records), so this is the one place that actually enforces it.
+  // Removing an existing id is rejected unless the collection is `deletable` (any record) or
+  // `deletableOwn` (only records whose id still carries `newPrefix`, i.e. admin-added ones —
+  // the fixed default set stays protected) — a bare z.record(...) validator has no opinion on
+  // this at all (an empty {} trivially "validates" as zero records), so this is the one place
+  // that actually enforces it.
   const existingIds = Object.keys(existing);
   const incomingIds = new Set(Object.keys(data));
   const removed = existingIds.filter((id) => !incomingIds.has(id));
   if (removed.length && !meta.deletable) {
-    throw new InvalidCollectionError(`"${name}" does not allow removing records (removed: ${removed.join(', ')})`);
+    const disallowed = meta.deletableOwn && meta.newPrefix
+      ? removed.filter((id) => !id.startsWith(meta.newPrefix as string))
+      : removed;
+    if (disallowed.length) {
+      throw new InvalidCollectionError(`"${name}" does not allow removing records (removed: ${disallowed.join(', ')})`);
+    }
   }
 
   if (!meta.addable) {
