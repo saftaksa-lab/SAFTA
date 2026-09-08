@@ -6,6 +6,7 @@ import { getPageContent } from '../../lib/content/store';
 import { getCollectionContent } from '../../lib/content/collections/store';
 import { INDEX_FIELDS } from '../../lib/content/schema/index';
 import { PARTNERS_FIELDS } from '../../lib/content/collections/partners';
+import { CHALLENGES_FIELDS } from '../../lib/content/collections/challenges';
 import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
@@ -25,6 +26,17 @@ const partnerItems = partners.items().map((p) => ({
   name: p.text('name'),
   logo: p.image('logo'),
   url: p.value('url'),
+}));
+
+// The national challenges are one shared collection (content/challenges.json) behind both
+// this slider and about.astro's card grid — the two used to be separate page-field sets and
+// had drifted apart. Only the title and image are shown here; the description is rendered on
+// the about page. See src/lib/content/collections/challenges.ts.
+const challenges = await getCollectionContent<typeof CHALLENGES_FIELDS>('challenges');
+const challengeItems = challenges.items().map((ch) => ({
+  id: ch.id,
+  title: ch.text('title'),
+  image: ch.image('image'),
 }));
 ---
 <BaseLayout
@@ -140,34 +152,12 @@ const partnerItems = partners.items().map((p) => ({
 </div>
 <div class="slider bleed reveal" id="believeSlider" role="group" style="margin-top:64px" tabindex="0">
 <div class="slider__track">
-<article class="slide">
-<figure><Image key="i026-phwaterscarcity" field={c.image("i026-phwaterscarcity")} /></figure>
-<Text as="h4" key="t027-شُح-الموارد-المائية" field={c.text("t027-شُح-الموارد-المائية")} />
-</article>
-<article class="slide">
-<figure><Image key="i029-phclimate" field={c.image("i029-phclimate")} /></figure>
-<Text as="h4" key="t030-قسوة-الظروف-المناخية" field={c.text("t030-قسوة-الظروف-المناخية")} />
-</article>
-<article class="slide">
-<figure><Image key="i032-phpests" field={c.image("i032-phpests")} /></figure>
-<Text as="h4" key="t033-مخاطر-الآفات-الزراعية" field={c.text("t033-مخاطر-الآفات-الزراعية")} />
-</article>
-<article class="slide">
-<figure><Image key="i035-phsoil" field={c.image("i035-phsoil")} /></figure>
-<Text as="h4" key="t036-تدهور-التربة" field={c.text("t036-تدهور-التربة")} />
-</article>
-<article class="slide">
-<figure><Image key="i038-phfoodwaste" field={c.image("i038-phfoodwaste")} /></figure>
-<Text as="h4" key="t039-هدر-الغذاء" field={c.text("t039-هدر-الغذاء")} />
-</article>
-<article class="slide">
-<figure><Image key="i061-phimportdependency" field={c.image("i061-phimportdependency")} /></figure>
-<Text as="h4" key="t062-الاعتماد-على-الاستيراد" field={c.text("t062-الاعتماد-على-الاستيراد")} />
-</article>
-<article class="slide">
-<figure><Image key="i063-phtechgaps" field={c.image("i063-phtechgaps")} /></figure>
-<Text as="h4" key="t064-فجوات-التقنية-والإرشاد" field={c.text("t064-فجوات-التقنية-والإرشاد")} />
-</article>
+{challengeItems.map((ch) => (
+  <article class="slide">
+    <figure><img data-cms-img={`${ch.id}.image`} src={ch.image.src} alt={ch.title.en || ch.title.ar} loading="lazy" /></figure>
+    <Text as="h4" key={`${ch.id}.title`} field={ch.title} />
+  </article>
+))}
 </div>
 </div>
 <div class="scrollbar" id="believeBar"><i></i></div>

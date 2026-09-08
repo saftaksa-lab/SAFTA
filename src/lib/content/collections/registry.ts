@@ -5,6 +5,7 @@ import EVENTS_COLLECTION from './events';
 import MEMBERS_COLLECTION from './members';
 import ROLES_COLLECTION from './roles';
 import PARTNERS_COLLECTION from './partners';
+import CHALLENGES_COLLECTION from './challenges';
 
 /**
  * Every collection with a generated schema module — the id-keyed counterpart to
@@ -18,6 +19,7 @@ const COLLECTIONS = {
   members: MEMBERS_COLLECTION,
   roles: ROLES_COLLECTION,
   partners: PARTNERS_COLLECTION,
+  challenges: CHALLENGES_COLLECTION,
 };
 
 export type CollectionName = keyof typeof COLLECTIONS;

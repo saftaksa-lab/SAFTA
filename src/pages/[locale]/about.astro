@@ -6,6 +6,7 @@ import { getPageContent } from '../../lib/content/store';
 import { getCollectionContent } from '../../lib/content/collections/store';
 import { ABOUT_FIELDS } from '../../lib/content/schema/about';
 import { ROLES_FIELDS } from '../../lib/content/collections/roles';
+import { CHALLENGES_FIELDS } from '../../lib/content/collections/challenges';
 import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
@@ -30,6 +31,17 @@ const roleItems = roles.items().map((r) => ({
   id: r.id,
   title: r.text('title'),
   description: r.text('description'),
+}));
+
+// The national challenges below come from the same content/challenges.json the home page's
+// slider renders — they used to be a separate set of about-page fields and had drifted out
+// of sync with it. See src/lib/content/collections/challenges.ts.
+const challenges = await getCollectionContent<typeof CHALLENGES_FIELDS>('challenges');
+const challengeItems = challenges.items().map((ch) => ({
+  id: ch.id,
+  title: ch.text('title'),
+  description: ch.text('description'),
+  image: ch.image('image'),
 }));
 ---
 <BaseLayout
@@ -98,22 +110,13 @@ const roleItems = roles.items().map((r) => ({
 </div>
 </div>
 <div class="grid-3 reveal">
-<article class="tri__card">
-<figure><Image key="i024-phclimate" field={c.image("i024-phclimate")} /></figure>
-<Text as="h3" key="t025-قسوة-الظروف-المناخية" field={c.text("t025-قسوة-الظروف-المناخية")} /><Text as="p" key="t026-ارتفاع-درجات-الحرارة-ومحدو" field={c.text("t026-ارتفاع-درجات-الحرارة-ومحدو")} />
-</article><article class="tri__card">
-<figure><Image key="i027-phwaterscarcity" field={c.image("i027-phwaterscarcity")} /></figure>
-<Text as="h3" key="t028-شُح-الموارد-المائية" field={c.text("t028-شُح-الموارد-المائية")} /><Text as="p" key="t029-الزراعة-هي-أكبر-مستهلك-للم" field={c.text("t029-الزراعة-هي-أكبر-مستهلك-للم")} />
-</article><article class="tri__card">
-<figure><Image key="i030-phpests" field={c.image("i030-phpests")} /></figure>
-<Text as="h3" key="t031-مخاطر-الآفات-الزراعية" field={c.text("t031-مخاطر-الآفات-الزراعية")} /><Text as="p" key="t032-خسائر-المحاصيل-بسبب-الآفات" field={c.text("t032-خسائر-المحاصيل-بسبب-الآفات")} />
-</article><article class="tri__card">
-<figure><Image key="i033-phsoil" field={c.image("i033-phsoil")} /></figure>
-<Text as="h3" key="t034-تدهور-التربة" field={c.text("t034-تدهور-التربة")} /><Text as="p" key="t035-الملوحة-وتراجع-المادة-العض" field={c.text("t035-الملوحة-وتراجع-المادة-العض")} />
-</article><article class="tri__card">
-<figure><Image key="i036-phfoodwaste" field={c.image("i036-phfoodwaste")} /></figure>
-<Text as="h3" key="t037-هدر-الغذاء" field={c.text("t037-هدر-الغذاء")} /><Text as="p" key="t038-الفاقد-بين-الحصاد-والاستهل" field={c.text("t038-الفاقد-بين-الحصاد-والاستهل")} />
-</article>
+{challengeItems.map((ch) => (
+  <article class="tri__card">
+    <figure><img data-cms-img={`${ch.id}.image`} src={ch.image.src} alt={ch.title.en || ch.title.ar} loading="lazy" /></figure>
+    <Text as="h3" key={`${ch.id}.title`} field={ch.title} />
+    <Text as="p" key={`${ch.id}.description`} field={ch.description} />
+  </article>
+))}
 </div>
 </div>
 </section>

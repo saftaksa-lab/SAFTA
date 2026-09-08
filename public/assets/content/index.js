@@ -106,51 +106,6 @@ window.SAFTA_C["index"] = {
   "en": "The agrifood sector is facing a range of interconnected challenges that are affecting productivity, sustainability, food security, and economic resilience.",
   "ar": "يواجه قطاع الزراعة والغذاء مجموعة من التحديات المترابطة التي تؤثّر في الإنتاجية والاستدامة والأمن الغذائي والمرونة الاقتصادية."
  },
- "i026-phwaterscarcity": {
-  "src": "assets/img/placeholders/ph-water-scarcity.svg",
-  "alt": "Water scarcity",
-  "alt_ar": "Water scarcity"
- },
- "t027-شُح-الموارد-المائية": {
-  "en": "Water scarcity",
-  "ar": "شُح الموارد المائية"
- },
- "i029-phclimate": {
-  "src": "assets/img/placeholders/ph-climate.svg",
-  "alt": "Harsh climate conditions",
-  "alt_ar": "Harsh climate conditions"
- },
- "t030-قسوة-الظروف-المناخية": {
-  "en": "Harsh climate conditions",
-  "ar": "قسوة الظروف المناخية"
- },
- "i032-phpests": {
-  "src": "assets/img/placeholders/ph-pests.svg",
-  "alt": "Pest risks",
-  "alt_ar": "Pest risks"
- },
- "t033-مخاطر-الآفات-الزراعية": {
-  "en": "Pest risks",
-  "ar": "مخاطر الآفات الزراعية"
- },
- "i035-phsoil": {
-  "src": "assets/img/placeholders/ph-soil.svg",
-  "alt": "Soil degradation",
-  "alt_ar": "Soil degradation"
- },
- "t036-تدهور-التربة": {
-  "en": "Soil degradation",
-  "ar": "تدهور التربة"
- },
- "i038-phfoodwaste": {
-  "src": "assets/img/placeholders/ph-food-waste.svg",
-  "alt": "Food waste",
-  "alt_ar": "Food waste"
- },
- "t039-هدر-الغذاء": {
-  "en": "Food waste",
-  "ar": "هدر الغذاء"
- },
  "t041-قريبًا": {
   "en": "Launching Soon",
   "ar": "قريبًا"
@@ -210,21 +165,5 @@ window.SAFTA_C["index"] = {
  "t058-برنامج-بنى-قدرات-وطنية-في-": {
   "en": "A programme that built national capability in the sector.",
   "ar": "برنامج بنى قدرات وطنية في القطاع."
- },
- "t062-الاعتماد-على-الاستيراد": {
-  "en": "Import dependency and food security exposure",
-  "ar": "الاعتماد على الاستيراد وانكشاف الأمن الغذائي"
- },
- "t064-فجوات-التقنية-والإرشاد": {
-  "en": "Technology and extension gaps",
-  "ar": "فجوات التقنية والإرشاد الزراعي"
- },
- "i061-phimportdependency": {
-  "src": "assets/img/placeholders/ph-what-we-do.svg",
-  "alt": "Import dependency and food security exposure"
- },
- "i063-phtechgaps": {
-  "src": "assets/img/placeholders/ph-insight-01.svg",
-  "alt": "Technology and extension gaps"
  }
 };

@@ -31,6 +31,7 @@ const SOURCES = {
   members: { file: 'members-data.js', global: 'SAFTA_MEMBERS_FULL', schemaKey: '_members' },
   roles: { file: 'roles-data.js', global: 'SAFTA_ROLES', schemaKey: '_roles' },
   partners: { file: 'partners-data.js', global: 'SAFTA_PARTNERS', schemaKey: '_partners' },
+  challenges: { file: 'challenges-data.js', global: 'SAFTA_CHALLENGES', schemaKey: '_challenges' },
 };
 
 const args = process.argv.slice(2);
