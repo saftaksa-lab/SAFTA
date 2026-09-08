@@ -3,7 +3,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Text from '../../components/content/Text.astro';
 import Image from '../../components/content/Image.astro';
 import { getPageContent } from '../../lib/content/store';
+import { getCollectionContent } from '../../lib/content/collections/store';
 import { ABOUT_FIELDS } from '../../lib/content/schema/about';
+import { ROLES_FIELDS } from '../../lib/content/collections/roles';
 import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
@@ -19,6 +21,16 @@ if (!isLocale(locale)) return new Response(null, { status: 404 });
 // <typeof ABOUT_FIELDS> type argument narrows c.text()/c.image() to this page's own keys,
 // so a typo'd key or calling .text() on an image key is a compile-time error.
 const c = await getPageContent<typeof ABOUT_FIELDS>('about');
+
+// The "Four roles" list is a real addable/deletable collection (content/roles.json) rather
+// than fixed page fields, so the admin can add or remove a role instead of only editing
+// the existing four. See src/lib/content/collections/roles.ts.
+const roles = await getCollectionContent<typeof ROLES_FIELDS>('roles');
+const roleItems = roles.items().map((r) => ({
+  id: r.id,
+  title: r.text('title'),
+  description: r.text('description'),
+}));
 ---
 <BaseLayout
   locale={locale}
@@ -116,15 +128,13 @@ const c = await getPageContent<typeof ABOUT_FIELDS>('about');
 </div>
 </div>
 <div class="grid-4 reveal">
-<div class="fact" style="border-top-width:2px;padding-top:22px">
-<b>01</b><Text as="h3" key="t042-توجيه-الابتكار" field={c.text("t042-توجيه-الابتكار")} style="font-size:20px;font-weight:500;margin:6px 0 12px" />
-<Text as="p" key="t043-رصد-التقنيات-الناشئة-والمس" field={c.text("t043-رصد-التقنيات-الناشئة-والمس")} style="font-size:15px;line-height:25px;color:var(--c-text-soft)" /></div><div class="fact" style="border-top-width:2px;padding-top:22px">
-<b>02</b><Text as="h3" key="t044-بناء-الشراكات" field={c.text("t044-بناء-الشراكات")} style="font-size:20px;font-weight:500;margin:6px 0 12px" />
-<Text as="p" key="t045-إنشاء-وتعزيز-الروابط-بين-ا" field={c.text("t045-إنشاء-وتعزيز-الروابط-بين-ا")} style="font-size:15px;line-height:25px;color:var(--c-text-soft)" /></div><div class="fact" style="border-top-width:2px;padding-top:22px">
-<b>03</b><Text as="h3" key="t046-تحفيز-الطلب-على-الابتكار" field={c.text("t046-تحفيز-الطلب-على-الابتكار")} style="font-size:20px;font-weight:500;margin:6px 0 12px" />
-<Text as="p" key="t047-تسهيل-تبنّي-التقنية-وإزالة" field={c.text("t047-تسهيل-تبنّي-التقنية-وإزالة")} style="font-size:15px;line-height:25px;color:var(--c-text-soft)" /></div><div class="fact" style="border-top-width:2px;padding-top:22px">
-<b>04</b><Text as="h3" key="t048-تمكين-عرض-الابتكار" field={c.text("t048-تمكين-عرض-الابتكار")} style="font-size:20px;font-weight:500;margin:6px 0 12px" />
-<Text as="p" key="t049-تمكين-الشركات-الناشئة-والم" field={c.text("t049-تمكين-الشركات-الناشئة-والم")} style="font-size:15px;line-height:25px;color:var(--c-text-soft)" /></div>
+{roleItems.map((r, i) => (
+  <div class="fact" style="border-top-width:2px;padding-top:22px">
+    <b>{String(i + 1).padStart(2, '0')}</b>
+    <h3 data-ar={r.title.ar || r.title.en} style="font-size:20px;font-weight:500;margin:6px 0 12px">{r.title.en || r.title.ar}</h3>
+    <p data-ar={r.description.ar || r.description.en} style="font-size:15px;line-height:25px;color:var(--c-text-soft)">{r.description.en || r.description.ar}</p>
+  </div>
+))}
 </div>
 </div>
 </section>

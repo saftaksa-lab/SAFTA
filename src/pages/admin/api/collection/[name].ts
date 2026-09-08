@@ -16,9 +16,7 @@ import { getCollectionFields, isEditableCollection } from '../../../../lib/conte
  * — the collection-shaped counterpart to ../content/[page].ts.
  *
  * Reachable only under /admin, which src/middleware.ts already gates behind a valid session —
- * there is no separate auth check here, matching content/[page].ts. Nothing in
- * public/admin/admin.js calls this yet; that wiring (plus add/remove-record UI) is a
- * separate, later task.
+ * there is no separate auth check here, matching content/[page].ts.
  */
 
 /** Mirrors ../content/[page].ts: no-store, and a content revision on reads and writes. */
