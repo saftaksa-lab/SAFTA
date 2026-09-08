@@ -458,10 +458,11 @@ function renderPane() {
         return fieldDirty(S.view, dressOne(f, sec, card));
       }).length;
       var isNew = sc.addable && sec.key.indexOf(sc.newPrefix || 'wg-new-') === 0;
+      var canDel = isNew || sc.deletable;
       body += '<div class="card"><button class="card__head" type="button">' +
         '<svg class="card__cx" viewBox="0 0 24 24" width="14" height="14"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
         '<span>' + escapeHtml(card.label) + '</span>' +
-        (isNew ? '<span class="rec-del" data-del="' + escapeHtml(sec.key) + '" title="حذف">حذف</span>' : '') +
+        (canDel ? '<span class="rec-del" data-del="' + escapeHtml(sec.key) + '" title="حذف">حذف</span>' : '') +
         (dn ? '<span class="chip" style="margin-inline-start:auto">' + dn + ' معدّل</span>' : '') +
         '<span class="side__n">' + card.fields.length + '</span>' +
         '</button><div class="card__body">';

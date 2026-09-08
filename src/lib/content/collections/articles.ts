@@ -26,6 +26,7 @@ const ARTICLES_COLLECTION = {
   file: "assets/js/article-data.js",
   store: "articles",
   addable: false,
+  deletable: false,
   fields: ARTICLES_FIELDS,
   newItem: {"kind":{"en":"","ar":""},"date":{"en":"","ar":""},"read":{"en":"","ar":""},"ph":false,"img":{"src":""},"title":{"en":"","ar":""},"lede":{"en":"","ar":""},"body":[],"quote":{"en":"","ar":""},"quoteBy":{"en":"","ar":""},"tags":[]},
 };

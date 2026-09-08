@@ -14,6 +14,7 @@ const ROLES_COLLECTION = {
   file: "assets/js/roles-data.js",
   store: "roles",
   addable: true,
+  deletable: true,
   fields: ROLES_FIELDS,
   newItem: {"title":{"en":"New role","ar":"دور جديد"},"description":{"en":"","ar":""}},
 };

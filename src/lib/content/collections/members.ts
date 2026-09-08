@@ -21,6 +21,7 @@ const MEMBERS_COLLECTION = {
   file: "assets/js/members-data.js",
   store: "members",
   addable: true,
+  deletable: false,
   fields: MEMBERS_FIELDS,
   newItem: {"name":{"en":"New member","ar":"عضو جديد"},"logo":{"src":""},"ini":"","cat":{"en":"","ar":""},"role":{"en":"","ar":""},"sector":{"en":"","ar":""},"since":"","short":"","bio":{"en":"","ar":""}},
 };

@@ -59,10 +59,11 @@ export class InvalidCollectionError extends Error {}
 /**
  * Validates an admin-submitted record map against that collection's schema module (shape)
  * before it is ever passed to writeCollectionData, then enforces the id-set rule zod itself
- * can't express: removing an existing id is never allowed (the old admin's delete button only
- * ever undid a not-yet-published add, never an already-saved record), and adding a new id is
- * allowed only for `addable` collections (`_groups`/`_events`) — `_articles`' fixed 7-record
- * set rejects both directions identically.
+ * can't express: removing an existing id is allowed only for `deletable` collections (`_roles`
+ * today — the old admin's delete button used to only ever undid a not-yet-published add for
+ * every collection, never an already-saved record, until `_roles` opted into full deletion),
+ * and adding a new id is allowed only for `addable` collections (`_groups`/`_events`/`_roles`)
+ * — `_articles`' fixed 7-record set rejects both directions identically.
  */
 export function validateCollectionUpdate(
   name: string,
@@ -79,21 +80,18 @@ export function validateCollectionUpdate(
   }
   const data = result.data as CollectionData;
 
-  // Removing an existing id is never allowed, addable or not — the old admin's delete button
-  // only ever undid a not-yet-published add (an id already matching the collection's
-  // newPrefix), never removed a record that had actually been saved; a bare z.record(...)
-  // validator has no opinion on this at all (an empty {} trivially "validates" as zero
-  // records), so this is the one place that actually enforces it. Adding a new id is allowed
-  // only when the collection is addable (_groups/_events) — _articles' fixed 7-record set
-  // rejects both directions identically.
+  const meta = getCollectionMeta(name);
+
+  // Removing an existing id is rejected unless the collection is `deletable` — a bare
+  // z.record(...) validator has no opinion on this at all (an empty {} trivially "validates"
+  // as zero records), so this is the one place that actually enforces it.
   const existingIds = Object.keys(existing);
   const incomingIds = new Set(Object.keys(data));
   const removed = existingIds.filter((id) => !incomingIds.has(id));
-  if (removed.length) {
+  if (removed.length && !meta.deletable) {
     throw new InvalidCollectionError(`"${name}" does not allow removing records (removed: ${removed.join(', ')})`);
   }
 
-  const meta = getCollectionMeta(name);
   if (!meta.addable) {
     const added = [...incomingIds].filter((id) => !existingIds.includes(id));
     if (added.length) {

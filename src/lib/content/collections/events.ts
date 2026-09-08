@@ -17,6 +17,7 @@ const EVENTS_COLLECTION = {
   file: "assets/js/events-data.js",
   store: "events",
   addable: true,
+  deletable: false,
   fields: EVENTS_FIELDS,
   newItem: {"day":"01","month":{"en":"JAN 2027","ar":"يناير 2027"},"title":{"en":"New event","ar":"فعالية جديدة"},"desc":{"en":"Short description of the event.","ar":"وصف مختصر للفعالية."},"link":"register-interest.html"},
 };

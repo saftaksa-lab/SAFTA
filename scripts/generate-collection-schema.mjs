@@ -135,6 +135,7 @@ const ${ident}_COLLECTION = {
   file: ${JSON.stringify(pageSchema.file)},
   store: ${JSON.stringify(pageSchema.store)},
   addable: ${pageSchema.addable === true},
+  deletable: ${pageSchema.deletable === true},
   fields: ${ident}_FIELDS,
   newItem: ${JSON.stringify(newItemRaw)},
 };

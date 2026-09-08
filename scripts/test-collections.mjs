@@ -30,6 +30,7 @@ export * from './store';
 export { default as GROUPS_COLLECTION } from './groups';
 export { default as ARTICLES_COLLECTION } from './articles';
 export { default as EVENTS_COLLECTION } from './events';
+export { default as ROLES_COLLECTION } from './roles';
 `;
 
 async function main() {
@@ -64,6 +65,7 @@ async function runAssertions(mod) {
     GROUPS_COLLECTION,
     ARTICLES_COLLECTION,
     EVENTS_COLLECTION,
+    ROLES_COLLECTION,
     validateCollectionUpdate,
     getCollectionContent,
   } = mod;
@@ -77,6 +79,7 @@ async function runAssertions(mod) {
     ['groups', GROUPS_COLLECTION],
     ['articles', ARTICLES_COLLECTION],
     ['events', EVENTS_COLLECTION],
+    ['roles', ROLES_COLLECTION],
   ]) {
     const result = zodForItemFields(collection.fields).safeParse(collection.newItem);
     assert.equal(
@@ -156,6 +159,27 @@ async function runAssertions(mod) {
       /does not allow removing records/,
       'groups: an empty {} must not silently wipe the whole collection',
     );
+  }
+
+  // 4b. `deletable` collections (`_roles`) are the one exception to "removal is never
+  //     allowed": an already-seeded, previously-published record can be removed outright,
+  //     not just an unpublished addition — unlike groups/articles/events above.
+  {
+    const { readCollectionData } = mod;
+    const existingRoles = await readCollectionData('roles');
+    const oneRoleId = Object.keys(existingRoles)[0];
+
+    const removedRoleId = { ...existingRoles };
+    delete removedRoleId[oneRoleId];
+    const rolesResult = validateCollectionUpdate('roles', existingRoles, removedRoleId);
+    assert.ok(
+      !(oneRoleId in rolesResult),
+      'roles: removing an existing, previously-seeded role should be accepted (deletable)',
+    );
+
+    const addedRoleId = { ...existingRoles, 'role-new-test': ROLES_COLLECTION.newItem };
+    const addResult = validateCollectionUpdate('roles', existingRoles, addedRoleId);
+    assert.ok(addResult['role-new-test'], 'roles: adding an id should still be accepted (addable)');
   }
 
   // 5. getCollectionContent()'s typed accessors match what's actually on disk.
