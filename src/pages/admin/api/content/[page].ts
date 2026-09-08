@@ -4,9 +4,11 @@ import {
   InvalidContentError,
   pruneReplacedUploads,
   readPageData,
+  readPageDataWithRevision,
   validatePageUpdate,
   writePageData,
 } from '../../../../lib/content/store';
+import { REVISION_HEADER } from '../../../../lib/content/json-file';
 import { isEditablePage } from '../../../../lib/content/schema/registry';
 
 /**
@@ -20,8 +22,16 @@ import { isEditablePage } from '../../../../lib/content/schema/registry';
  * and commit it by hand) until they are migrated too.
  */
 
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+/**
+ * Every response is no-store: the admin panel diffs what it holds against what the server
+ * has, so a cached copy here would resurrect exactly the stale-baseline problem REVISION_HEADER
+ * exists to catch.
+ */
+function json(body: unknown, status = 200, extraHeaders: Record<string, string> = {}) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...extraHeaders },
+  });
 }
 
 export const GET: APIRoute = async ({ params }) => {
@@ -29,7 +39,8 @@ export const GET: APIRoute = async ({ params }) => {
   if (!isEditablePage(page)) return json({ error: `"${page}" is not editable from the admin yet` }, 404);
 
   try {
-    return json(await readPageData(page));
+    const { data, rev } = await readPageDataWithRevision(page);
+    return json(data, 200, { [REVISION_HEADER]: rev });
   } catch (err) {
     if (err instanceof MissingContentError) return json({ error: err.message }, 404);
     throw err;
@@ -50,9 +61,9 @@ export const POST: APIRoute = async ({ params, request }) => {
   try {
     const existing = await readPageData(page);
     const validated = validatePageUpdate(page, body);
-    await writePageData(page, validated);
+    const rev = await writePageData(page, validated);
     await pruneReplacedUploads(existing, validated);
-    return json({ ok: true });
+    return json({ ok: true, rev }, 200, { [REVISION_HEADER]: rev });
   } catch (err) {
     if (err instanceof MissingContentError) return json({ error: err.message }, 404);
     if (err instanceof InvalidContentError) return json({ error: err.message }, 400);

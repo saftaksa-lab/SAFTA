@@ -4,9 +4,11 @@ import {
   MissingCollectionError,
   pruneReplacedCollectionUploads,
   readCollectionData,
+  readCollectionDataWithRevision,
   validateCollectionUpdate,
   writeCollectionData,
 } from '../../../../lib/content/collections/store';
+import { REVISION_HEADER } from '../../../../lib/content/json-file';
 import { getCollectionFields, isEditableCollection } from '../../../../lib/content/collections/registry';
 
 /**
@@ -19,8 +21,12 @@ import { getCollectionFields, isEditableCollection } from '../../../../lib/conte
  * separate, later task.
  */
 
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+/** Mirrors ../content/[page].ts: no-store, and a content revision on reads and writes. */
+function json(body: unknown, status = 200, extraHeaders: Record<string, string> = {}) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...extraHeaders },
+  });
 }
 
 export const GET: APIRoute = async ({ params }) => {
@@ -28,7 +34,8 @@ export const GET: APIRoute = async ({ params }) => {
   if (!isEditableCollection(name)) return json({ error: `"${name}" is not an editable collection` }, 404);
 
   try {
-    return json(await readCollectionData(name));
+    const { data, rev } = await readCollectionDataWithRevision(name);
+    return json(data, 200, { [REVISION_HEADER]: rev });
   } catch (err) {
     if (err instanceof MissingCollectionError) return json({ error: err.message }, 404);
     throw err;
@@ -49,9 +56,9 @@ export const POST: APIRoute = async ({ params, request }) => {
   try {
     const existing = await readCollectionData(name);
     const validated = validateCollectionUpdate(name, existing, body);
-    await writeCollectionData(name, validated);
+    const rev = await writeCollectionData(name, validated);
     await pruneReplacedCollectionUploads(getCollectionFields(name), existing, validated);
-    return json({ ok: true });
+    return json({ ok: true, rev }, 200, { [REVISION_HEADER]: rev });
   } catch (err) {
     if (err instanceof MissingCollectionError) return json({ error: err.message }, 404);
     if (err instanceof InvalidCollectionError) return json({ error: err.message }, 400);

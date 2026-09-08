@@ -15,14 +15,22 @@
 /* رقم إصدار شكل المسودة — ارفعه متى صار شكل S.cur (حقول جديدة، مخزن جديد، إلخ)
    غير متوافق مع مسودات محفوظة سابقًا بحيث لا يعود دمجها بالسجلّ (انظر loadDraft)
    كافيًا؛ كل مسودة محفوظة تحت رقم أقدم تُحذف تلقائيًا من localStorage عند الإقلاع
-   بدل أن تبقى معلَّقة أو تُقرَأ بالخطأ. */
+   بدل أن تبقى معلَّقة أو تُقرَأ بالخطأ.
+
+   v3: أضيف حقل revs (مفتاح العرض → رقم مراجعة نسخة الخادم التي بُنيت عليها المسودة).
+   مسودات v2 لا تحمل هذا الحقل فلا يمكن التحقّق من حداثتها إطلاقًا — وهي بالضبط
+   المسودات التي كانت تُظهر تعديلات جهازٍ آخر كأنها تعديلات محلية غير منشورة — لذا
+   تُحذف عند أول إقلاع بعد هذا التحديث بدل أن تُدمَج على غير أساس. */
 var LS_PREFIX     = 'safta.cms.draft';
-var DRAFT_VERSION = 2;
+var DRAFT_VERSION = 3;
 var LS_KEY        = LS_PREFIX + '.v' + DRAFT_VERSION;
 var UPLOADS  = 'assets/img/uploads/';
 
 var SCHEMA = window.SAFTA_SCHEMA || {};
 var BASE   = window.SAFTA_BASE   || {};
+
+/* ترويسة الخادم التي تحمل رقم مراجعة المحتوى (src/lib/content/json-file.ts) */
+var REV_HEADER = 'X-Content-Revision';
 
 var $  = function (s, r) { return (r || document).querySelector(s); };
 var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
@@ -36,6 +44,11 @@ var S = {
   query:  ''
 };
 
+/* مفتاح العرض → رقم مراجعة نسخته على الخادم، كما وردت في آخر قراءة أو نشر.
+   تُحفظ مع المسودة ليُكتشَف لاحقًا ما إذا كان جهاز آخر قد نشر فوق النسخة التي
+   بُنيت عليها تلك المسودة (انظر staleViews). */
+var REV = {};
+
 function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
 function resetState() {
@@ -46,7 +59,9 @@ function resetState() {
 
 function saveDraft() {
   try {
-    localStorage.setItem(LS_KEY, JSON.stringify({ cur: S.cur, images: S.images, at: Date.now() }));
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      cur: S.cur, images: S.images, revs: clone(REV), at: Date.now()
+    }));
   } catch (e) {
     toast('المتصفّح رفض حفظ المسودة — نزّل الملفات قبل الإغلاق');
   }
@@ -66,11 +81,33 @@ function purgeStaleDrafts() {
   } catch (e) {}
 }
 
+/* المسودة صالحة فقط ما دامت نسخة الخادم التي بُنيت عليها هي نفسها الحاضرة الآن.
+   يعيد قائمة العروض التي تحرّك فيها الخادم بعد آخر حفظ للمسودة — أي التي نشر عليها
+   محرِّر آخر من جهاز آخر. تُقارَن المراجعات فقط حين تتوفّر الاثنتان: مراجعة حيّة من
+   الخادم ومراجعة مسجّلة في المسودة؛ إن فشل الجلب (REV فارغة) لا نعرف شيئًا فلا نحذف. */
+function staleViews(draftRevs) {
+  if (!draftRevs) return [];
+  return apiBackedViews().filter(function (v) {
+    return REV[v] && draftRevs[v] && REV[v] !== draftRevs[v];
+  });
+}
+
 function loadDraft() {
   resetState();
   purgeStaleDrafts();
   try {
     var d = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
+
+    /* نشر أحدث من جهة أخرى ⇐ المسودة تصف محتوًى لم يعد موجودًا، ودمجها كان يُظهر
+       القيم القديمة على أنها «تعديلات غير منشورة» ويحجب ما نشره الآخر. تُحذف كاملةً
+       وتبقى S.cur على نسخة الخادم التي حمّلها syncApiBackedBaseline للتوّ. */
+    var stale = d && d.cur ? staleViews(d.revs) : [];
+    if (stale.length) {
+      try { localStorage.removeItem(LS_KEY); } catch (e) {}
+      showStaleModal(stale);
+      return;
+    }
+
     if (d && d.cur) {
       /* دمج بالسجلّ لا استبدال المخزن (groups/articles/events/members) كاملًا —
          استبدال المخزن كاملًا بنسخة المسودة كان يمحو من اللوحة أي سجلّ حاضر على
@@ -319,10 +356,15 @@ function syncApiBackedBaseline() {
     var sc = SCHEMA[v];
     var url = sc.kind === 'data' ? '/admin/api/collection/' + sc.store : '/admin/api/content/' + v;
     return fetch(url)
-      .then(function (r) { if (!r.ok) throw new Error('bad status'); return r.json(); })
-      .then(function (data) {
-        if (sc.kind === 'data') BASE[sc.store] = data;
-        else BASE.pages[v] = data;
+      .then(function (r) {
+        if (!r.ok) throw new Error('bad status');
+        var rev = r.headers.get(REV_HEADER);
+        return r.json().then(function (data) { return { data: data, rev: rev }; });
+      })
+      .then(function (res) {
+        if (sc.kind === 'data') BASE[sc.store] = res.data;
+        else BASE.pages[v] = res.data;
+        if (res.rev) REV[v] = res.rev;
       })
       .catch(function () {
         toast('تعذّر تحميل أحدث نسخة من «' + (SCHEMA[v].label || v) + '» — يُعرض آخر إصدار محفوظ محليًا');
@@ -1003,6 +1045,21 @@ function changedFiles() {
   return out;
 }
 
+/* تُستدعى من loadDraft بعد حذف مسودة تجاوزها الخادم. تسرد الأقسام التي تغيّرت
+   على الخادم حتى يعرف المحرِّر أين ينظر، لا مجرّد أن شيئًا ما ضاع. */
+function showStaleModal(views) {
+  var list = $('#staleList');
+  if (list) {
+    list.innerHTML = views.map(function (v) {
+      var sc = SCHEMA[v] || {};
+      return '<div class="pub__row"><div class="pub__meta">' +
+        '<div class="pub__name">' + escapeHtml(sc.label || v) + '</div>' +
+        '<div class="pub__to">حُدِّث من جهاز آخر</div></div></div>';
+    }).join('');
+  }
+  $('#staleModal').hidden = false;
+}
+
 function showDownloadModal(files) {
   var list = $('#pubList');
   if (!files.length) {
@@ -1069,6 +1126,9 @@ $('#btnPublish').addEventListener('click', function () {
       if (r.ok) {
         if (sc.kind === 'data') BASE[sc.store] = clone(S.cur[sc.store]);
         else BASE.pages[r.view] = clone(S.cur.pages[r.view]);
+        /* المسودة التي تُحفظ بعد قليل يجب أن تُنسَب لنسخة الخادم التي أنتجها هذا النشر،
+           وإلا بدت لاحقًا كأنها بُنيت على نسخة تجاوزها الخادم وحُذفت بلا سبب. */
+        if (r.j && r.j.rev) REV[r.view] = r.j.rev;
         saved.push(sc.label);
       } else failed.push((sc && sc.label) || r.view);
     });
@@ -1090,6 +1150,9 @@ $('#pubAll').addEventListener('click', function () {
 });
 
 $('#pubX').addEventListener('click', function () { $('#pubModal').hidden = true; });
+
+$('#staleX').addEventListener('click', function () { $('#staleModal').hidden = true; });
+$('#staleOk').addEventListener('click', function () { $('#staleModal').hidden = true; });
 
 function download(f) {
   var a = document.createElement('a');
@@ -1113,7 +1176,9 @@ window.addEventListener('beforeunload', function (e) {
 });
 
 document.addEventListener('keydown', function (e) {
-  if (e.key === 'Escape') { $('#pubModal').hidden = true; $('#pvModal').hidden = true; }
+  if (e.key === 'Escape') {
+    $('#pubModal').hidden = true; $('#pvModal').hidden = true; $('#staleModal').hidden = true;
+  }
 });
 
 /* ═══════════════════ 14 · الإقلاع ═══════════════════ */

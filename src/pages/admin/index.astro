@@ -64,6 +64,25 @@
   </div>
 </div>
 
+<!-- ══════════════════ نافذة «حُذفت المسودة» ══════════════════ -->
+<!-- تظهر عند الإقلاع فقط، حين يكون محرِّر آخر قد نشر تعديلات بعد آخر حفظ لمسودة
+     هذا المتصفّح — عندها تُحذف المسودة وتُعرَض نسخة الخادم. انظر loadDraft في admin.js. -->
+<div class="modal" id="staleModal" hidden>
+  <div class="modal__box" role="alertdialog" aria-labelledby="staleTitle" aria-describedby="staleLede">
+    <button class="modal__x" id="staleX" aria-label="إغلاق">&times;</button>
+    <h2 id="staleTitle">تم تحديث المحتوى من جهاز آخر</h2>
+    <p class="modal__lede" id="staleLede">
+      نشر أحد المحرِّرين تعديلات على المحتوى بعد آخر مرّة عملتَ فيها على هذا المتصفّح،
+      فحُذفت مسودّتك المحفوظة هنا لتفادي إظهار نصوص قديمة على أنها تعديلات غير منشورة.
+      ما تراه الآن هو أحدث نسخة محفوظة على الخادم.
+    </p>
+    <div id="staleList" class="pub"></div>
+    <div class="modal__foot">
+      <button class="btn btn--primary" id="staleOk">فهمت</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════════ نافذة المعاينة ══════════════════ -->
 <div class="modal modal--wide" id="pvModal" hidden>
   <div class="modal__box modal__box--wide">

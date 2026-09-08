@@ -2,7 +2,7 @@ import { unlink } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import type { ItemFieldMap, TypedItemContent } from './codec';
 import { getCollectionMeta, getCollectionValidator, isEditableCollection, type CollectionName } from './registry';
-import { readJsonCached, writeJsonAtomic } from '../json-file';
+import { readJsonCached, readJsonCachedWithRevision, writeJsonAtomic } from '../json-file';
 import { resolveAsset } from '../store';
 
 /**
@@ -19,14 +19,15 @@ export type CollectionData = Record<string, ItemRecord>;
 
 export class MissingCollectionError extends Error {}
 
+function missingCollection(name: CollectionName) {
+  return () =>
+    new MissingCollectionError(
+      `content/${name}.json is missing. The content directory is gitignored — run \`npm run seed:collections\` to recreate it from public/assets/js/.`,
+    );
+}
+
 async function readJson(name: CollectionName): Promise<CollectionData> {
-  return readJsonCached<CollectionData>(
-    `${name}.json`,
-    () =>
-      new MissingCollectionError(
-        `content/${name}.json is missing. The content directory is gitignored — run \`npm run seed:collections\` to recreate it from public/assets/js/.`,
-      ),
-  );
+  return readJsonCached<CollectionData>(`${name}.json`, missingCollection(name));
 }
 
 /** The raw id-keyed record map for a collection, as stored on disk — what the admin edits. */
@@ -34,9 +35,23 @@ export async function readCollectionData(name: CollectionName): Promise<Collecti
   return readJson(name);
 }
 
-/** Replaces a collection's content file. See ../json-file.ts's writeJsonAtomic. */
-export async function writeCollectionData(name: CollectionName, data: CollectionData): Promise<void> {
-  await writeJsonAtomic(`${name}.json`, data);
+/**
+ * As readCollectionData, plus the collection file's revision — the admin panel stores it with
+ * a draft so a later boot can tell whether someone else published over the copy that draft
+ * was based on. See ../store.ts's readPageDataWithRevision.
+ */
+export async function readCollectionDataWithRevision(
+  name: CollectionName,
+): Promise<{ data: CollectionData; rev: string }> {
+  return readJsonCachedWithRevision<CollectionData>(`${name}.json`, missingCollection(name));
+}
+
+/**
+ * Replaces a collection's content file. See ../json-file.ts's writeJsonAtomic. Returns the
+ * revision the file now carries, for the publishing admin panel to record against its draft.
+ */
+export async function writeCollectionData(name: CollectionName, data: CollectionData): Promise<string> {
+  return writeJsonAtomic(`${name}.json`, data);
 }
 
 export class InvalidCollectionError extends Error {}

@@ -2,7 +2,7 @@ import { unlink } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import type { FieldMap, TypedPageContent } from './schema/codec';
 import { getPageValidator, isEditablePage } from './schema/registry';
-import { readJsonCached, writeJsonAtomic } from './json-file';
+import { readJsonCached, readJsonCachedWithRevision, writeJsonAtomic } from './json-file';
 
 /**
  * Reads the site's editable content out of ./content/*.json at request time, via the
@@ -27,14 +27,15 @@ export type PageData = Record<string, Record_>;
 
 export class MissingContentError extends Error {}
 
+function missingContent(fileName: string) {
+  return () =>
+    new MissingContentError(
+      `content/${fileName} is missing. The content directory is gitignored — run \`npm run seed:content\` to recreate it from public/assets/content/.`,
+    );
+}
+
 async function readJson<T>(fileName: string): Promise<T> {
-  return readJsonCached<T>(
-    fileName,
-    () =>
-      new MissingContentError(
-        `content/${fileName} is missing. The content directory is gitignored — run \`npm run seed:content\` to recreate it from public/assets/content/.`,
-      ),
-  );
+  return readJsonCached<T>(fileName, missingContent(fileName));
 }
 
 /**
@@ -55,12 +56,21 @@ export async function readPageData(page: string): Promise<PageData> {
 }
 
 /**
+ * As readPageData, plus the page file's revision — the admin panel stores it with a draft so
+ * a later boot can tell whether someone else published over the copy that draft was based on.
+ */
+export async function readPageDataWithRevision(page: string): Promise<{ data: PageData; rev: string }> {
+  const fileName = `${page}.json`;
+  return readJsonCachedWithRevision<PageData>(fileName, missingContent(fileName));
+}
+
+/**
  * Replaces a page's content file. Writes to a sibling temp file and renames, so a reader
  * never observes a half-written file, and primes the cache with what was just written so
  * the site reflects the edit immediately instead of waiting out the revalidate window.
  */
-export async function writePageData(page: string, data: PageData): Promise<void> {
-  await writeJsonAtomic(`${page}.json`, data);
+export async function writePageData(page: string, data: PageData): Promise<string> {
+  return writeJsonAtomic(`${page}.json`, data);
 }
 
 /**
