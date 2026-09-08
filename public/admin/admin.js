@@ -29,6 +29,15 @@ var UPLOADS  = 'assets/img/uploads/';
 var SCHEMA = window.SAFTA_SCHEMA || {};
 var BASE   = window.SAFTA_BASE   || {};
 
+/* أسماء مخازن كل مجموعات البيانات (kind:"data") في SCHEMA — groups/articles/events/
+   members/roles وأي مجموعة تُضاف لاحقًا. تُستخدم لبناء S.cur/resetState دون تعداد
+   الأسماء يدويًا، فإضافة مجموعة جديدة في schema.js لا تحتاج لمسّ هذا الملف. */
+function dataStores() {
+  return Object.keys(SCHEMA)
+    .filter(function (v) { return SCHEMA[v].kind === 'data'; })
+    .map(function (v) { return SCHEMA[v].store; });
+}
+
 /* ترويسة الخادم التي تحمل رقم مراجعة المحتوى (src/lib/content/json-file.ts) */
 var REV_HEADER = 'X-Content-Revision';
 
@@ -38,7 +47,11 @@ var $$ = function (s, r) { return Array.prototype.slice.call((r || document).que
 /* ═══════════════════ 1 · الحالة ═══════════════════ */
 
 var S = {
-  cur:    { pages: {}, groups: {}, articles: {}, events: {}, members: {} },   /* النسخة المعدّلة */
+  cur:    (function () {
+    var o = { pages: {} };
+    dataStores().forEach(function (store) { o[store] = {}; });
+    return o;
+  })(),                                               /* النسخة المعدّلة */
   images: {},                                        /* المسار → dataURL */
   view:   Object.keys(SCHEMA)[0] || 'index',
   query:  ''
@@ -52,8 +65,9 @@ var REV = {};
 function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
 function resetState() {
-  S.cur = clone({ pages: BASE.pages || {}, groups: BASE.groups || {},
-                  articles: BASE.articles || {}, events: BASE.events || {}, members: BASE.members || {} });
+  var o = { pages: BASE.pages || {} };
+  dataStores().forEach(function (store) { o[store] = BASE[store] || {}; });
+  S.cur = clone(o);
   S.images = {};
 }
 
@@ -857,6 +871,7 @@ function previewTarget() {
   if (S.view === '_groups')   return { file: 'working-group.html', id: Object.keys(S.cur.groups)[0], view: S.view };
   if (S.view === '_events')   return { file: 'media.html', id: null, view: S.view };
   if (S.view === '_members')  return { file: 'member.html', id: Object.keys(S.cur.members)[0], view: S.view };
+  if (S.view === '_roles')    return { file: 'about.html', id: null, view: S.view };
   return { file: 'article.html', id: Object.keys(S.cur.articles)[0], view: S.view };
 }
 
@@ -941,7 +956,7 @@ function buildPreview(t, lang, width) {
        data-cms/data-cms-img بهذه المسارات ذاتها عبر Text/Value/Image. لا سكربت بيانات
        نستبدله كما في الصفحات القديمة (wg-data.js وغيرها لم يعودا موجودَين في القالب). */
     if (t.view && SCHEMA[t.view] && SCHEMA[t.view].kind === 'data') {
-      var cdict = (t.view === '_events') ? collectionPatchDictAll(t.view) : collectionPatchDict(t.view, t.id);
+      var cdict = (t.view === '_events' || t.view === '_roles') ? collectionPatchDictAll(t.view) : collectionPatchDict(t.view, t.id);
       var cpatch = '<script>(function(){' +
         'var C=' + JSON.stringify(cdict) + ';' +
         'document.querySelectorAll("[data-cms]").forEach(function(el){' +

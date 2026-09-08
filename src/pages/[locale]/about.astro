@@ -131,8 +131,8 @@ const roleItems = roles.items().map((r) => ({
 {roleItems.map((r, i) => (
   <div class="fact" style="border-top-width:2px;padding-top:22px">
     <b>{String(i + 1).padStart(2, '0')}</b>
-    <h3 data-ar={r.title.ar || r.title.en} style="font-size:20px;font-weight:500;margin:6px 0 12px">{r.title.en || r.title.ar}</h3>
-    <p data-ar={r.description.ar || r.description.en} style="font-size:15px;line-height:25px;color:var(--c-text-soft)">{r.description.en || r.description.ar}</p>
+    <Text as="h3" key={`${r.id}.title`} field={r.title} style="font-size:20px;font-weight:500;margin:6px 0 12px" />
+    <Text as="p" key={`${r.id}.description`} field={r.description} style="font-size:15px;line-height:25px;color:var(--c-text-soft)" />
   </div>
 ))}
 </div>
