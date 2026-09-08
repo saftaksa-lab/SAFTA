@@ -13,10 +13,6 @@ window.SAFTA_C["member"] = {
   "en": "Member profile",
   "ar": "ملف العضو"
  },
- "t004-بيانات-تجريبية-المدخلات-في": {
-  "en": "<b data-ar=\"بيانات تجريبية.\">Demo data.</b> The entries on this page are placeholders used to show the layout. Replace them with the Alliance’s real records before launch.",
-  "ar": "<b>بيانات تجريبية.</b> المدخلات في هذه الصفحة عناصر مبدئية لعرض التصميم فقط، ويجب استبدالها بسجلات التحالف الحقيقية قبل الإطلاق."
- },
  "t005-حكومي": {
   "en": "Government",
   "ar": "حكومي"

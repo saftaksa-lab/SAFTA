@@ -25,10 +25,6 @@ window.SAFTA_C["members"] = {
   "en": "Government entities, academic institutions, private sector companies and non-profit organizations working together to advance agrifood technology in the Kingdom.",
   "ar": "جهات حكومية ومؤسسات أكاديمية وشركات من القطاع الخاص ومنظمات غير ربحية تعمل معًا للنهوض بتقنيات الزراعة والغذاء في المملكة."
  },
- "t007-بيانات-تجريبية-المدخلات-في": {
-  "en": "<b data-ar=\"بيانات تجريبية.\">Demo data.</b> The entries on this page are placeholders used to show the layout. Replace them with the Alliance’s real records before launch.",
-  "ar": "<b>بيانات تجريبية.</b> المدخلات في هذه الصفحة عناصر مبدئية لعرض التصميم فقط، ويجب استبدالها بسجلات التحالف الحقيقية قبل الإطلاق."
- },
  "i008-mewa": {
   "src": "assets/img/partners/mewa.png",
   "alt": "",

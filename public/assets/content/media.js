@@ -13,10 +13,6 @@ window.SAFTA_C["media"] = {
   "en": "The latest news, events and exhibitions from across the Alliance.",
   "ar": "آخر أخبار التحالف وفعالياته ومعارضه."
  },
- "t004-بيانات-تجريبية-المدخلات-في": {
-  "en": "<b data-ar=\"بيانات تجريبية.\">Demo data.</b> The entries on this page are placeholders used to show the layout. Replace them with the Alliance’s real records before launch.",
-  "ar": "<b>بيانات تجريبية.</b> المدخلات في هذه الصفحة عناصر مبدئية لعرض التصميم فقط، ويجب استبدالها بسجلات التحالف الحقيقية قبل الإطلاق."
- },
  "i005-phnews": {
   "src": "assets/img/placeholders/ph-news.svg",
   "alt": "",

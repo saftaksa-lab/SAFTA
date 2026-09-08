@@ -42,7 +42,6 @@ const items = members.items().map((m) => ({
 <p data-cms="t006-جهات-حكومية-ومؤسسات-أكاديم" class="lede" data-ar="جهات حكومية ومؤسسات أكاديمية وشركات من القطاع الخاص ومنظمات غير ربحية تعمل معًا للنهوض بتقنيات الزراعة والغذاء في المملكة.">Government entities, academic institutions, private sector companies and non-profit organizations working together to advance agrifood technology in the Kingdom.</p>
 </div>
 </div>
-<p class="demo-note"><svg fill="none" height="17" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="17"><circle cx="12" cy="12" r="9"></circle><path d="M12 8h.01M11 12h1v4h1"></path></svg><span data-cms="t007-بيانات-تجريبية-المدخلات-في" data-ar="&lt;b&gt;بيانات تجريبية.&lt;/b&gt; المدخلات في هذه الصفحة عناصر مبدئية لعرض التصميم فقط، ويجب استبدالها بسجلات التحالف الحقيقية قبل الإطلاق."><b data-ar="بيانات تجريبية.">Demo data.</b> The entries on this page are placeholders used to show the layout. Replace them with the Alliance’s real records before launch.</span></p>
 <div class="grid-3" id="memberGrid">
 {items.map((m, i) => (
   <a class={`mcard member-card member-card--${'abcdef'[i % 6]} reveal`} href={`/${locale}/member?id=${m.id}`}>
