@@ -23,22 +23,7 @@
  *
  * Exits 1 if any page has drifted, so it can gate a deploy.
  */
-import { readFile } from 'node:fs/promises';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const SCHEMA_DIR = join(ROOT, 'src', 'lib', 'content', 'schema');
-const CONTENT_DIR = join(ROOT, 'content');
-
-/** The registry is the source of truth for which pages are admin-writable — read the page
- *  names out of its PAGES map rather than keeping a second list here to fall out of date. */
-async function registeredPages() {
-  const src = await readFile(join(SCHEMA_DIR, 'registry.ts'), 'utf8');
-  const block = src.match(/const PAGES\s*=\s*\{([\s\S]*?)\}/);
-  if (!block) throw new Error('could not locate the PAGES map in schema/registry.ts');
-  return [...block[1].matchAll(/^\s*'?([\w-]+)'?\s*:/gm)].map((m) => m[1]);
-}
+import { registeredPages, schemaKeys, diskData } from './lib/page-schema-keys.mjs';
 
 const wanted = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const pages = wanted.length ? wanted : await registeredPages();
@@ -46,25 +31,9 @@ const pages = wanted.length ? wanted : await registeredPages();
 let drifted = 0;
 
 for (const page of pages) {
-  const src = await readFile(join(SCHEMA_DIR, `${page}.ts`), 'utf8');
-
-  // Both blocks are generator output (generate-page-schema.mjs), so their formatting is
-  // stable enough to read with a regex — this deliberately avoids importing the TypeScript
-  // modules so it can run on a prod checkout with no build step or esbuild present.
-  const fieldsBlock = src.slice(src.indexOf('_FIELDS'), src.indexOf('_SECTIONS'));
-  const fieldKeys = [...fieldsBlock.matchAll(/^\s*"([^"]+)":\s*\{\s*kind:/gm)].map((m) => m[1]);
-
-  const sectionsBlock = src.slice(src.indexOf('_SECTIONS'));
-  const sectionKeys = [...sectionsBlock.matchAll(/fields:\s*\[([^\]]*)\]/g)]
-    .flatMap((m) => [...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1]));
-
-  let diskKeys = null;
-  try {
-    diskKeys = Object.keys(JSON.parse(await readFile(join(CONTENT_DIR, `${page}.json`), 'utf8')));
-  } catch {
-    // Left null — reported as MISSING below. content/ is gitignored, so an absent file is a
-    // seeding problem (npm run seed:content), not schema drift.
-  }
+  const { fields: fieldKeys, sections: sectionKeys } = await schemaKeys(page);
+  const data = await diskData(page);
+  const diskKeys = data && Object.keys(data);
 
   const inFields = new Set(fieldKeys);
   const inSections = new Set(sectionKeys);
