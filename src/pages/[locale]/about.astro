@@ -100,26 +100,6 @@ const challengeItems = challenges.items().map((ch) => ({
 </div>
 </div>
 </section>
-<section class="ribbon">
-<div class="wrap">
-<div class="sec-head reveal">
-<div class="sec-head__txt">
-<Text as="p" key="t020-السياق-الوطني" field={c.text("t020-السياق-الوطني")} class="eyebrow" />
-<Text as="h2" key="t021-تحديات-تجعل-الابتكار-ضرورة" field={c.text("t021-تحديات-تجعل-الابتكار-ضرورة")} class="h-section" />
-<Text as="p" key="t022-تواجه-أنظمة-الزراعة-والغذا" field={c.text("t022-تواجه-أنظمة-الزراعة-والغذا")} class="lede" />
-</div>
-</div>
-<div class="grid-3 reveal">
-{challengeItems.map((ch) => (
-  <article class="tri__card">
-    <figure><img data-cms-img={`${ch.id}.image`} src={ch.image.src} alt={ch.title.en || ch.title.ar} loading="lazy" /></figure>
-    <Text as="h3" key={`${ch.id}.title`} field={ch.title} />
-    <Text as="p" key={`${ch.id}.description`} field={ch.description} />
-  </article>
-))}
-</div>
-</div>
-</section>
 <section class="ribbon ribbon--grey">
 <div class="wrap">
 <div class="sec-head reveal">
@@ -136,6 +116,26 @@ const challengeItems = challenges.items().map((ch) => ({
     <Text as="h3" key={`${r.id}.title`} field={r.title} style="font-size:20px;font-weight:500;margin:6px 0 12px" />
     <Text as="p" key={`${r.id}.description`} field={r.description} style="font-size:15px;line-height:25px;color:var(--c-text-soft)" />
   </div>
+))}
+</div>
+</div>
+</section>
+<section class="ribbon">
+<div class="wrap">
+<div class="sec-head reveal">
+<div class="sec-head__txt">
+<Text as="p" key="t020-السياق-الوطني" field={c.text("t020-السياق-الوطني")} class="eyebrow" />
+<Text as="h2" key="t021-تحديات-تجعل-الابتكار-ضرورة" field={c.text("t021-تحديات-تجعل-الابتكار-ضرورة")} class="h-section" />
+<Text as="p" key="t022-تواجه-أنظمة-الزراعة-والغذا" field={c.text("t022-تواجه-أنظمة-الزراعة-والغذا")} class="lede" />
+</div>
+</div>
+<div class="grid-3 reveal">
+{challengeItems.map((ch) => (
+  <article class="tri__card">
+    <figure><img data-cms-img={`${ch.id}.image`} src={ch.image.src} alt={ch.title.en || ch.title.ar} loading="lazy" /></figure>
+    <Text as="h3" key={`${ch.id}.title`} field={ch.title} />
+    <Text as="p" key={`${ch.id}.description`} field={ch.description} />
+  </article>
 ))}
 </div>
 </div>
