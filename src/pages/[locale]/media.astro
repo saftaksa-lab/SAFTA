@@ -2,11 +2,11 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Text from '../../components/content/Text.astro';
 import Value from '../../components/content/Value.astro';
-import Image from '../../components/content/Image.astro';
 import { getPageContent } from '../../lib/content/store';
 import { MEDIA_FIELDS } from '../../lib/content/schema/media';
 import { getCollectionContent } from '../../lib/content/collections/store';
 import { EVENTS_FIELDS } from '../../lib/content/collections/events';
+import { ARTICLES_FIELDS } from '../../lib/content/collections/articles';
 import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
@@ -39,6 +39,14 @@ const eventItems = events.items().map((e) => ({
   desc: e.text('desc'),
   href: safeHref(e.value('link')),
 }));
+
+const articles = await getCollectionContent<typeof ARTICLES_FIELDS>('articles');
+const articleItems = articles.items().map((a) => ({
+  id: a.id,
+  date: a.text('date'),
+  title: a.text('title'),
+  img: a.image('img'),
+}));
 ---
 <BaseLayout
   locale={locale}
@@ -61,23 +69,15 @@ const eventItems = events.items().map((e) => ({
 <button class="mtab" type="button" role="tab" aria-selected="false" data-mtab="events" data-ar="الفعاليات والمعارض">Events &amp; exhibitions</button>
 </div>
 <div class="mtab-panel is-active" id="news" role="tabpanel">
-<div class="card-row bleed reveal"><a class="news-card" href={`/${locale}/article?id=mou-water`}>
-<div class="news-card__media"><Image key="i005-phnews" field={c.image("i005-phnews")} /></div>
-<div class="news-card__body"><Text as="p" key="t006-أخبار-28-يوليو-2026" field={c.text("t006-أخبار-28-يوليو-2026")} class="news-card__meta" /><Text as="h3" key="t007-التحالف-ووزارة-البيئة-والم" field={c.text("t007-التحالف-ووزارة-البيئة-والم")} /></div>
-<div class="news-card__foot"><span class="circ-sm"><svg fill="none" height="13" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="13"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></div>
-</a><a class="news-card" href={`/${locale}/article?id=first-cohort`}>
-<div class="news-card__media"><Image key="i008-phmembership" field={c.image("i008-phmembership")} /></div>
-<div class="news-card__body"><Text as="p" key="t009-أخبار-14-يوليو-2026" field={c.text("t009-أخبار-14-يوليو-2026")} class="news-card__meta" /><Text as="h3" key="t010-انعقاد-الدفعة-الأولى-من-مج" field={c.text("t010-انعقاد-الدفعة-الأولى-من-مج")} /></div>
-<div class="news-card__foot"><span class="circ-sm"><svg fill="none" height="13" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="13"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></div>
-</a><a class="news-card" href={`/${locale}/article?id=loi-2026`}>
-<div class="news-card__media"><Image key="i011-phinsight02" field={c.image("i011-phinsight02")} /></div>
-<div class="news-card__body"><Text as="p" key="t012-أخبار-30-يونيو-2026" field={c.text("t012-أخبار-30-يونيو-2026")} class="news-card__meta" /><Text as="h3" key="t013-التحالف-ينشر-خطاب-الاهتمام" field={c.text("t013-التحالف-ينشر-خطاب-الاهتمام")} /></div>
-<div class="news-card__foot"><span class="circ-sm"><svg fill="none" height="13" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="13"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></div>
-</a><a class="news-card" href={`/${locale}/article?id=precision-pilots`}>
-<div class="news-card__media"><Image key="i014-phwhatwedo" field={c.image("i014-phwhatwedo")} /></div>
-<div class="news-card__body"><Text as="p" key="t015-أخبار-09-يونيو-2026" field={c.text("t015-أخبار-09-يونيو-2026")} class="news-card__meta" /><Text as="h3" key="t016-التحالف-يشارك-مراكز-بحثية-" field={c.text("t016-التحالف-يشارك-مراكز-بحثية-")} /></div>
-<div class="news-card__foot"><span class="circ-sm"><svg fill="none" height="13" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="13"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></div>
-</a></div>
+<div class="card-row bleed reveal">
+{articleItems.map((a) => (
+  <a class="news-card" href={`/${locale}/article?id=${a.id}`}>
+    <div class="news-card__media"><img data-cms-img={`${a.id}.img`} src={a.img.src} alt="" /></div>
+    <div class="news-card__body"><Text as="p" key={`${a.id}.date`} field={a.date} class="news-card__meta" /><Text as="h3" key={`${a.id}.title`} field={a.title} /></div>
+    <div class="news-card__foot"><span class="circ-sm"><svg fill="none" height="13" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="13"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></div>
+  </a>
+))}
+</div>
 </div>
 <div class="mtab-panel" id="events" role="tabpanel" hidden>
 <div class="reveal" id="eventsList">
