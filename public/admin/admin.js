@@ -29,6 +29,11 @@ var UPLOADS  = 'assets/img/uploads/';
 var SCHEMA = window.SAFTA_SCHEMA || {};
 var BASE   = window.SAFTA_BASE   || {};
 
+/* إعدادات الموقع العامة (src/lib/content/settings.ts) — أعلام تُخفي أقساماً كاملة عن
+   الموقع، منفصلة عن نظام المسودة/النشر أعلاه لأنها تُحفظ فورًا عبر /admin/api/settings
+   بدل المرور بخطوة «حفظ ونشر». انظر awardsToggleHtml/bindAwardsToggle أدناه. */
+var SITE_SETTINGS = { hideAwards: false };
+
 /* أسماء مخازن كل مجموعات البيانات (kind:"data") في SCHEMA — groups/articles/events/
    members/roles وأي مجموعة تُضاف لاحقًا. تُستخدم لبناء S.cur/resetState دون تعداد
    الأسماء يدويًا، فإضافة مجموعة جديدة في schema.js لا تحتاج لمسّ هذا الملف. */
@@ -386,6 +391,15 @@ function syncApiBackedBaseline() {
   }));
 }
 
+function syncSiteSettings() {
+  return fetch('/admin/api/settings')
+    .then(function (r) { if (!r.ok) throw new Error('bad status'); return r.json(); })
+    .then(function (data) { SITE_SETTINGS.hideAwards = !!data.hideAwards; })
+    .catch(function () {
+      toast('تعذّر تحميل إعدادات الموقع — يُفترض أن كل الأقسام ظاهرة');
+    });
+}
+
 /* ═══════════════════ 6 · القائمة الجانبية ═══════════════════ */
 
 function renderSide() {
@@ -450,6 +464,8 @@ function renderPane() {
         '<span class="lock">اسم القسم وترتيبه مقفلان</span>' +
         '<span class="side__n">' + count + '</span>' +
       '</div><div class="sec__body">';
+
+    if (S.view === 'index' && sec.key === 'awards') body += awardsToggleHtml();
 
     (sec.fields || []).forEach(function (f) { body += fieldHtml(dressOne(f, sec, null)); });
 
@@ -583,6 +599,48 @@ function fieldHtml(f, viewOverride) {
   return head + '<div class="f__pair">' + box('ar', 'العربية') + box('en', 'English') + '</div></div>';
 }
 
+/* إظهار/إخفاء قسم الجوائز عن الموقع بالكامل (الرئيسية + القائمة الجانبية) — إعداد
+   موقع منفصل عن حقول النص أعلاه، يُحفظ فورًا عبر /admin/api/settings بدل انتظار
+   «حفظ ونشر» (انظر SITE_SETTINGS وsyncSiteSettings أعلاه). */
+function awardsToggleHtml() {
+  var checked = SITE_SETTINGS.hideAwards;
+  return '<div class="f">' +
+    '<div class="f__top">' +
+      '<span class="f__label">إظهار القسم في الموقع</span>' +
+      '<span class="f__tag">إعداد فوري</span>' +
+    '</div>' +
+    '<div class="f__pair"><div class="f__side" style="grid-column:1/-1">' +
+      '<i>يُخفي هذا القسم عن الرئيسية وعن القائمة الجانبية في الموقع مباشرة عند التبديل — لا حاجة لحفظ أو نشر.</i>' +
+      '<label class="chk"><input type="checkbox" id="awardsHideToggle"' + (checked ? '' : ' checked') + '> إظهار قسم الجوائز في الموقع</label>' +
+    '</div></div>' +
+  '</div>';
+}
+
+function bindAwardsToggle(pane) {
+  var el = $('#awardsHideToggle', pane);
+  if (!el) return;
+  el.addEventListener('change', function () {
+    var hide = !el.checked;
+    el.disabled = true;
+    fetch('/admin/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ hideAwards: hide }),
+    }).then(function (r) {
+      if (!r.ok) throw new Error('bad status');
+      return r.json();
+    }).then(function (data) {
+      SITE_SETTINGS.hideAwards = !!data.hideAwards;
+      el.disabled = false;
+      toast(SITE_SETTINGS.hideAwards ? 'أُخفي قسم الجوائز عن الموقع' : 'أُظهر قسم الجوائز في الموقع');
+    }).catch(function () {
+      el.checked = !el.checked;
+      el.disabled = false;
+      toast('تعذّر حفظ الإعداد — حاول مجددًا');
+    });
+  });
+}
+
 /* ═══════════════════ 9 · الربط ═══════════════════ */
 
 function findField(uid, view) {
@@ -593,6 +651,8 @@ function findField(uid, view) {
 
 function bindPane() {
   var pane = $('#pane');
+
+  bindAwardsToggle(pane);
 
   $$('.card__head', pane).forEach(function (b) {
     b.addEventListener('click', function () { b.parentNode.classList.toggle('is-open'); });
@@ -1205,9 +1265,10 @@ document.addEventListener('keydown', function (e) {
    يتحقّق من الجلسة قبل أن تصل هذه الصفحة أصلًا، فلا حاجة لفحصٍ هنا. */
 
 (function boot() {
-  syncApiBackedSchema().then(function () {
-    return syncApiBackedBaseline();
-  }).then(start, start);
+  Promise.all([
+    syncApiBackedSchema().then(function () { return syncApiBackedBaseline(); }),
+    syncSiteSettings(),
+  ]).then(start, start);
 })();
 
 /* للاختبار الآلي */

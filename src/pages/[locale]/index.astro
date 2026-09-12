@@ -8,6 +8,7 @@ import { INDEX_FIELDS } from '../../lib/content/schema/index';
 import { PARTNERS_FIELDS } from '../../lib/content/collections/partners';
 import { CHALLENGES_FIELDS } from '../../lib/content/collections/challenges';
 import { isLocale } from '../../lib/locale';
+import { getSiteSettings } from '../../lib/content/settings';
 
 export function getStaticPaths() {
   return [{ params: { locale: 'en' } }, { params: { locale: 'ar' } }];
@@ -16,6 +17,7 @@ const { locale } = Astro.params;
 if (!isLocale(locale)) return new Response(null, { status: 404 });
 
 const c = await getPageContent<typeof INDEX_FIELDS>('index');
+const { hideAwards } = await getSiteSettings();
 
 // The partner logo strip is an addable/deletable collection (content/partners.json) rather
 // than fixed page fields, so the admin can add or remove a partner instead of only swapping
@@ -164,6 +166,7 @@ const challengeItems = challenges.items().map((ch) => ({
 </div>
 </section>
 <!-- =============== 9b. SAFTA EXCELLENCE AWARDS =============== -->
+{!hideAwards && (
 <section class="ribbon awards" id="awards">
 <div class="wrap">
 <div class="awards__panel reveal">
@@ -213,6 +216,7 @@ const challengeItems = challenges.items().map((ch) => ({
 </div>
 </div>
 </section>
+)}
 </main>
 <!-- =============== 1b. PARTNER LOGO STRIP =============== -->
 <!-- شعارات رسمية مستخرجة من أوراق سياسات التحالف الرسمية

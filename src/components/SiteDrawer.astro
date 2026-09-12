@@ -1,8 +1,8 @@
 ---
 /* Drawer nav. `current` marks one link with is-current — same set of pages
    that carried the class in the hand-written HTML. */
-interface Props { current?: string; locale: 'en' | 'ar' }
-const { current, locale } = Astro.props;
+interface Props { current?: string; locale: 'en' | 'ar'; hideAwards?: boolean }
+const { current, locale, hideAwards = false } = Astro.props;
 const on = (key: string) => (current === key ? 'is-current' : undefined);
 ---
 <div aria-hidden="true" class="drawer" id="drawer">
@@ -12,7 +12,9 @@ const on = (key: string) => (current === key ? 'is-current' : undefined);
 <a class={on('about')} data-ar="عن التحالف" href={`/${locale}/about`}>About</a>
 <a class={on('technologies')} data-ar="مجموعات العمل" href={`/${locale}/technologies`}>Working Groups</a>
 <a class={on('members')} data-ar="المتحالفون" href={`/${locale}/members`}>Our Members</a>
+{!hideAwards && (
 <a class="is-soon" aria-disabled="true" tabindex="-1" href="#"><span data-ar="جوائز سافتا للتميّز">SAFTA Excellence Awards</span><em class="soon-tag" data-ar="قريبًا">Soon</em></a>
+)}
 <a class={on('media')} data-ar="الأخبار والفعاليات" href={`/${locale}/media`}>News &amp; Events</a>
 <a class={on('contact')} data-ar="تواصل معنا" href={`/${locale}/contact`}>Contact Us</a>
 </nav>

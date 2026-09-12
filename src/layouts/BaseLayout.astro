@@ -4,6 +4,7 @@ import SiteDrawer from '../components/SiteDrawer.astro';
 import JoinBanner from '../components/JoinBanner.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import type { Locale } from '../lib/locale';
+import { getSiteSettings } from '../lib/content/settings';
 
 interface Props {
   /** which locale route this page was generated for */
@@ -30,6 +31,8 @@ const {
   appleTouchIcon = false,
   joinBanner = true,
 } = Astro.props;
+
+const { hideAwards } = await getSiteSettings();
 ---
 <html data-title-ar={titleAr} dir={locale === 'ar' ? 'rtl' : 'ltr'} lang={locale}>
 <head>
@@ -54,7 +57,7 @@ const {
 <div id="scroll-progress"></div>
 <!-- =============== HEADER =============== -->
 <SiteHeader locale={locale} />
-<SiteDrawer current={current} locale={locale} />
+<SiteDrawer current={current} locale={locale} hideAwards={hideAwards} />
 <slot />
 {joinBanner && <JoinBanner locale={locale} />}
 <SiteFooter locale={locale} />
