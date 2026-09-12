@@ -1,6 +1,9 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Text from '../../components/content/Text.astro';
+import { getPageContent } from '../../lib/content/store';
 import { getCollectionContent } from '../../lib/content/collections/store';
+import { MEMBERS_FIELDS as MEMBERS_PAGE_FIELDS } from '../../lib/content/schema/members';
 import { MEMBERS_FIELDS } from '../../lib/content/collections/members';
 import { isLocale } from '../../lib/locale';
 
@@ -9,6 +12,10 @@ export function getStaticPaths() {
 }
 const { locale } = Astro.params;
 if (!isLocale(locale)) return new Response(null, { status: 404 });
+
+// Hero copy comes from content/members-page.json (this page's own schema module, not the
+// _members collection below — see schema/members.ts for why it has a distinct file name).
+const c = await getPageContent<typeof MEMBERS_PAGE_FIELDS>('members');
 
 const members = await getCollectionContent<typeof MEMBERS_FIELDS>('members');
 const items = members.items().map((m) => ({
@@ -28,18 +35,18 @@ const items = members.items().map((m) => ({
 <main>
 <section class="page-hero page-hero--plain">
 <div class="wrap">
-<p class="crumbs"><a data-cms="t001-الرئيسية" data-ar="الرئيسية" href={`/${locale}`}>Home</a><span>/</span>Members</p>
-<h1 data-cms="t002-الأعضاء" data-ar="الأعضاء">Members of the Alliance</h1>
-<p data-cms="t003-جهات-حكومية-وأكاديمية-ومن-" class="lede" data-ar="جهات حكومية وأكاديمية ومن القطاع الخاص وغير ربحية تعمل معًا في تقنيات الزراعة والغذاء.">Government, academic, private sector and non-profit entities working together on agrifood technology.</p>
+<p class="crumbs"><Text as="a" key="t001-الرئيسية" field={c.text("t001-الرئيسية")} href={`/${locale}`} /><span>/</span>Members</p>
+<Text as="h1" key="t002-الأعضاء" field={c.text("t002-الأعضاء")} />
+<Text as="p" key="t003-جهات-حكومية-وأكاديمية-ومن-" field={c.text("t003-جهات-حكومية-وأكاديمية-ومن-")} class="lede" />
 </div>
 </section>
 <section class="ribbon">
 <div class="wrap">
 <div class="sec-head reveal">
 <div class="sec-head__txt">
-<p data-cms="t004-التحالف" class="eyebrow" data-ar="التحالف">The Alliance</p>
-<h2 data-cms="t005-الأعضاء" class="h-section" data-ar="الأعضاء">Members of the Alliance</h2>
-<p data-cms="t006-جهات-حكومية-ومؤسسات-أكاديم" class="lede" data-ar="جهات حكومية ومؤسسات أكاديمية وشركات من القطاع الخاص ومنظمات غير ربحية تعمل معًا للنهوض بتقنيات الزراعة والغذاء في المملكة.">Government entities, academic institutions, private sector companies and non-profit organizations working together to advance agrifood technology in the Kingdom.</p>
+<Text as="p" key="t004-التحالف" field={c.text("t004-التحالف")} class="eyebrow" />
+<Text as="h2" key="t005-الأعضاء" field={c.text("t005-الأعضاء")} class="h-section" />
+<Text as="p" key="t006-جهات-حكومية-ومؤسسات-أكاديم" field={c.text("t006-جهات-حكومية-ومؤسسات-أكاديم")} class="lede" />
 </div>
 </div>
 <div class="grid-3" id="memberGrid">
@@ -55,6 +62,4 @@ const items = members.items().map((m) => ({
 </main>
 <script slot="scripts" is:inline crossorigin="" integrity="sha512-BwHfrr4c9kmRkLw6iXFdzcdWV/PGkVgiIyIWLLlTSXzWQzxuSg4DiQUCpauz/EWjgk5TYQqX/kvn9pG1NpYfqg==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script slot="scripts" is:inline src="assets/js/members-map-data.js"></script>
-<script slot="scripts" is:inline src="assets/content/members.js?v=28"></script>
-<script slot="scripts" is:inline src="assets/js/cms.js?v=28"></script>
 </BaseLayout>

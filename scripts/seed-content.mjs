@@ -24,6 +24,15 @@ const args = process.argv.slice(2);
 const force = args.includes('--force');
 const wanted = args.filter((a) => !a.startsWith('--'));
 
+// content/<page>.json is the default target, but "members" collides with the _members
+// collection's own data file (content/members.json, seeded by seed-collections.mjs) — its
+// page copy lives at content/members-page.json instead (see schema/members.ts's
+// `contentFile`).
+const TARGET_FILE_OVERRIDES = { members: 'members-page.json' };
+function targetFileFor(page) {
+  return TARGET_FILE_OVERRIDES[page] ?? `${page}.json`;
+}
+
 /** Pull the object literal out of `window.SAFTA_C["about"] = { ... };` */
 function parseLegacy(source, page) {
   const marker = source.indexOf('window.SAFTA_C[');
@@ -50,7 +59,8 @@ let written = 0;
 let skipped = 0;
 
 for (const page of pages) {
-  const target = join(CONTENT_DIR, `${page}.json`);
+  const targetFile = targetFileFor(page);
+  const target = join(CONTENT_DIR, targetFile);
   if (!force && (await exists(target))) {
     skipped++;
     continue;
@@ -58,7 +68,7 @@ for (const page of pages) {
   const source = await readFile(join(LEGACY_DIR, `${page}.js`), 'utf8');
   const data = parseLegacy(source, page);
   await writeFile(target, JSON.stringify(data, null, 2) + '\n', 'utf8');
-  console.log(`seeded content/${page}.json — ${Object.keys(data).length} fields`);
+  console.log(`seeded content/${targetFile} — ${Object.keys(data).length} fields`);
   written++;
 }
 

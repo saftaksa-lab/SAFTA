@@ -1,7 +1,7 @@
 import { unlink } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import type { FieldMap, TypedPageContent } from './schema/codec';
-import { getPageValidator, isEditablePage } from './schema/registry';
+import { getContentFile, getPageValidator, isEditablePage } from './schema/registry';
 import { readJsonCached, readJsonCachedWithRevision, writeJsonAtomic } from './json-file';
 
 /**
@@ -50,9 +50,15 @@ export function resolveAsset(src: string): string {
   return src;
 }
 
+/** The content/*.json file a page's data lives in — `<page>.json` unless the page's schema
+ *  module overrides it (see getContentFile) because that name is already taken. */
+function contentFileFor(page: string): string {
+  return isEditablePage(page) ? getContentFile(page) : `${page}.json`;
+}
+
 /** The raw field map for a page, as stored on disk — what the admin edits. */
 export async function readPageData(page: string): Promise<PageData> {
-  return readJson<PageData>(`${page}.json`);
+  return readJson<PageData>(contentFileFor(page));
 }
 
 /**
@@ -60,7 +66,7 @@ export async function readPageData(page: string): Promise<PageData> {
  * a later boot can tell whether someone else published over the copy that draft was based on.
  */
 export async function readPageDataWithRevision(page: string): Promise<{ data: PageData; rev: string }> {
-  const fileName = `${page}.json`;
+  const fileName = contentFileFor(page);
   return readJsonCachedWithRevision<PageData>(fileName, missingContent(fileName));
 }
 
@@ -70,7 +76,7 @@ export async function readPageDataWithRevision(page: string): Promise<{ data: Pa
  * the site reflects the edit immediately instead of waiting out the revalidate window.
  */
 export async function writePageData(page: string, data: PageData): Promise<string> {
-  return writeJsonAtomic(`${page}.json`, data);
+  return writeJsonAtomic(contentFileFor(page), data);
 }
 
 /**
@@ -143,14 +149,15 @@ export interface PageContent {
 export async function getPageContent<F extends FieldMap = FieldMap>(
   page: string,
 ): Promise<TypedPageContent<F>> {
-  const data = await readJson<PageData>(`${page}.json`);
+  const fileName = contentFileFor(page);
+  const data = await readJson<PageData>(fileName);
 
   function record(key: string, kind: string): Record_ {
     const found = data[key];
     if (found) return found;
     // A typo'd key is a bug, and in dev it should be impossible to miss. In production a
     // single bad key must not take the page down — it degrades to an empty field.
-    const message = `content/${page}.json has no ${kind} field "${key}"`;
+    const message = `content/${fileName} has no ${kind} field "${key}"`;
     if (import.meta.env.DEV) throw new Error(message);
     console.warn(`[content] ${message}`);
     return {};

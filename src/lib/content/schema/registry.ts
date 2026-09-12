@@ -4,6 +4,7 @@ import CONTACT_PAGE from './contact';
 import REGISTER_INTEREST_PAGE from './register-interest';
 import INDEX_PAGE from './index';
 import MEDIA_PAGE from './media';
+import MEMBERS_PAGE from './members';
 
 /**
  * Every page with a generated schema module — the single source of truth for which pages
@@ -17,6 +18,7 @@ const PAGES = {
   'register-interest': REGISTER_INTEREST_PAGE,
   index: INDEX_PAGE,
   media: MEDIA_PAGE,
+  members: MEMBERS_PAGE,
 };
 
 export type PageName = keyof typeof PAGES;
@@ -27,6 +29,15 @@ export function isEditablePage(page: string): page is PageName {
 
 export function getPageValidator(page: PageName) {
   return zodForFields(PAGES[page].fields);
+}
+
+/**
+ * The content/*.json file a page's data lives in. Defaults to `<page>.json`; a page can
+ * override it via `contentFile` when that name is already taken — `members` does, because
+ * content/members.json is the `_members` collection's data file (collections/members.ts).
+ */
+export function getContentFile(page: PageName): string {
+  return (PAGES[page] as { contentFile?: string }).contentFile ?? `${page}.json`;
 }
 
 /**
