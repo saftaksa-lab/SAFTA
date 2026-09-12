@@ -39,11 +39,23 @@ export async function schemaKeys(page) {
   return { fields, sections };
 }
 
+/** The content/*.json file a page's data lives in — `<page>.json` unless the schema module
+ *  declares a `contentFile` override (see registry.ts's getContentFile, which reads the same
+ *  property off the imported module — this is that check's no-import, regex equivalent, so
+ *  it stays runnable on a production checkout with no build step). A page like `members`
+ *  overrides it because `content/members.json` is already claimed by the `_members`
+ *  collection; without resolving this, these scripts would diff/prune the wrong file. */
+export async function contentFileFor(page) {
+  const src = await readFile(join(SCHEMA_DIR, `${page}.ts`), 'utf8');
+  const match = src.match(/contentFile:\s*"([^"]+)"/);
+  return match ? match[1] : `${page}.json`;
+}
+
 /** Returns null when the file is absent — content/ is gitignored, so a missing file is a
  *  seeding problem (npm run seed:content), not schema drift. */
 export async function diskData(page) {
   try {
-    return JSON.parse(await readFile(join(CONTENT_DIR, `${page}.json`), 'utf8'));
+    return JSON.parse(await readFile(join(CONTENT_DIR, await contentFileFor(page)), 'utf8'));
   } catch {
     return null;
   }

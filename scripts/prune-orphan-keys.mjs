@@ -24,7 +24,7 @@
  */
 import { readFile, writeFile, copyFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { CONTENT_DIR, registeredPages, schemaKeys, diskData } from './lib/page-schema-keys.mjs';
+import { CONTENT_DIR, registeredPages, schemaKeys, diskData, contentFileFor } from './lib/page-schema-keys.mjs';
 
 const args = process.argv.slice(2);
 const write = args.includes('--write');
@@ -38,9 +38,10 @@ let changedFiles = 0;
 
 for (const page of pages) {
   const { fields } = await schemaKeys(page);
+  const contentFile = await contentFileFor(page);
   const data = await diskData(page);
   if (!data) {
-    console.log(`- ${page}: content/${page}.json is missing — run \`npm run seed:content\` first`);
+    console.log(`- ${page}: content/${contentFile} is missing — run \`npm run seed:content\` first`);
     continue;
   }
 
@@ -70,8 +71,8 @@ for (const page of pages) {
 
   if (!write) continue;
 
-  const target = join(CONTENT_DIR, `${page}.json`);
-  const backup = join(CONTENT_DIR, `${page}.json.orphans-${stamp}.bak`);
+  const target = join(CONTENT_DIR, contentFile);
+  const backup = join(CONTENT_DIR, `${contentFile}.orphans-${stamp}.bak`);
   await copyFile(target, backup);
 
   // Rebuilt by filtering the original key order rather than deleting in place, so the
@@ -80,7 +81,7 @@ for (const page of pages) {
   for (const [k, v] of Object.entries(data)) if (declared.has(k)) pruned[k] = v;
   await writeFile(target, JSON.stringify(pruned, null, 2) + '\n', 'utf8');
   changedFiles++;
-  console.log(`    → backup: content/${page}.json.orphans-${stamp}.bak`);
+  console.log(`    → backup: content/${contentFile}.orphans-${stamp}.bak`);
 }
 
 console.log('');
