@@ -60,3 +60,22 @@ export async function diskData(page) {
     return null;
   }
 }
+
+/**
+ * The page's sections as the admin UI groups them — `[{ key, label, fields }]`, with each
+ * section's card fields folded into its own `fields` list. `schemaKeys().sections` returns
+ * the same field set flattened; this keeps the grouping, so seed-content.mjs can reseed one
+ * section of a page without touching the rest of the admin's live data.
+ */
+export async function pageSections(page) {
+  const src = await readFile(join(SCHEMA_DIR, `${page}.ts`), 'utf8');
+  const block = src.slice(src.indexOf('_SECTIONS'));
+  const quoted = (s) => [...s.matchAll(/"((?:[^"\\]|\\.)*)"/g)].map((m) => m[1]);
+
+  const re = /\{\s*key:\s*"((?:[^"\\]|\\.)*)",\s*label:\s*"((?:[^"\\]|\\.)*)",\s*fields:\s*\[([^\]]*)\],\s*cards:\s*\[([\s\S]*?)\],\s*\}/g;
+  return [...block.matchAll(re)].map(([, key, label, fields, cards]) => ({
+    key,
+    label,
+    fields: [...quoted(fields), ...[...cards.matchAll(/fields:\s*\[([^\]]*)\]/g)].flatMap((m) => quoted(m[1]))],
+  }));
+}
