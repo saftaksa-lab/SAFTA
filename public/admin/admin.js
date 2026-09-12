@@ -530,7 +530,7 @@ function fieldHtml(f, viewOverride) {
   var sc = SCHEMA[v];
   var dirty = fieldDirty(v, f);
   var uid = escapeHtml(f.uid);
-  var tag = { text: 'نص', long: 'فقرة', rich: 'نص منسّق', image: 'صورة', url: 'رابط', boolean: 'قيمة منطقية' }[f.type] || 'نص';
+  var tag = { text: 'نص', long: 'فقرة', rich: 'نص منسّق', image: 'صورة', url: 'رابط', youtube: 'فيديو يوتيوب', boolean: 'قيمة منطقية' }[f.type] || 'نص';
 
   var head = '<div class="f' + (dirty ? ' is-dirty' : '') + '" data-uid="' + uid + '" data-view="' + v + '">' +
     '<div class="f__top">' +
@@ -565,6 +565,20 @@ function fieldHtml(f, viewOverride) {
     return head +
       '<div class="f__pair"><div class="f__side' + bd + '" style="grid-column:1/-1">' +
         '<label class="chk"><input type="checkbox" data-act="toggle"' + (checked ? ' checked' : '') + '> مفعّل</label>' +
+      '</div></div></div>';
+  }
+
+  /* فيديو يوتيوب: رابط واحد للّغتين. الصفحة تستخرج معرّف الفيديو من الرابط مهما كان شكله
+     (watch?v= أو youtu.be أو shorts)، وتُخفي الفيديو من الصفحة كلّها إذا تُرك الحقل فارغًا. */
+  if (f.type === 'youtube') {
+    var yt  = readField(v, f, 'en') || '';
+    var ytd = String(yt) !== String(baseField(v, f, 'en')) ? ' is-dirty' : '';
+    return head +
+      '<div class="f__pair"><div class="f__side" style="grid-column:1/-1">' +
+        '<i>الصق رابط الفيديو من يوتيوب، مثل <b>https://www.youtube.com/watch?v=…</b>' +
+        ' — اتركه فارغًا لإخفاء الفيديو من الصفحة</i>' +
+        '<textarea class="inp' + ytd + '" rows="1" dir="ltr" style="text-align:left" ' +
+        'data-lang="en" data-act="edit">' + escapeHtml(yt) + '</textarea>' +
       '</div></div></div>';
   }
 

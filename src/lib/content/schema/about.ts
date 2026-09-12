@@ -12,9 +12,7 @@ export const ABOUT_FIELDS = {
   "t005-منصة-وطنية-لتسريع-تبنّي-تق": { kind: "text", tag: "h2", type: "text", label: "منصة وطنية لتسريع تبنّي تقنيات الزراعة والغذاء" },
   "t006-تأسّس-التحالف-السعودي-لتقن": { kind: "text", tag: "p", type: "long", label: "تأسّس التحالف السعودي لتقنيات الزراعة والغذاء كمنصّة وطنية للتعاون وال" },
   "t007-يُعدّ-التحالف-أحد-أبرز-مخر": { kind: "text", tag: "p", type: "long", label: "يُعدّ التحالف أحد أبرز مخرجات الخطة التنفيذية للبحث والابتكار في وزارة" },
-  "i008-reelposter": { kind: "image", tag: "img", type: "image", label: "reel-poster.jpg" },
-  "t009-شغّل-الفيديو": { kind: "text", tag: "span", type: "text", label: "شغّل الفيديو" },
-  "t010-٢٠-ثانية-بلا-صوت": { kind: "text", tag: "span", type: "text", label: "٢٠ ثانية · بلا صوت" },
+  "t008-youtube": { kind: "text", tag: "iframe", type: "youtube", label: "رابط فيديو يوتيوب" },
   "t011-قريبًا": { kind: "text", tag: "b", type: "text", label: "قريبًا" },
   "t012-Soon": { kind: "text", tag: "b", type: "text", label: "Soon" },
   "t013-قريبًا": { kind: "text", tag: "b", type: "text", label: "قريبًا" },
@@ -49,7 +47,7 @@ export const ABOUT_SECTIONS = [
   {
     key: "section-2",
     label: "من نحن",
-    fields: ["t004-الرسالة-والرؤية","t005-منصة-وطنية-لتسريع-تبنّي-تق","t006-تأسّس-التحالف-السعودي-لتقن","t007-يُعدّ-التحالف-أحد-أبرز-مخر","i008-reelposter","t009-شغّل-الفيديو","t010-٢٠-ثانية-بلا-صوت"],
+    fields: ["t004-الرسالة-والرؤية","t005-منصة-وطنية-لتسريع-تبنّي-تق","t006-تأسّس-التحالف-السعودي-لتقن","t007-يُعدّ-التحالف-أحد-أبرز-مخر","t008-youtube"],
     cards: [
 
     ],

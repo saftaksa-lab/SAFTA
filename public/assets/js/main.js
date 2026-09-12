@@ -796,46 +796,6 @@
   });
 })();
 
-/* ---------------------------------------------------------------------
-   23. مشغّل الفيديو بالضغط
-   ---------------------------------------------------------------------
-   لا يُحمّل الفيديو إطلاقًا حتى يضغط الزائر: الصفحة ترى صورة غلاف
-   بحجم 100 كيلوبايت بدل 4.7 ميجابايت. عند الضغط يُنشأ عنصر <video>
-   ويبدأ التشغيل فورًا.
-   --------------------------------------------------------------------- */
-(function () {
-  'use strict';
-  var boxes = document.querySelectorAll('.vplay');
-  if (!boxes.length) return;
-
-  Array.prototype.forEach.call(boxes, function (box) {
-    var btn = box.querySelector('.vplay__btn');
-    if (!btn) return;
-
-    btn.addEventListener('click', function () {
-      if (box.classList.contains('is-playing')) return;
-
-      var v = document.createElement('video');
-      v.className   = 'vplay__video';
-      v.controls    = true;
-      v.autoplay    = true;
-      v.playsInline = true;
-      v.preload     = 'auto';
-      v.setAttribute('poster', (box.querySelector('.vplay__poster') || {}).src || '');
-
-      var webm = box.getAttribute('data-src-webm');
-      var mp4  = box.getAttribute('data-src-mp4');
-      if (webm) { var s1 = document.createElement('source'); s1.src = webm; s1.type = 'video/webm'; v.appendChild(s1); }
-      if (mp4)  { var s2 = document.createElement('source'); s2.src = mp4;  s2.type = 'video/mp4';  v.appendChild(s2); }
-
-      box.appendChild(v);
-      box.classList.add('is-playing');
-      var p = v.play();
-      if (p && p.catch) p.catch(function () { /* المتصفّح منع التشغيل — الأزرار ظاهرة */ });
-    });
-  });
-})();
-
 /* ══════════════ 25) تبويبات الأخبار/الفعاليات (News & Events) ══════════════
    يبدّل بين .mtab-panel حسب زر .mtab[data-mtab]. لا يعتمد على صفحة بعينها. */
 (function () {

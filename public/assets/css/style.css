@@ -427,11 +427,19 @@ ul { margin: 0; padding: 0; list-style: none; }
 
 /* ---------- 15. CASE STUDY (split) ------------------------------------- */
 .split { display: grid; grid-template-columns: 1fr 1fr; gap: 110px; align-items: center; }
+/* عمود واحد حين يُخفى الطرف الثاني — مثل فيديو «عن التحالف» إذا تُرك رابطه فارغًا في لوحة
+   التحكّم: بدون هذا يبقى نصف الشبكة فارغًا والنصّ محشورًا في النصف الآخر. */
+.split--single { grid-template-columns: 1fr; }
 .split figure { overflow: hidden; }
 .split img { width: 100%; height: 385px; object-fit: cover; }
 .split h3 { font-size: 26px; line-height: 34px; font-weight: 400; margin-bottom: 24px; }
 .split p { font-size: 16px; line-height: 26px; margin-bottom: 20px; }
 .split .cta-circle { margin-top: 16px; }
+
+/* تضمين يوتيوب: الإطار لا يحمل أبعادًا جوهرية، فالنسبة 16:9 هي ما يمنحه ارتفاعًا بدل أن
+   ينهار إلى ١٥٠ بكسل الافتراضية للمتصفّح. */
+.video-embed { position: relative; margin: 0; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 4px; background: var(--c-green-deep, #015C44); }
+.video-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
 
 /* ---------- 16. NEWS CARDS --------------------------------------------- */
 .news-card {
@@ -3170,78 +3178,6 @@ html, body { max-width: 100%; overflow-x: hidden; }
 }
 @media (max-width: 480px) {
   .glance--soon .soon-tape { --tape-h: 40px; transform: rotate(-22deg); width: 195%; }
-}
-
-/* =======================================================================
-   ★ تعديل ١٢ — مشغّل الفيديو بالضغط (صفحة عن التحالف)
-   -----------------------------------------------------------------------
-   المقطع 4.7 ميجابايت و20 ثانية — تشغيله تلقائيًا يُثقل الصفحة على
-   الجوال وشبكات البيانات. فالصفحة تُحمّل صورة غلاف 100KB فقط، ولا
-   يُطلب الفيديو من الخادم إلا بعد ضغط الزائر.
-   ======================================================================= */
-.vplay {
-  position: relative;
-  margin: 0;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  border-radius: 4px;
-  background: var(--c-green-deep, #015C44);
-  isolation: isolate;
-}
-.vplay__poster,
-.vplay__video {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  object-fit: cover; display: block;
-}
-.vplay__video { z-index: 3; background: #000; }
-.vplay::after {
-  content: ''; position: absolute; inset: 0; z-index: 1;
-  background: linear-gradient(180deg, rgba(1,44,33,.10) 0%, rgba(1,44,33,.52) 100%);
-  transition: opacity .3s;
-}
-.vplay.is-playing::after,
-.vplay.is-playing .vplay__poster,
-.vplay.is-playing .vplay__btn,
-.vplay.is-playing .vplay__meta { opacity: 0; pointer-events: none; }
-
-/* الزر */
-.vplay__btn {
-  position: absolute; inset-block-start: 50%; inset-inline-start: 50%;
-  transform: translate(-50%, -50%); z-index: 2;
-  display: inline-flex; align-items: center; gap: 11px;
-  height: 54px; padding: 0 26px 0 22px;
-  border: 0; border-radius: 99px; cursor: pointer;
-  background: rgba(255,255,255,.94);
-  color: var(--c-green-deep, #015C44);
-  font: 700 14.5px/1 var(--f-body, system-ui), sans-serif;
-  box-shadow: 0 10px 34px rgba(0,0,0,.32);
-  transition: transform .22s cubic-bezier(.22,1,.36,1), background .22s;
-}
-[dir="rtl"] .vplay__btn { padding: 0 22px 0 26px; }
-[dir="rtl"] .vplay__btn svg { transform: scaleX(-1); }
-.vplay__btn:hover { background: #fff; transform: translate(-50%, -50%) scale(1.05); }
-.vplay__btn:active { transform: translate(-50%, -50%) scale(.98); }
-
-/* سطر المدة */
-.vplay__meta {
-  position: absolute; z-index: 2;
-  inset-block-end: 16px; inset-inline-start: 18px;
-  font: 600 11.5px/1 var(--f-body, system-ui), sans-serif;
-  letter-spacing: .6px; color: rgba(255,255,255,.9);
-  background: rgba(0,0,0,.32); border-radius: 99px; padding: 6px 12px;
-  backdrop-filter: blur(3px);
-}
-
-@media (max-width: 900px) {
-  .vplay__btn { height: 46px; padding: 0 20px 0 17px; font-size: 13px; gap: 9px; }
-  .vplay__btn svg { width: 22px; height: 22px; }
-  .vplay__meta { font-size: 10.5px; inset-block-end: 12px; inset-inline-start: 12px; }
-}
-@media (max-width: 480px) {
-  .vplay__btn span { display: none; }        /* أيقونة فقط على الضيق */
-  .vplay__btn { width: 56px; height: 56px; padding: 0; justify-content: center; }
-  [dir="rtl"] .vplay__btn { padding: 0; }
 }
 
 /* =======================================================================

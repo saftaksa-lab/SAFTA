@@ -29,18 +29,9 @@ window.SAFTA_C["about"] = {
   "en": "The Alliance is one of the key outcomes of the Ministry of Environment, Water and Agriculture’s Research and Innovation Executive Plan. It is designed to lead a transformation of the national food and agriculture sector through strategic coordination among stakeholders committed to advancing technology adoption, sharing knowledge, and shaping sound policies and regulatory frameworks.",
   "ar": "يُعدّ التحالف أحد أبرز مخرجات الخطة التنفيذية للبحث والابتكار في وزارة البيئة والمياه والزراعة، وقد صُمّم ليقود تحوّلًا في قطاع الغذاء والزراعة الوطني عبر التنسيق الاستراتيجي بين أصحاب المصلحة الملتزمين بدفع تبنّي التقنية، وتبادل المعرفة، وصياغة سياسات وأطر تنظيمية سليمة."
  },
- "i008-reelposter": {
-  "src": "assets/video/reel-poster.jpg",
-  "alt": "",
-  "alt_ar": ""
- },
- "t009-شغّل-الفيديو": {
-  "en": "Play video",
-  "ar": "شغّل الفيديو"
- },
- "t010-٢٠-ثانية-بلا-صوت": {
-  "en": "20 seconds · no sound",
-  "ar": "٢٠ ثانية · بلا صوت"
+ "t008-youtube": {
+  "en": "",
+  "ar": ""
  },
  "t011-قريبًا": {
   "en": "Soon",

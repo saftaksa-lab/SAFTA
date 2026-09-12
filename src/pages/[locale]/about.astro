@@ -8,6 +8,7 @@ import { ABOUT_FIELDS } from '../../lib/content/schema/about';
 import { ROLES_FIELDS } from '../../lib/content/collections/roles';
 import { CHALLENGES_FIELDS } from '../../lib/content/collections/challenges';
 import { isLocale } from '../../lib/locale';
+import { youtubeEmbedUrl } from '../../lib/youtube';
 
 export function getStaticPaths() {
   return [{ params: { locale: 'en' } }, { params: { locale: 'ar' } }];
@@ -22,6 +23,11 @@ if (!isLocale(locale)) return new Response(null, { status: 404 });
 // <typeof ABOUT_FIELDS> type argument narrows c.text()/c.image() to this page's own keys,
 // so a typo'd key or calling .text() on an image key is a compile-time error.
 const c = await getPageContent<typeof ABOUT_FIELDS>('about');
+
+// The reel is a YouTube link an admin pastes, not an uploaded file. youtubeEmbedUrl returns
+// null for a blank or unrecognisable value, which is what drops the video out of the layout
+// below rather than rendering an iframe pointed at nothing.
+const reelEmbed = youtubeEmbedUrl(c.text('t008-youtube').en);
 
 // The "Four roles" list is a real addable/deletable collection (content/roles.json) rather
 // than fixed page fields, so the admin can add or remove a role instead of only editing
@@ -67,21 +73,19 @@ const challengeItems = challenges.items().map((ch) => ({
 <Text as="h2" key="t005-منصة-وطنية-لتسريع-تبنّي-تق" field={c.text("t005-منصة-وطنية-لتسريع-تبنّي-تق")} class="h-section" />
 </div>
 </div>
-<div class="split reveal">
+<div class:list={['split', 'reveal', !reelEmbed && 'split--single']}>
 <div>
 <Text as="p" key="t006-تأسّس-التحالف-السعودي-لتقن" field={c.text("t006-تأسّس-التحالف-السعودي-لتقن")} style="font-size:17px;line-height:29px;margin-bottom:20px;" />
 <Text as="p" key="t007-يُعدّ-التحالف-أحد-أبرز-مخر" field={c.text("t007-يُعدّ-التحالف-أحد-أبرز-مخر")} style="font-size:17px;line-height:29px;" />
 </div>
-<figure class="vplay" id="aboutReel"
-  data-src-mp4="assets/video/green-dunes-reel.mp4"
-  data-src-webm="assets/video/green-dunes-reel.webm">
-<Image key="i008-reelposter" field={c.image("i008-reelposter")} class="vplay__poster" loading="lazy" />
-<button class="vplay__btn" type="button" aria-label="تشغيل الفيديو">
-<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
-<Text as="span" key="t009-شغّل-الفيديو" field={c.text("t009-شغّل-الفيديو")} />
-</button>
-<Text as="span" key="t010-٢٠-ثانية-بلا-صوت" field={c.text("t010-٢٠-ثانية-بلا-صوت")} class="vplay__meta" />
+{reelEmbed && (
+<figure class="video-embed" id="aboutReel">
+<iframe src={reelEmbed} title={locale === 'ar' ? 'فيديو التحالف' : 'Alliance video'}
+  loading="lazy" allowfullscreen
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  referrerpolicy="strict-origin-when-cross-origin"></iframe>
 </figure>
+)}
 </div>
 </div>
 </section>
