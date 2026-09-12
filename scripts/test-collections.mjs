@@ -114,35 +114,31 @@ async function runAssertions(mod) {
   // 3. A 'list' field round-trips arrays of length 0, 1, and 7 — proving the variable-length
   //    design (every repeating structure in the real data varies in length per record).
   {
-    const statsSchema = zodForItemFields(GROUPS_COLLECTION.fields).shape.stats;
+    const bodySchema = zodForItemFields(ARTICLES_COLLECTION.fields).shape.body;
     for (const n of [0, 1, 7]) {
-      const items = Array.from({ length: n }, (_, i) => ({ n: String(i), l: { en: `label ${i}`, ar: '' } }));
-      const result = statsSchema.safeParse(items);
-      assert.equal(result.success, true, `groups.stats should accept an array of length ${n}`);
+      const items = Array.from({ length: n }, (_, i) => ({ h: { en: `heading ${i}`, ar: '' }, p: { en: `para ${i}`, ar: '' } }));
+      const result = bodySchema.safeParse(items);
+      assert.equal(result.success, true, `articles.body should accept an array of length ${n}`);
       assert.equal(result.data.length, n);
     }
   }
 
-  // 4. Id-set enforcement for a fixed, non-deletable collection: removal is never allowed
-  //    (an empty {} must not silently wipe a whole collection, since z.record({}) has nothing
-  //    to reject on its own); addition is allowed only when the collection is addable.
+  // 4. Id-set enforcement for a non-deletable collection: removal is never allowed (an empty
+  //    {} must not silently wipe a whole collection, since z.record({}) has nothing to reject
+  //    on its own); addition is allowed only when the collection is addable. `events` is the
+  //    subject because it is the addable-but-not-deletable case — every collection is addable
+  //    now, so there is no longer one that rejects an added id.
   {
     const { readCollectionData } = mod;
-    const existingArticles = await readCollectionData('articles');
-    const oneArticleId = Object.keys(existingArticles)[0];
+    const existingEvents = await readCollectionData('events');
+    const oneEventId = Object.keys(existingEvents)[0];
 
-    const addedId = { ...existingArticles, 'new-fake-id': ARTICLES_COLLECTION.newItem };
+    const removedId = { ...existingEvents };
+    delete removedId[oneEventId];
     assert.throws(
-      () => validateCollectionUpdate('articles', existingArticles, addedId),
-      /does not allow adding records/,
-      'articles: adding an id should be rejected (fixed set)',
-    );
-    const removedId = { ...existingArticles };
-    delete removedId[oneArticleId];
-    assert.throws(
-      () => validateCollectionUpdate('articles', existingArticles, removedId),
+      () => validateCollectionUpdate('events', existingEvents, removedId),
       /does not allow removing records/,
-      'articles: removing an id should be rejected',
+      'events: removing an id should be rejected',
     );
 
     const existingGroups = await readCollectionData('groups');

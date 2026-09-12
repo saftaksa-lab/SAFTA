@@ -1871,17 +1871,6 @@ body { overflow-x: clip; }
    42. بطاقات مجموعات العمل — بيانات حقيقية بدل البطاقات الفارغة
    ======================================================================= */
 .wg-card { position: relative; }
-.wg-status {
-  position: absolute; inset-block-start: 20px; inset-inline-end: 20px;
-  display: inline-flex; align-items: center; height: 22px; padding: 0 10px;
-  border-radius: 11px; font-size: 11px; font-weight: 700; letter-spacing: .2px;
-  background: var(--c-grey-bg, #F2F7F4); color: var(--c-text);
-  white-space: nowrap; max-width: 45%; overflow: hidden; text-overflow: ellipsis;
-}
-[lang="ar"] .wg-status { font-size: 12px; }
-.wg-status--done  { background: rgba(1,92,68,.12);   color: #015C44; }
-.wg-status--prog  { background: rgba(70,137,200,.14); color: #2C5F8F; }
-.wg-status--track { background: rgba(99,189,105,.16); color: #2E7D3A; }
 .wg-card h3 { padding-inline-end: 84px; }
 .wg-meta { margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--c-grey-line); }
 .wg-meta p { margin: 0 0 6px; font-size: 12.5px; line-height: 18px; color: var(--c-text); }
@@ -1893,7 +1882,6 @@ body { overflow-x: clip; }
 }
 [lang="ar"] .wg-meta__k { font-size: 11.5px; letter-spacing: 0; text-transform: none; }
 @media (max-width: 900px) {
-  .wg-status { inset-block-start: 16px; inset-inline-end: 16px; height: 20px; font-size: 11px; }
   .wg-card h3 { padding-inline-end: 76px; }
   .wg-meta p { font-size: 12px; line-height: 17px; }
   [lang="ar"] .wg-meta p { font-size: 12.5px; line-height: 20px; }
@@ -1906,86 +1894,6 @@ body { overflow-x: clip; }
 }
 [lang="ar"] .grid-empty { font-size: 15px; }
 
-/* =======================================================================
-   43. صفحة تفصيل مجموعة العمل — working-group.html
-   ======================================================================= */
-.wgp__head { display: flex; align-items: flex-start; gap: 20px; margin-bottom: 22px; }
-.wgp__no {
-  flex: 0 0 auto; font-family: 'Space Grotesk', sans-serif;
-  font-size: 40px; line-height: 1; font-weight: 700; color: var(--c-brand-3, #63BD69);
-  letter-spacing: -1px; padding-top: 4px;
-}
-.wgp__ident { flex: 1 1 auto; min-width: 0; }
-.wgp__head .wg-status { position: static; flex: 0 0 auto; margin-top: 8px; max-width: none; }
-.wgp__scope { max-width: 74ch; margin-bottom: 30px; }
-
-.wgp__stats {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
-  gap: 0 22px; margin-bottom: 34px;
-  border-top: 1px solid var(--c-grey-line); padding-top: 26px;
-}
-.wgp__stat { padding-bottom: 20px; }
-.wgp__stat b {
-  display: block; font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(28px, 3.2vw, 40px); line-height: 1.05; font-weight: 700;
-  color: var(--c-green-deep, #015C44); letter-spacing: -1px; margin-bottom: 7px;
-}
-.wgp__stat span { display: block; font-size: 13px; line-height: 19px; color: var(--c-text); opacity: .72; }
-[lang="ar"] .wgp__stat span { font-size: 13.5px; line-height: 22px; }
-[lang="ar"] .wgp__stat b { letter-spacing: 0; }
-
-.wgp__sec { margin-top: 34px; }
-.h-sub {
-  font-family: var(--f-head); font-size: clamp(20px, 2.2vw, 26px);
-  font-weight: 600; letter-spacing: -.3px; margin-bottom: 20px;
-}
-[lang="ar"] .h-sub { letter-spacing: 0; line-height: 1.5; }
-.wgp__recs { list-style: none; counter-reset: wgr; margin: 0; padding: 0; }
-.wgp__rec {
-  counter-increment: wgr; position: relative;
-  padding: 18px 0 18px 0; padding-inline-start: 46px;
-  border-top: 1px solid var(--c-grey-line);
-}
-.wgp__rec:last-child { border-bottom: 1px solid var(--c-grey-line); }
-.wgp__rec::before {
-  content: counter(wgr, decimal-leading-zero);
-  position: absolute; inset-block-start: 20px; inset-inline-start: 0;
-  font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700;
-  color: var(--c-brand-3, #63BD69);
-}
-.wgp__rec h4 { font-size: 16px; font-weight: 600; margin: 0 0 6px; line-height: 1.35; }
-[lang="ar"] .wgp__rec h4 { font-size: 17px; line-height: 1.5; }
-.wgp__rec p { font-size: 14.5px; line-height: 24px; color: var(--c-text); opacity: .8; margin: 0; max-width: 78ch; }
-[lang="ar"] .wgp__rec p { font-size: 15px; line-height: 28px; }
-
-.wgp__note {
-  margin-top: 30px; padding: 20px 24px; border-radius: 10px;
-  background: var(--c-grey-bg, #F2F7F4); border-inline-start: 4px solid var(--c-brand-3, #63BD69);
-  font-size: 15px; line-height: 26px; max-width: 80ch;
-}
-[lang="ar"] .wgp__note { font-size: 15.5px; line-height: 30px; }
-.wgp__src { margin-top: 22px; font-size: 12px; color: var(--c-text); opacity: .55; }
-[lang="ar"] .wgp__src { font-size: 12.5px; }
-.wgp__nav { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 40px; }
-.fact--wide { grid-column: 1 / -1; }
-
-@media (max-width: 900px) {
-  .wgp__head { gap: 14px; flex-wrap: wrap; }
-  .wgp__no { font-size: 30px; }
-  .wgp__scope { margin-bottom: 22px; }
-  .wgp__stats { grid-template-columns: 1fr 1fr; gap: 0 16px; padding-top: 20px; margin-bottom: 24px; }
-  .wgp__stat { padding-bottom: 16px; }
-  .wgp__stat b { font-size: 26px; }
-  .wgp__stat span { font-size: 12px; line-height: 17px; }
-  [lang="ar"] .wgp__stat span { font-size: 12.5px; line-height: 20px; }
-  .wgp__rec { padding-inline-start: 36px; padding-block: 15px; }
-  .wgp__rec h4 { font-size: 15px; }
-  .wgp__rec p { font-size: 13.5px; line-height: 22px; }
-  [lang="ar"] .wgp__rec p { font-size: 14px; line-height: 25px; }
-  .wgp__note { padding: 15px 17px; font-size: 13.5px; line-height: 23px; }
-  [lang="ar"] .wgp__note { font-size: 14px; line-height: 26px; }
-  .wgp__nav .btn-pill { flex: 1 1 100%; text-align: center; }
-}
 } }
 
 /* =======================================================================

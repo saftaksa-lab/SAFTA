@@ -929,7 +929,7 @@ $('#q').addEventListener('input', function () {
 function previewTarget() {
   var sc = SCHEMA[S.view];
   if (sc.kind !== 'data') return { file: sc.file, id: null };
-  if (S.view === '_groups')   return { file: 'working-group.html', id: Object.keys(S.cur.groups)[0], view: S.view };
+  if (S.view === '_groups')   return { file: 'technologies.html', id: null, view: S.view };
   if (S.view === '_events')   return { file: 'media.html', id: null, view: S.view };
   if (S.view === '_members')  return { file: 'member.html', id: Object.keys(S.cur.members)[0], view: S.view };
   if (S.view === '_roles')    return { file: 'about.html', id: null, view: S.view };
@@ -1016,11 +1016,11 @@ function buildPreview(t, lang, width) {
     }
 
     /* مجموعات _groups/_articles/_events: نفس آلية الترقيع أعلاه لكن بقاموس مبنيّ من
-       مسارات schema.js نفسها — article.astro/working-group.astro/media.astro تُصدر
+       مسارات schema.js نفسها — article.astro/technologies.astro/media.astro تُصدر
        data-cms/data-cms-img بهذه المسارات ذاتها عبر Text/Value/Image. لا سكربت بيانات
        نستبدله كما في الصفحات القديمة (wg-data.js وغيرها لم يعودا موجودَين في القالب). */
     if (t.view && SCHEMA[t.view] && SCHEMA[t.view].kind === 'data') {
-      var cdict = (t.view === '_events' || t.view === '_roles' || t.view === '_partners' || t.view === '_challenges') ? collectionPatchDictAll(t.view) : collectionPatchDict(t.view, t.id);
+      var cdict = (t.view === '_groups' || t.view === '_events' || t.view === '_roles' || t.view === '_partners' || t.view === '_challenges') ? collectionPatchDictAll(t.view) : collectionPatchDict(t.view, t.id);
       var cpatch = '<script>(function(){' +
         'var C=' + JSON.stringify(cdict) + ';' +
         'document.querySelectorAll("[data-cms]").forEach(function(el){' +

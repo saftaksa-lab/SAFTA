@@ -167,8 +167,8 @@ field to begin with, so this migration doesn't touch it.
 
 ## Collection content (`groups` / `articles` / `events`)
 
-`article`, `working-group`, `technologies` and `media`'s Events tab render from three
-repeating record sets — `working-group`/`technologies` share `assets/js/wg-data.js` (9
+`article`, `technologies` and `media`'s Events tab render from three
+repeating record sets — `technologies` reads `assets/js/wg-data.js` (9
 programs), `article` reads `assets/js/article-data.js` (7 fixed articles), `media`'s Events
 tab reads `assets/js/events-data.js` (4 events) — none of which the schema modules above can
 express: `getPageContent`/`zodForFields` are flat, one value per key, with no notion of an
@@ -197,16 +197,25 @@ would otherwise silently wipe an addable collection). `src/pages/admin/api/colle
 exposes the same GET/POST shape as the page content route, gated by the same `/admin` session
 middleware.
 
-`article.astro`, `working-group.astro`, `technologies.astro` and `media.astro`'s Events tab now
+`article.astro`, `technologies.astro` and `media.astro`'s Events tab now
 render server-side from this store via `getCollectionContent<F>(name)`, reusing `Text.astro`/
 `Image.astro` as-is (their `TextField`/`ImageField` prop shapes are exactly what `text()`/`image()`
 already return) plus the new `Value.astro` for untranslated scalars (`no`, `ch`'s theme, `src`,
-`day`, `link`). List fields (`stats`, `recs`, `body`, `tags`) have no typed accessor — each template
+`day`, `link`). List fields (`body`, `tags`) have no typed accessor — each template
 casts `.list(key)` to that collection's own item shape and maps over it directly, since it's
 page-specific rendering logic with exactly one caller. The `?id=`/fallback-to-first-record lookup,
 the icon/theme grid tiles on `technologies.astro`, and the `safeHref` link-sanitizing on the events
 tab are all ported verbatim from the client-side IIFEs they replace (formerly modules 18, 21, 22,
 24 in `assets/js/main.js`, now deleted).
+
+`groups` carries only the five fields the technologies grid renders (`name`, `scope`, `img`,
+`no`, `ch`). The per-group detail page that once consumed `status`/`lead`/`head`/`orgs`/
+`stats`/`recs`/`note`/`src` was removed along with those fields — nothing linked to it. Because
+`content/` is gitignored and is the live data store, a deployment that predates that change
+still holds the dropped keys and `zodForItemFields` is `.strict()`, so every admin save to
+working groups 400s until `node scripts/prune-orphan-collection-keys.mjs groups --write` is run
+in that checkout (the collection counterpart to `prune-orphan-keys.mjs`; dry-run by default,
+backs up before writing).
 
 **`public/admin/admin.js`'s edit flow for these three views was deliberately left untouched in this
 pass, and that is now a real drift risk worth knowing about.** The admin still edits `_groups`/

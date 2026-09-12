@@ -6,25 +6,10 @@ import type { ItemFieldMap } from './codec';
 
 export const GROUPS_FIELDS = {
   "name": { kind: "text", type: "text", label: "اسم المجموعة" },
-  "status": { kind: "text", type: "text", label: "الحالة" },
-  "lead": { kind: "text", type: "text", label: "الجهة القائدة" },
-  "head": { kind: "text", type: "text", label: "رئيس المجموعة" },
-  "orgs": { kind: "text", type: "long", label: "الجهات المشاركة" },
   "scope": { kind: "text", type: "long", label: "نطاق العمل" },
-  "stats": { kind: "list", type: "list", label: "الرقم", itemFields: {
-    "n": { kind: "value", type: "text", label: "الرقم" },
-    "l": { kind: "text", type: "text", label: "التسمية" },
-  } },
-  "recs": { kind: "list", type: "list", label: "العنوان", itemFields: {
-    "t": { kind: "text", type: "text", label: "العنوان" },
-    "d": { kind: "text", type: "long", label: "الوصف" },
-  } },
-  "note": { kind: "text", type: "long", label: "ملاحظة" },
   "img": { kind: "image", type: "image", label: "img" },
   "no": { kind: "value", type: "text", label: "الرقم التسلسلي" },
   "ch": { kind: "value", type: "text", label: "فئة التحدي" },
-  "statusKey": { kind: "value", type: "text", label: "رمز الحالة" },
-  "src": { kind: "value", type: "text", label: "مصدر الاستشهاد" },
 } as const satisfies ItemFieldMap;
 
 const GROUPS_COLLECTION = {
@@ -34,7 +19,7 @@ const GROUPS_COLLECTION = {
   addable: true,
   deletable: true,
   fields: GROUPS_FIELDS,
-  newItem: {"name":{"en":"New working group","ar":"مجموعة عمل جديدة"},"status":{"en":"","ar":""},"lead":{"en":"","ar":""},"head":{"en":"","ar":""},"orgs":{"en":"","ar":""},"scope":{"en":"Short description of the working group.","ar":"نبذة مختصرة عن مجموعة العمل."},"stats":[],"recs":[],"note":{"en":"","ar":""},"img":{"src":""},"no":"","ch":"","statusKey":"","src":""},
+  newItem: {"name":{"en":"New working group","ar":"مجموعة عمل جديدة"},"scope":{"en":"Short description of the working group.","ar":"نبذة مختصرة عن مجموعة العمل."},"img":{"src":""},"no":"","ch":""},
 };
 
 export default GROUPS_COLLECTION;
