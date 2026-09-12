@@ -233,32 +233,8 @@ ul { margin: 0; padding: 0; list-style: none; }
   transition: opacity 1s ease, visibility 1s;
 }
 .hero__slide.is-active { opacity: 1; visibility: visible; }
-/* ---- Ken Burns: زوم-أوت مستمر مع انزياح خفيف ------------------------------
-   كانت الحركة السابقة `transition` تحتاج تغيّر حالة لتشتغل — والشريحة الأولى
-   تُفتح وهي is-active أصلًا، فلا يحدث تغيّر ولا تتحرك الصورة عند فتح الموقع.
-   الحل: `animation` تبدأ فور مطابقة العنصر بلا انتظار أي حدث.
-   المدة أطول من مدة الشريحة (×1.6) فلا تصل الحركة لنهايتها أبدًا — الصورة
-   في حالة تحرّك دائم مهما طال بقاء الزائر.                                */
 .hero__slide img {
   width: 100%; height: 100%; object-fit: cover;
-  transform: scale(1.20);
-  transform-origin: 50% 45%;
-  will-change: transform;
-  backface-visibility: hidden;   /* يمنع اهتزاز الحواف أثناء التكبير */
-}
-.hero__slide.is-active img {
-  animation: heroKenBurns calc(var(--hero-dur, 8s) * 1.6) cubic-bezier(.24, .46, .3, 1) forwards;
-}
-@keyframes heroKenBurns {
-  from { transform: scale(1.20) translate3d(2.2%, 1.4%, 0); }
-  to   { transform: scale(1.02) translate3d(0, 0, 0); }
-}
-/* اتجاه الانزياح يتبدّل بين الشرائح فلا تتكرّر الحركة نفسها */
-.hero__slide:nth-child(even) img { transform-origin: 50% 55%; }
-.hero__slide:nth-child(even).is-active img { animation-name: heroKenBurnsAlt; }
-@keyframes heroKenBurnsAlt {
-  from { transform: scale(1.20) translate3d(-2.2%, -1.2%, 0); }
-  to   { transform: scale(1.02) translate3d(0, 0, 0); }
 }
 
 /* الفيديو يتحرّك بذاته، فيكفيه تنفّس خفيف حتى لا تبدو شريحته جامدة */
