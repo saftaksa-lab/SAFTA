@@ -25,10 +25,10 @@ const ARTICLES_COLLECTION = {
   label: "الأخبار والمقالات",
   file: "assets/js/article-data.js",
   store: "articles",
-  addable: false,
-  deletable: false,
+  addable: true,
+  deletable: true,
   fields: ARTICLES_FIELDS,
-  newItem: {"kind":{"en":"","ar":""},"date":{"en":"","ar":""},"read":{"en":"","ar":""},"ph":false,"img":{"src":""},"title":{"en":"","ar":""},"lede":{"en":"","ar":""},"body":[],"quote":{"en":"","ar":""},"quoteBy":{"en":"","ar":""},"tags":[]},
+  newItem: {"kind":{"en":"News","ar":"أخبار"},"date":{"en":"","ar":""},"read":{"en":"","ar":""},"ph":false,"img":{"src":""},"title":{"en":"New article","ar":"مقال جديد"},"lede":{"en":"","ar":""},"body":[],"quote":{"en":"","ar":""},"quoteBy":{"en":"","ar":""},"tags":[]},
 };
 
 export default ARTICLES_COLLECTION;
