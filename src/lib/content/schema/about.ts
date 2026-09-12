@@ -34,7 +34,7 @@ export const ABOUT_FIELDS = {
   "i050-phmembership": { kind: "image", tag: "img", type: "image", label: "ph-membership.svg" },
   "t051-البيان-التأسيسي": { kind: "text", tag: "p", type: "text", label: "البيان التأسيسي" },
   "t052-يمثّل-تأسيسه-فرصة-تاريخية-": { kind: "text", tag: "h3", type: "long", label: "«يمثّل تأسيسه فرصة تاريخية لتسخير الذكاء الجماعي والقدرات المتنوعة وال" },
-  "t053-تعرّف-على-المتحالفين": { kind: "text", tag: "span", type: "text", label: "تعرّف على المتحالفين" },
+  "t053-تعرّف-على-المتحالفين": { kind: "text", tag: "span", type: "text", label: "تعرّف على الأعضاء" },
 } as const satisfies FieldMap;
 
 export const ABOUT_SECTIONS = [

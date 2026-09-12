@@ -1,4 +1,4 @@
-/* بيانات المتحالفين — يولّدها مركز التحكّم. لا تُحرَّر يدويًا.
+/* بيانات الأعضاء — يولّدها مركز التحكّم. لا تُحرَّر يدويًا.
    مصدر seed-collections.mjs لملء content/members.json عند أول تنزيل للمستودع —
    انظر public/assets/js/wg-data.js لنفس القاعدة تجاه _groups. */
 window.SAFTA_MEMBERS_FULL = {

@@ -17,7 +17,7 @@ export const MEMBERS_FIELDS = {
 } as const satisfies ItemFieldMap;
 
 const MEMBERS_COLLECTION = {
-  label: "بيانات المتحالفين",
+  label: "بيانات الأعضاء",
   file: "assets/js/members-data.js",
   store: "members",
   addable: true,

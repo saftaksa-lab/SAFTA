@@ -39,7 +39,7 @@ export const REGISTER_INTEREST_FIELDS = {
   "t029-اختر-ملفًا": { kind: "text", tag: "label", type: "text", label: "اختر ملفًا" },
   "t030-لم-يُختر-أي-ملف": { kind: "text", tag: "span", type: "text", label: "لم يُختر أي ملف" },
   "t034-ماذا-بعد؟": { kind: "text", tag: "h3", type: "text", label: "ماذا بعد؟" },
-  "t035-أربع-خطوات-من-إرسال-الطلب-": { kind: "text", tag: "p", type: "text", label: "أربع خطوات من إرسال الطلب حتى إدراج جهتك في دليل المتحالفين." },
+  "t035-أربع-خطوات-من-إرسال-الطلب-": { kind: "text", tag: "p", type: "text", label: "أربع خطوات من إرسال الطلب حتى إدراج جهتك في دليل الأعضاء." },
   "t036-المراجعة": { kind: "text", tag: "b", type: "text", label: "المراجعة" },
   "t037-يراجع-فريق-التحالف-طلبك-وي": { kind: "text", tag: "span", type: "text", label: "يراجع فريق التحالف طلبك ويتحقّق من اكتمال بياناته." },
   "t038-التواصل": { kind: "text", tag: "b", type: "text", label: "التواصل" },
@@ -47,7 +47,7 @@ export const REGISTER_INTEREST_FIELDS = {
   "t040-خطاب-العضوية": { kind: "text", tag: "b", type: "text", label: "خطاب العضوية" },
   "t041-تتلقّى-الجهات-المؤهّلة-خطا": { kind: "text", tag: "span", type: "text", label: "تتلقّى الجهات المؤهّلة خطاب الاهتمام بالعضوية للتوقيع." },
   "t042-الإدراج": { kind: "text", tag: "b", type: "text", label: "الإدراج" },
-  "t043-بعد-التوقيع-تُدرَج-جهتك-في": { kind: "text", tag: "span", type: "text", label: "بعد التوقيع تُدرَج جهتك في دليل المتحالفين على الموقع." },
+  "t043-بعد-التوقيع-تُدرَج-جهتك-في": { kind: "text", tag: "span", type: "text", label: "بعد التوقيع تُدرَج جهتك في دليل الأعضاء على الموقع." },
   "t044-عندك-سؤال؟": { kind: "text", tag: "p", type: "text", label: "عندك سؤال؟" },
 } as const satisfies FieldMap;
 

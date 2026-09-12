@@ -139,7 +139,7 @@ window.SAFTA_C["register-interest"] = {
  },
  "t035-أربع-خطوات-من-إرسال-الطلب-": {
   "en": "Four steps from submitting your request to being listed in the Members directory.",
-  "ar": "أربع خطوات من إرسال الطلب حتى إدراج جهتك في دليل المتحالفين."
+  "ar": "أربع خطوات من إرسال الطلب حتى إدراج جهتك في دليل الأعضاء."
  },
  "t036-المراجعة": {
   "en": "Review",
@@ -171,7 +171,7 @@ window.SAFTA_C["register-interest"] = {
  },
  "t043-بعد-التوقيع-تُدرَج-جهتك-في": {
   "en": "Once signed, your entity is listed in the Members directory.",
-  "ar": "بعد التوقيع تُدرَج جهتك في دليل المتحالفين على الموقع."
+  "ar": "بعد التوقيع تُدرَج جهتك في دليل الأعضاء على الموقع."
  },
  "t044-عندك-سؤال؟": {
   "en": "Any questions?",

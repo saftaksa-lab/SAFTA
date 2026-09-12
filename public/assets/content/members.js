@@ -5,9 +5,9 @@ window.SAFTA_C["members"] = {
   "en": "Home",
   "ar": "الرئيسية"
  },
- "t002-المتحالفون": {
+ "t002-الأعضاء": {
   "en": "Members of the Alliance",
-  "ar": "المتحالفون"
+  "ar": "الأعضاء"
  },
  "t003-جهات-حكومية-وأكاديمية-ومن-": {
   "en": "Government, academic, private sector and non-profit entities working together on agrifood technology.",
@@ -17,9 +17,9 @@ window.SAFTA_C["members"] = {
   "en": "The Alliance",
   "ar": "التحالف"
  },
- "t005-المتحالفون": {
+ "t005-الأعضاء": {
   "en": "Members of the Alliance",
-  "ar": "المتحالفون"
+  "ar": "الأعضاء"
  },
  "t006-جهات-حكومية-ومؤسسات-أكاديم": {
   "en": "Government entities, academic institutions, private sector companies and non-profit organizations working together to advance agrifood technology in the Kingdom.",

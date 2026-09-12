@@ -11,7 +11,7 @@ const on = (key: string) => (current === key ? 'is-current' : undefined);
 <a class={on('index')} data-ar="الرئيسية" href={`/${locale}`}>Home</a>
 <a class={on('about')} data-ar="عن التحالف" href={`/${locale}/about`}>About</a>
 <a class={on('technologies')} data-ar="مجموعات العمل" href={`/${locale}/technologies`}>Working Groups</a>
-<a class={on('members')} data-ar="المتحالفون" href={`/${locale}/members`}>Our Members</a>
+<a class={on('members')} data-ar="الأعضاء" href={`/${locale}/members`}>Our Members</a>
 {!hideAwards && (
 <a class="is-soon" aria-disabled="true" tabindex="-1" href="#"><span data-ar="جوائز سافتا للتميّز">SAFTA Excellence Awards</span><em class="soon-tag" data-ar="قريبًا">Soon</em></a>
 )}

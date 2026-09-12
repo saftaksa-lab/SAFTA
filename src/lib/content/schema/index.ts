@@ -13,7 +13,7 @@ export const INDEX_FIELDS = {
   "t006-استعرض-الرؤى": { kind: "text", tag: "span", type: "text", label: "استعرض الرؤى" },
   "t007-الشراكات": { kind: "text", tag: "p", type: "text", label: "الشراكات" },
   "t008-الجهات-الحكومية-والبحثية-و": { kind: "text", tag: "h2", type: "text", label: "الجهات الحكومية والبحثية والقطاع الخاص — تحالف واحد." },
-  "t009-تعرّف-على-المتحالفين": { kind: "text", tag: "span", type: "text", label: "تعرّف على المتحالفين" },
+  "t009-تعرّف-على-المتحالفين": { kind: "text", tag: "span", type: "text", label: "تعرّف على الأعضاء" },
   "t010-الإعلانات": { kind: "text", tag: "p", type: "text", label: "الإعلانات" },
   "t011-التحالف-يفتح-باب-العضوية-ف": { kind: "text", tag: "h2", type: "long", label: "التحالف يفتح باب العضوية في مجموعات عمله للجهات المهتمة بتقنيات الزراع" },
   "t012-سجّل-اهتمامك": { kind: "text", tag: "span", type: "text", label: "سجّل اهتمامك" },
