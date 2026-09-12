@@ -5,6 +5,7 @@ import REGISTER_INTEREST_PAGE from './register-interest';
 import INDEX_PAGE from './index';
 import MEDIA_PAGE from './media';
 import MEMBERS_PAGE from './members';
+import MEMBER_PAGE from './member';
 
 /**
  * Every page with a generated schema module — the single source of truth for which pages
@@ -19,6 +20,7 @@ const PAGES = {
   index: INDEX_PAGE,
   media: MEDIA_PAGE,
   members: MEMBERS_PAGE,
+  member: MEMBER_PAGE,
 };
 
 export type PageName = keyof typeof PAGES;

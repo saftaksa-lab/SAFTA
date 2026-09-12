@@ -3,7 +3,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Text from '../../components/content/Text.astro';
 import Value from '../../components/content/Value.astro';
 import Image from '../../components/content/Image.astro';
+import { getPageContent } from '../../lib/content/store';
 import { getCollectionContent } from '../../lib/content/collections/store';
+import { MEMBER_FIELDS as MEMBER_PAGE_FIELDS } from '../../lib/content/schema/member';
 import { MEMBERS_FIELDS } from '../../lib/content/collections/members';
 import { isLocale } from '../../lib/locale';
 
@@ -12,6 +14,11 @@ export function getStaticPaths() {
 }
 const { locale } = Astro.params;
 if (!isLocale(locale)) return new Response(null, { status: 404 });
+
+// Chrome text (breadcrumbs, fact labels, contact blurb) comes from content/member.json —
+// the per-member data below is a real collection record instead (see schema/member.ts for
+// why this page's own copy is a distinct schema module from the members collection).
+const c = await getPageContent<typeof MEMBER_PAGE_FIELDS>('member');
 
 const members = await getCollectionContent<typeof MEMBERS_FIELDS>('members');
 const all = members.items();
@@ -37,8 +44,8 @@ const bio = member.text('bio');
 <main>
 <section class="page-hero page-hero--plain">
 <div class="wrap">
-<p class="crumbs"><a data-cms="t001-الرئيسية" data-ar="الرئيسية" href={`/${locale}`}>Home</a><span>/</span><a data-cms="t002-الأعضاء" data-ar="الأعضاء" href={`/${locale}/members`}>Members</a><span>/</span>Profile</p>
-<h1 data-cms="t003-ملف-العضو" data-ar="ملف العضو">Member profile</h1>
+<p class="crumbs"><Text as="a" key="t001-الرئيسية" field={c.text("t001-الرئيسية")} href={`/${locale}`} /><span>/</span><Text as="a" key="t002-الأعضاء" field={c.text("t002-الأعضاء")} href={`/${locale}/members`} /><span>/</span>Profile</p>
+<Text as="h1" key="t003-ملف-العضو" field={c.text("t003-ملف-العضو")} />
 </div>
 </section>
 <section class="ribbon">
@@ -51,30 +58,30 @@ const bio = member.text('bio');
 </div>
 </div>
 <div class="facts reveal">
-<div class="fact"><b data-cms="t007-الدور-في-التحالف" data-ar="الدور في التحالف">Role in the Alliance</b><Text as="span" id="mRole" key="role" field={role} /></div>
-<div class="fact"><b data-cms="t009-مجال-التركيز" data-ar="مجال التركيز">Sector focus</b><Text as="span" id="mSector" key="sector" field={sector} /></div>
-<div class="fact"><b data-cms="t011-عضو-منذ" data-ar="عضو منذ">Member since</b><Value as="span" id="mSince" key="since" value={since} /></div>
+<div class="fact"><Text as="b" key="t007-الدور-في-التحالف" field={c.text("t007-الدور-في-التحالف")} /><Text as="span" id="mRole" key="role" field={role} /></div>
+<div class="fact"><Text as="b" key="t009-مجال-التركيز" field={c.text("t009-مجال-التركيز")} /><Text as="span" id="mSector" key="sector" field={sector} /></div>
+<div class="fact"><Text as="b" key="t011-عضو-منذ" field={c.text("t011-عضو-منذ")} /><Value as="span" id="mSince" key="since" value={since} /></div>
 </div>
 <div class="prose reveal" style="margin-top:72px">
-<h2 data-cms="t012-نبذة" data-ar="نبذة">Overview</h2>
+<Text as="h2" key="t012-نبذة" field={c.text("t012-نبذة")} />
 <Text as="p" id="mBio" key="bio" field={bio} />
-<h2 data-cms="t013-مجالات-التعاون" data-ar="مجالات التعاون">Areas of collaboration</h2>
+<Text as="h2" key="t013-مجالات-التعاون" field={c.text("t013-مجالات-التعاون")} />
 <ul>
-<li data-cms="t014-التبنّي-المنسّق-لتقنيات-ال" data-ar="التبنّي المنسّق لتقنيات الزراعة والغذاء على مستوى القطاع.">Coordinated adoption of agrifood technologies across the sector.</li>
-<li data-cms="t015-التبادل-العلمي-والبحثي-مع-" data-ar="التبادل العلمي والبحثي مع الشركاء المحليين والدوليين.">Scientific and research exchange with national and international partners.</li>
-<li data-cms="t016-بناء-القدرات-البشرية-ونقل-" data-ar="بناء القدرات البشرية ونقل المعرفة.">Human capacity building and knowledge transfer.</li>
+<Text as="li" key="t014-التبنّي-المنسّق-لتقنيات-ال" field={c.text("t014-التبنّي-المنسّق-لتقنيات-ال")} />
+<Text as="li" key="t015-التبادل-العلمي-والبحثي-مع-" field={c.text("t015-التبادل-العلمي-والبحثي-مع-")} />
+<Text as="li" key="t016-بناء-القدرات-البشرية-ونقل-" field={c.text("t016-بناء-القدرات-البشرية-ونقل-")} />
 </ul>
 </div>
 
 <div class="mcontact reveal">
 <div class="mcontact__txt">
-<p data-cms="t017-التواصل" class="eyebrow" data-ar="التواصل">Get in touch</p>
-<h2 data-cms="t018-تواصل-مع-هذه-الجهة-عبر-الت" data-ar="تواصل مع هذه الجهة عبر التحالف">Reach this member through the Alliance</h2>
-<p data-cms="t019-تُوجَّه-الطلبات-المتعلقة-ب" data-ar="تُوجَّه الطلبات المتعلقة بهذه الجهة عبر أمانة التحالف، فنحيلها إلى جهة الاتصال المناسبة لديها.">Requests relating to this member are routed through the Alliance Secretariat, which forwards them to the right contact point.</p>
+<Text as="p" key="t017-التواصل" field={c.text("t017-التواصل")} class="eyebrow" />
+<Text as="h2" key="t018-تواصل-مع-هذه-الجهة-عبر-الت" field={c.text("t018-تواصل-مع-هذه-الجهة-عبر-الت")} />
+<Text as="p" key="t019-تُوجَّه-الطلبات-المتعلقة-ب" field={c.text("t019-تُوجَّه-الطلبات-المتعلقة-ب")} />
 </div>
 <div class="mcontact__acts">
 <a class="btn-solid" href={`/${locale}/contact`}>
-<span data-cms="t020-افتح-نموذج-التواصل" data-ar="افتح نموذج التواصل">Open the contact form</span>
+<Text as="span" key="t020-افتح-نموذج-التواصل" field={c.text("t020-افتح-نموذج-التواصل")} />
 <svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg>
 </a>
 <a class="mcontact__mail" href="mailto:info@safta.sa">
@@ -84,11 +91,9 @@ const bio = member.text('bio');
 </div>
 </div>
 <div style="margin-top:64px">
-<a class="cta-circle" href={`/${locale}/members`}><span data-cms="t021-العودة-إلى-كل-المتحالفين" data-ar="العودة إلى كل الأعضاء">Back to all members</span><span class="circ"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></a>
+<a class="cta-circle" href={`/${locale}/members`}><Text as="span" key="t021-العودة-إلى-كل-المتحالفين" field={c.text("t021-العودة-إلى-كل-المتحالفين")} /><span class="circ"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></a>
 </div>
 </div>
 </section>
 </main>
-<script slot="scripts" is:inline src="assets/content/member.js?v=28"></script>
-<script slot="scripts" is:inline src="assets/js/cms.js?v=28"></script>
 </BaseLayout>
