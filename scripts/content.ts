@@ -8,7 +8,8 @@
  *
  * There is no `seed` command yet: SAFTA's `content/` folder still holds the legacy
  * JSON store. A fresh database starts from each singleton's initial value, and the
- * collections stay empty until the legacy import (Phase 4 of the port) fills them.
+ * collections stay empty until `npm run content:import-legacy` (scripts/import-legacy.ts)
+ * fills them.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { exportContent, importContent, resetContent } from '../src/lib/content/io.ts';

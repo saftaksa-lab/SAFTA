@@ -24,6 +24,7 @@
     "content:export": "node scripts/content.ts export",
     "content:import": "node scripts/content.ts import",
     "content:reset": "node scripts/content.ts reset",
+    "content:import-legacy": "node scripts/import-legacy.ts",
     "check:admin": "node scripts/check-admin-specs.ts"
   },
   "dependencies": {

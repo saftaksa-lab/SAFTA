@@ -19,6 +19,7 @@ npm run content:migrate          # create missing singletons, upgrade old ones (
 npm run content:export [file]    # the database content as one JSON envelope
 npm run content:import <file> [--dry-run]
 npm run content:reset -- --yes   # wipe all database content and uploaded media
+npm run content:import-legacy -- [--dry-run] [--from <dir>] [--replace]  # content/*.json -> database (see below)
 npm run check:admin   # every dashboard panel matches its schema — keep it passing
 npx astro check       # typecheck — keep it clean
 ```
@@ -66,6 +67,26 @@ unpublished one is a 404.
 The old editor is still at `/admin/legacy`, but it no longer changes the site: it writes
 `content/*.json`, which is now only the source of the one-time legacy import. It goes away once
 that import has run.
+
+**The legacy import** (`scripts/import-legacy.ts`) moves that content into the database: page
+text, the collections, the members-map coordinates and every image they reference (bundled
+`assets/img` files included; bundled SVGs are rasterized with IBM Plex Sans Arabic, uploaded SVGs
+are refused and listed). It is strict: any legacy key it does not map, required field it cannot
+fill, leftover markup or missing image fails the run, listed all at once, and nothing is written.
+It is safe to repeat, until someone saves in the dashboard: from then on it refuses without
+`--replace`, because it would put the legacy content back over their edits. Run it against a migrated database with the site stopped, because a running
+server keeps its cached content until restarted:
+
+```sh
+npm run setup
+npm run content:import-legacy -- --dry-run   # report only
+npm run content:import-legacy                # import, then start the site
+```
+
+`--from <dir>` reads `<dir>/content` and `<dir>/public` instead of this checkout's, for a
+production snapshot (it needs `public/assets` and `public/uploads`, since the old editor wrote
+`public/assets/content/*.js` too). `members-map-data.js` is parsed as data, never run.
+`--out <file>` also saves the envelope it built.
 
 - What each surface holds: the Zod schemas in `src/lib/content/schemas/` (one file per site page)
   and the collection inputs in `repo.ts`. A fresh database starts from each schema's `initial`

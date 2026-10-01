@@ -36,7 +36,7 @@ const partners = getSingleton('home_partners').items;
 
 {hero.panels.map((panel, i) => (
 <div class:list={['hero__slide', i === 0 && 'is-active']} data-slide={i}>
-<Image id={panel.imageId} fallback={imageFor(heroImages, panel.id)} alt="" />
+<Image media={panel.imageId} fallback={imageFor(heroImages, panel.id)} alt="" />
 </div>
 ))}
 
@@ -78,7 +78,7 @@ const partners = getSingleton('home_partners').items;
 <div class="card-row bleed reveal" style="margin-top:66px">
 {discover.tiles.map((tile) => (
 <a class="tile" href={localizeHref(locale, tile.href)}>
-<Image id={tile.imageId} fallback={imageFor(discoverImages, tile.id)} />
+<Image media={tile.imageId} fallback={imageFor(discoverImages, tile.id)} />
 <div class="tile__txt">
 <Text as="p" field={pick(tile, 'eyebrow')} class="eyebrow eyebrow--light" />
 <Text as="h3" field={pick(tile, 'heading')} />
@@ -104,7 +104,7 @@ const partners = getSingleton('home_partners').items;
 <div class="slider__track">
 {challenges.map((ch) => (
   <article class="slide">
-    <figure><Image id={ch.imageId} fallback={imageFor(challengeImages, ch.id)} alt={english(pick(ch, 'title'))} loading="lazy" /></figure>
+    <figure><Image media={ch.imageId} fallback={imageFor(challengeImages, ch.id)} alt={english(pick(ch, 'title'))} loading="lazy" /></figure>
     <Text as="h4" field={pick(ch, 'title')} />
   </article>
 ))}
@@ -154,7 +154,7 @@ const partners = getSingleton('home_partners').items;
 <div class="partners__track">
 {partners.map((p) => (
   <a class="partner" href={p.url ?? `/${locale}/members`} title={english(pick(p, 'name'))}>
-    <Image id={p.logoId} fallback={imageFor(partnerLogos, p.id)} alt={english(pick(p, 'name'))} loading="lazy" />
+    <Image media={p.logoId} fallback={imageFor(partnerLogos, p.id)} alt={english(pick(p, 'name'))} loading="lazy" />
   </a>
 ))}
 </div>

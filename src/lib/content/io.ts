@@ -8,7 +8,7 @@
  * envelope: password hashes must not leave in a file an admin can download.
  */
 import { existsSync, unlinkSync } from 'node:fs';
-import { asc, inArray } from 'drizzle-orm';
+import { asc, inArray, isNotNull } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '../../db/index.ts';
 import { article, contentSingleton, event, media, member, workingGroup } from '../../db/content-schema.ts';
@@ -353,4 +353,15 @@ export function isContentEmpty(): boolean {
   const anyMember = db.select({ slug: member.slug }).from(member).get();
   const anyMedia = db.select({ id: media.id }).from(media).get();
   return !singleton && !anyEvent && !anyWorkingGroup && !anyArticle && !anyMember && !anyMedia;
+}
+
+/**
+ * True when anything has been saved through the dashboard. Every dashboard save
+ * stamps `updatedBy` with the admin's id; imports and `content:migrate` leave it
+ * null. The legacy import uses this to refuse to overwrite edits made since
+ * cutover. (Deleting a user nulls their stamps, so their edits stop counting.)
+ */
+export function hasDashboardEdits(): boolean {
+  const tables = [contentSingleton, event, workingGroup, article, member, media];
+  return tables.some((table) => db.select().from(table).where(isNotNull(table.updatedBy)).limit(1).get() !== undefined);
 }

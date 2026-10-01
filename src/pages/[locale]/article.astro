@@ -34,7 +34,7 @@ const quote = pick(article, 'quote');
 <article class="art">
 
 <header class="art__hero">
-<Image id={article.imageId ?? chrome.defaultImageId} fallback={ARTICLE_IMG} alt="" id="aImg" />
+<Image media={article.imageId ?? chrome.defaultImageId} fallback={ARTICLE_IMG} alt="" id="aImg" />
 <div class="art__scrim"></div>
 <div class="wrap">
 <p class="crumbs"><Text as="a" field={crumbHome} href={`/${locale}`} /><span>/</span><Text as="a" field={pick(chrome, 'crumbMedia')} href={`/${locale}/media`} /><span>/</span><Text as="span" id="aKind" field={pick(article, 'kind')} /></p>

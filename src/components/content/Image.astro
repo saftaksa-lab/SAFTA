@@ -1,7 +1,8 @@
 ---
 /**
- * An image slot: the uploaded media when `id` resolves, otherwise `fallback`
- * (the slot's default art from src/lib/safta-assets.ts).
+ * An image slot: the uploaded media when `media` resolves, otherwise `fallback`
+ * (the slot's default art from src/lib/safta-assets.ts). The prop is not `id`,
+ * so the element's own `id` attribute can pass through with the rest.
  *
  * Alt text is single-language, because i18n.js never swaps `alt`. Pass `alt`
  * to decide it here (`""` for a decorative slide background); leave it out to
@@ -10,13 +11,14 @@
 import { resolveImage } from '../../lib/safta-assets';
 
 interface Props {
-  id: string | null;
+  /** A media id, or `null` for the fallback. */
+  media: string | null;
   fallback: string;
   alt?: string;
   [attr: string]: unknown;
 }
 
-const { id, fallback, alt, ...rest } = Astro.props;
-const image = resolveImage(id, fallback);
+const { media, fallback, alt, ...rest } = Astro.props;
+const image = resolveImage(media, fallback);
 ---
 <img src={image.src} width={image.width} height={image.height} alt={alt ?? image.alt} {...rest} />

@@ -122,7 +122,7 @@ const soonSwapped = { ar: english(soon), en: soon.ar };
 <div class="grid-3 reveal">
 {challenges.map((ch) => (
   <article class="tri__card">
-    <figure><Image id={ch.imageId} fallback={imageFor(challengeImages, ch.id)} alt={english(pick(ch, 'title'))} loading="lazy" /></figure>
+    <figure><Image media={ch.imageId} fallback={imageFor(challengeImages, ch.id)} alt={english(pick(ch, 'title'))} loading="lazy" /></figure>
     <Text as="h3" field={pick(ch, 'title')} />
     <Text as="p" field={pick(ch, 'description')} />
   </article>
@@ -133,7 +133,7 @@ const soonSwapped = { ar: english(soon), en: soon.ar };
 <section class="ribbon">
 <div class="wrap">
 <div class="split reveal">
-<figure><Image id={founding.imageId} fallback={FOUNDING_STATEMENT_IMG} alt="" /></figure>
+<figure><Image media={founding.imageId} fallback={FOUNDING_STATEMENT_IMG} alt="" /></figure>
 <div>
 <Text as="p" field={pick(founding, 'eyebrow')} class="eyebrow" />
 <Text as="h3" field={pick(founding, 'quote')} style="font-family:var(--f-head);font-size:27px;line-height:38px;font-weight:500;margin:16px 0 24px" />

@@ -46,7 +46,7 @@ const events = listEvents().map((e) => ({ ...e, href: localizeHref(locale, e.hre
 <div class="card-row bleed reveal">
 {articles.map((a) => (
   <a class="news-card" href={`/${locale}/article?id=${a.slug}`}>
-    <div class="news-card__media"><Image id={a.imageId ?? defaultImageId} fallback={ARTICLE_IMG} alt="" /></div>
+    <div class="news-card__media"><Image media={a.imageId ?? defaultImageId} fallback={ARTICLE_IMG} alt="" /></div>
     <div class="news-card__body"><Text as="p" field={pick(a, 'date')} class="news-card__meta" /><Text as="h3" field={pick(a, 'title')} /></div>
     <div class="news-card__foot"><span class="circ-sm"><svg fill="none" height="13" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="13"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></div>
   </a>
