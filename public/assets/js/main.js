@@ -418,77 +418,66 @@
   }
 
   /* ---------------------------------------------------------------------
-     13. MEMBERS MAP — records come from SAFTA_CRM.load()
-         (local list by default, live CRM once an endpoint is configured)
+     13. MEMBERS MAP — markers come from member rows, rendered by
+         members.astro into <script id="membersMapData" type="application/json">
      --------------------------------------------------------------------- */
   var mapEl = document.getElementById('membersMap');
-  if (mapEl && window.L && window.SAFTA_CRM) {
+  var mapData = document.getElementById('membersMapData');
+  /* L.map, not just L: another script can leave a global `L` behind, and a throw
+     here would stop every module below (forms, video…) when Leaflet fails to load */
+  if (mapEl && mapData && window.L && typeof window.L.map === 'function') {
+    /* keyed by the member's fixed category (src/db/content-schema.ts) */
     var CAT_COLOR = {
-      'Government':    '#015C44',
-      'Academic':      '#2FA58C',
-      'Private sector':'#4689C8',
-      'Non-profit':    '#63BD69'
+      government: '#015C44',
+      academic:   '#2FA58C',
+      private:    '#4689C8',
+      nonprofit:  '#63BD69'
     };
     var map = L.map(mapEl, { scrollWheelZoom: false, attributionControl: true })
                .setView([24.0, 45.0], 5);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      maxZoom: 18, subdomains: 'abcd',
-      attribution: '&copy; OpenStreetMap &copy; CARTO'
+    /* CARTO's keyless basemaps now answer "API key required"; the standard
+       OpenStreetMap tiles need no key at this site's traffic, with attribution */
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
     map.on('click', function () { map.scrollWheelZoom.enable(); });
     map.on('mouseout', function () { map.scrollWheelZoom.disable(); });
 
     var pins = [];
 
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    }
+
+    /* each text value is { en, ar }, English already falling back to Arabic */
     function popupHTML(m) {
-      var ar = document.documentElement.dir === 'rtl';
-      var name = (ar && m.name_ar) ? m.name_ar : m.name;
-      var cat  = (ar && m.cat_ar)  ? m.cat_ar  : m.cat;
-      var city = (ar && m.city_ar) ? m.city_ar : m.city;
-      var more = ar ? 'عرض الملف' : 'View profile';
+      var lang = document.documentElement.lang === 'ar' ? 'ar' : 'en';
+      var more = lang === 'ar' ? 'عرض الملف' : 'View profile';
       return '<div class="memmap__pop"><span class="memmap__cat" style="color:' +
-             (CAT_COLOR[m.cat] || '#015C44') + '">' + cat + '</span>' +
-             '<strong>' + name + '</strong><small>' + (city || '') + '</small>' +
-             '<a href="' + m.url + '">' + more + ' &rsaquo;</a></div>';
+             (CAT_COLOR[m.cat] || '#015C44') + '">' + esc(m.catLabel[lang]) + '</span>' +
+             '<strong>' + esc(m.name[lang]) + '</strong><small>' + esc(m.city[lang]) + '</small>' +
+             '<a href="' + esc(m.url) + '">' + more + ' &rsaquo;</a></div>';
     }
 
-    function draw(records) {
-      records.forEach(function (m) {
-        var mk = L.circleMarker([m.lat, m.lng], {
-          radius: 9, weight: 2, color: '#fff',
-          fillColor: CAT_COLOR[m.cat] || '#015C44', fillOpacity: 1
-        }).addTo(map).bindPopup(popupHTML(m));
-        mk.saftaData = m;
-        pins.push(mk);
-      });
-      if (pins.length) {
-        map.fitBounds(L.featureGroup(pins).getBounds(), { padding: [46, 46], maxZoom: 7 });
-      }
-      /* keep the map in sync with the category chips above it */
-      var chipBar = document.getElementById('memberFilters');
-      if (chipBar) {
-        chipBar.addEventListener('click', function (e) {
-          var chip = e.target.closest('.chip');
-          if (!chip) return;
-          var f = chip.dataset.filter;
-          var shown = [];
-          pins.forEach(function (mk) {
-            var on = (f === 'All' || mk.saftaData.cat === f);
-            if (on) { mk.addTo(map); shown.push(mk); } else { map.removeLayer(mk); }
-          });
-          if (shown.length) {
-            map.fitBounds(L.featureGroup(shown).getBounds(), { padding: [46, 46], maxZoom: 8 });
-          }
-        });
-      }
-      /* re-render open popups when the language flips */
-      document.addEventListener('safta:lang', function () {
-        pins.forEach(function (mk) { mk.setPopupContent(popupHTML(mk.saftaData)); });
-      });
-      setTimeout(function () { map.invalidateSize(); }, 250);
+    JSON.parse(mapData.textContent || '[]').forEach(function (m) {
+      var mk = L.circleMarker([m.lat, m.lng], {
+        radius: 9, weight: 2, color: '#fff',
+        fillColor: CAT_COLOR[m.cat] || '#015C44', fillOpacity: 1
+      }).addTo(map).bindPopup(popupHTML(m));
+      mk.saftaData = m;
+      pins.push(mk);
+    });
+    if (pins.length) {
+      map.fitBounds(L.featureGroup(pins).getBounds(), { padding: [46, 46], maxZoom: 7 });
     }
-
-    window.SAFTA_CRM.load().then(draw);
+    /* re-render popups when the language flips */
+    document.addEventListener('safta:lang', function () {
+      pins.forEach(function (mk) { mk.setPopupContent(popupHTML(mk.saftaData)); });
+    });
+    setTimeout(function () { map.invalidateSize(); }, 250);
 
     /* legend swatches take their colour from the same map */
     [].slice.call(document.querySelectorAll('.memmap__legend i')).forEach(function (i) {

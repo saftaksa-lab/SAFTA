@@ -1,18 +1,38 @@
 ---
-import type { TextField } from '../../lib/content/store';
+/**
+ * One bilingual text field, in the shape assets/js/i18n.js expects: the
+ * English is the element's content and the Arabic rides along in `data-ar`,
+ * which i18n.js assigns to `innerHTML` when the page switches language.
+ *
+ * Both sides are plain text, escaped here, unless `prose` is set: then both go
+ * through src/lib/prose.ts (`**bold**` and `[label](/path)` only) with on-site
+ * links given this locale's prefix. English falls back to Arabic when blank, and
+ * the other way round for the few fields where Arabic is optional.
+ */
+import { english, escapeHtml, localizeHref, type Bilingual } from '../../lib/bilingual';
+import type { Locale } from '../../lib/locale';
+import { renderInlineProse } from '../../lib/prose';
 
 interface Props {
-  /** element to render — the markup's original tag */
+  /** The element to render: the markup's original tag. */
   as?: string;
-  /** content key, kept in data-cms so the admin can still target this node */
-  key: string;
-  field: TextField;
+  field: Bilingual;
+  /** Render as inline prose. Needs `locale` for its links. */
+  prose?: boolean;
+  locale?: Locale;
+  /** Append the form's required-field marker, in both languages. */
+  required?: boolean;
   [attr: string]: unknown;
 }
 
-const { as: Tag = 'span', key, field, ...rest } = Astro.props;
+const { as: Tag = 'span', field, prose = false, locale = 'en', required = false, ...rest } = Astro.props;
+
+const REQ = ' <b class="req">*</b>';
+const render = (text: string) =>
+  prose ? renderInlineProse(text, (href) => localizeHref(locale, href)) : escapeHtml(text);
+const en = render(english(field)) + (required ? REQ : '');
+// Arabic is required except on a few optional fields (an article's quote); when only the
+// English is filled in, show it rather than swapping in nothing.
+const ar = render(field.ar.trim() === '' ? english(field) : field.ar) + (required ? REQ : '');
 ---
-{/* English is the rendered text and Arabic rides along in data-ar — the contract
-    assets/js/i18n.js expects. It used to be produced by assets/js/cms.js after paint;
-    now it comes out of content/<page>.json on the server. */}
-<Tag data-cms={key} data-ar={field.ar} {...rest} set:html={field.en} />
+<Tag data-ar={ar} {...rest} set:html={en} />

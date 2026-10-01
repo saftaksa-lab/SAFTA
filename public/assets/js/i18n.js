@@ -81,12 +81,8 @@
   /* run before paint so there is no flash of the wrong language */
   apply(detect());
 
-  /* query-string pages (?id=...) are prerendered, so the lang-switch href baked at
-     build time never carries the runtime query — patch it in before it can be clicked */
-  if (location.search) {
-    var sw = document.querySelector('.lang-switch');
-    if (sw) sw.setAttribute('href', sw.getAttribute('href') + location.search);
-  }
+  /* the lang-switch href already carries the query string (?id=...): SiteHeader
+     renders it on the server, so it must not be appended again here */
 
   document.addEventListener('DOMContentLoaded', function () {
     apply(detect());

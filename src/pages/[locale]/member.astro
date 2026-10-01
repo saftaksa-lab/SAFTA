@@ -1,12 +1,10 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Text from '../../components/content/Text.astro';
-import Value from '../../components/content/Value.astro';
-import Image from '../../components/content/Image.astro';
-import { getPageContent } from '../../lib/content/store';
-import { getCollectionContent } from '../../lib/content/collections/store';
-import { MEMBER_FIELDS as MEMBER_PAGE_FIELDS } from '../../lib/content/schema/member';
-import { MEMBERS_FIELDS } from '../../lib/content/collections/members';
+import { getMember, getSingleton } from '../../lib/content/cache';
+import { english, pick } from '../../lib/bilingual';
+import { uploadedImage } from '../../lib/safta-assets';
+import { crumbHome, memberCategoryLabels } from '../../lib/ui';
 import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
@@ -15,83 +13,74 @@ export function getStaticPaths() {
 const { locale } = Astro.params;
 if (!isLocale(locale)) return new Response(null, { status: 404 });
 
-// Chrome text (breadcrumbs, fact labels, contact blurb) comes from content/member.json —
-// the per-member data below is a real collection record instead (see schema/member.ts for
-// why this page's own copy is a distinct schema module from the members collection).
-const c = await getPageContent<typeof MEMBER_PAGE_FIELDS>('member');
-
-const members = await getCollectionContent<typeof MEMBERS_FIELDS>('members');
-const all = members.items();
+// `?id=` is the member's slug. With none, send the visitor to the directory; an unknown or
+// unpublished one is a 404 (it used to show the first member instead).
 const id = Astro.url.searchParams.get('id');
-// Same fallback the old client-side lookup used: an unknown/missing id shows the first
-// record rather than a hard 404.
-const member = all.find((m) => m.id === id) ?? all[0];
+if (!id) return Astro.redirect(`/${locale}/members`);
+const member = getMember(id);
+if (!member) return new Response(null, { status: 404 });
 
-const name = member.text('name');
-const logo = member.image('logo');
-const ini = member.value('ini');
-const cat = member.text('cat');
-const role = member.text('role');
-const sector = member.text('sector');
-const since = member.value('since');
-const bio = member.text('bio');
+// Breadcrumbs, fact labels and the contact block are the same on every profile.
+const chrome = getSingleton('member_chrome');
+const name = pick(member, 'name');
+const logo = uploadedImage(member.logoId);
 ---
 <BaseLayout
   locale={locale}
-  title={`${name.en} | SAFTA`}
+  title={`${english(name)} | SAFTA`}
   titleAr={`${name.ar} | التحالف السعودي`}
 >
 <main>
 <section class="page-hero page-hero--plain">
 <div class="wrap">
-<p class="crumbs"><Text as="a" key="t001-الرئيسية" field={c.text("t001-الرئيسية")} href={`/${locale}`} /><span>/</span><Text as="a" key="t002-الأعضاء" field={c.text("t002-الأعضاء")} href={`/${locale}/members`} /><span>/</span>Profile</p>
-<Text as="h1" key="t003-ملف-العضو" field={c.text("t003-ملف-العضو")} />
+<p class="crumbs"><Text as="a" field={crumbHome} href={`/${locale}`} /><span>/</span><Text as="a" field={pick(chrome, 'crumbMembers')} href={`/${locale}/members`} /><span>/</span>Profile</p>
+<Text as="h1" field={pick(chrome, 'title')} />
 </div>
 </section>
 <section class="ribbon">
 <div class="wrap">
 <div class="member-head reveal">
-<span class="member-card__logo" id="mLogo">{logo.src ? <Image key="logo" field={{ src: logo.src, alt: name.en, altAr: name.ar }} /> : <Value as="span" key="ini" value={ini} />}</span>
+<span class="member-card__logo" id="mLogo">{logo ? <img src={logo.src} width={logo.width} height={logo.height} alt={english(name)} /> : <span>{member.initials}</span>}</span>
 <div>
-<Text as="p" class="eyebrow" id="mCat" key="cat" field={cat} />
-<Text as="h2" class="h-section" id="mName" style="margin-top:10px" key="name" field={name} />
+<Text as="p" class="eyebrow" id="mCat" field={memberCategoryLabels[member.category]} />
+<Text as="h2" class="h-section" id="mName" style="margin-top:10px" field={name} />
 </div>
 </div>
 <div class="facts reveal">
-<div class="fact"><Text as="b" key="t007-الدور-في-التحالف" field={c.text("t007-الدور-في-التحالف")} /><Text as="span" id="mRole" key="role" field={role} /></div>
-<div class="fact"><Text as="b" key="t009-مجال-التركيز" field={c.text("t009-مجال-التركيز")} /><Text as="span" id="mSector" key="sector" field={sector} /></div>
-<div class="fact"><Text as="b" key="t011-عضو-منذ" field={c.text("t011-عضو-منذ")} /><Value as="span" id="mSince" key="since" value={since} /></div>
+<div class="fact"><Text as="b" field={pick(chrome, 'roleLabel')} /><Text as="span" id="mRole" field={pick(member, 'role')} /></div>
+<div class="fact"><Text as="b" field={pick(chrome, 'sectorLabel')} /><Text as="span" id="mSector" field={pick(member, 'sector')} /></div>
+<div class="fact"><Text as="b" field={pick(chrome, 'sinceLabel')} /><span id="mSince">{member.since}</span></div>
 </div>
 <div class="prose reveal" style="margin-top:72px">
-<Text as="h2" key="t012-نبذة" field={c.text("t012-نبذة")} />
-<Text as="p" id="mBio" key="bio" field={bio} />
-<Text as="h2" key="t013-مجالات-التعاون" field={c.text("t013-مجالات-التعاون")} />
+<Text as="h2" field={pick(chrome, 'overviewHeading')} />
+<Text as="p" id="mBio" field={pick(member, 'bio')} />
+<Text as="h2" field={pick(chrome, 'collaborationHeading')} />
 <ul>
-<Text as="li" key="t014-التبنّي-المنسّق-لتقنيات-ال" field={c.text("t014-التبنّي-المنسّق-لتقنيات-ال")} />
-<Text as="li" key="t015-التبادل-العلمي-والبحثي-مع-" field={c.text("t015-التبادل-العلمي-والبحثي-مع-")} />
-<Text as="li" key="t016-بناء-القدرات-البشرية-ونقل-" field={c.text("t016-بناء-القدرات-البشرية-ونقل-")} />
+{chrome.collaborationItems.map((item) => (
+<Text as="li" field={pick(item, 'text')} />
+))}
 </ul>
 </div>
 
 <div class="mcontact reveal">
 <div class="mcontact__txt">
-<Text as="p" key="t017-التواصل" field={c.text("t017-التواصل")} class="eyebrow" />
-<Text as="h2" key="t018-تواصل-مع-هذه-الجهة-عبر-الت" field={c.text("t018-تواصل-مع-هذه-الجهة-عبر-الت")} />
-<Text as="p" key="t019-تُوجَّه-الطلبات-المتعلقة-ب" field={c.text("t019-تُوجَّه-الطلبات-المتعلقة-ب")} />
+<Text as="p" field={pick(chrome, 'contactEyebrow')} class="eyebrow" />
+<Text as="h2" field={pick(chrome, 'contactHeading')} />
+<Text as="p" field={pick(chrome, 'contactText')} />
 </div>
 <div class="mcontact__acts">
 <a class="btn-solid" href={`/${locale}/contact`}>
-<Text as="span" key="t020-افتح-نموذج-التواصل" field={c.text("t020-افتح-نموذج-التواصل")} />
+<Text as="span" field={pick(chrome, 'contactCtaLabel')} />
 <svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg>
 </a>
-<a class="mcontact__mail" href="mailto:info@safta.sa">
+<a class="mcontact__mail" href={`mailto:${chrome.contactEmail}`}>
 <svg fill="none" height="16" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="16"><rect height="15" rx="2.5" width="19" x="2.5" y="4.5"></rect><path d="M3 6.5l9 6.5 9-6.5"></path></svg>
-<span>info@safta.sa</span>
+<span>{chrome.contactEmail}</span>
 </a>
 </div>
 </div>
 <div style="margin-top:64px">
-<a class="cta-circle" href={`/${locale}/members`}><Text as="span" key="t021-العودة-إلى-كل-المتحالفين" field={c.text("t021-العودة-إلى-كل-المتحالفين")} /><span class="circ"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></a>
+<a class="cta-circle" href={`/${locale}/members`}><Text as="span" field={pick(chrome, 'backLabel')} /><span class="circ"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></a>
 </div>
 </div>
 </section>

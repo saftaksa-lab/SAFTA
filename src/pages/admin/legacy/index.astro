@@ -13,6 +13,12 @@
 <link rel="stylesheet" href="/admin/admin.css">
 </head>
 <body>
+<!-- The public pages read the database since Phase 3 of the CMS port. This editor still
+     writes content/*.json, which is now only the source of the one-time legacy import.
+     The page goes away in Phase 6. -->
+<p role="note" style="margin:0;padding:10px 16px;background:#FFF4E5;border-bottom:1px solid #E8C48A;color:#5A3D0A;font:14px/1.6 'IBM Plex Sans Arabic',system-ui,sans-serif;text-align:center">
+<strong>هذا المحرّر السابق لم يعد يغيّر الموقع.</strong> عدّل المحتوى من <a href="/admin" style="color:inherit;text-decoration:underline">لوحة التحكّم الجديدة</a>.
+</p>
 
 <!-- ══════════════════ اللوحة ══════════════════ -->
 <div id="app" class="app">

@@ -1,8 +1,9 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Text from '../../components/content/Text.astro';
-import { getPageContent } from '../../lib/content/store';
-import { REGISTER_INTEREST_FIELDS } from '../../lib/content/schema/register-interest';
+import { getSingleton } from '../../lib/content/cache';
+import { english, pick } from '../../lib/bilingual';
+import { crumbHome } from '../../lib/ui';
 import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
@@ -11,7 +12,10 @@ export function getStaticPaths() {
 const { locale } = Astro.params;
 if (!isLocale(locale)) return new Response(null, { status: 404 });
 
-const c = await getPageContent<typeof REGISTER_INTEREST_FIELDS>('register-interest');
+const hero = getSingleton('register_hero');
+const form = getSingleton('register_form');
+const info = getSingleton('register_info');
+const website = pick(form, 'websitePlaceholder');
 ---
 <BaseLayout
   locale={locale}
@@ -23,9 +27,9 @@ const c = await getPageContent<typeof REGISTER_INTEREST_FIELDS>('register-intere
 <main>
 <section class="page-hero page-hero--plain">
 <div class="wrap">
-<p class="crumbs"><Text as="a" key="t001-الرئيسية" field={c.text("t001-الرئيسية")} href={`/${locale}`} /><span>/</span>Register interest</p>
-<Text as="h1" key="t002-سجّل-اهتمامك" field={c.text("t002-سجّل-اهتمامك")} />
-<Text as="p" key="t003-عرّفنا-بجهتك-والتحدي-الذي-" field={c.text("t003-عرّفنا-بجهتك-والتحدي-الذي-")} class="lede" />
+<p class="crumbs"><Text as="a" field={crumbHome} href={`/${locale}`} /><span>/</span>Register interest</p>
+<Text as="h1" field={pick(hero, 'title')} />
+<Text as="p" field={pick(hero, 'lede')} class="lede" />
 </div>
 </section>
 <section class="ribbon">
@@ -33,65 +37,55 @@ const c = await getPageContent<typeof REGISTER_INTEREST_FIELDS>('register-intere
 <div class="form-shell">
 <form class="form reveal" id="interestForm" novalidate="">
 <div class="row-2">
-<div class="field"><Text as="label" key="t004-الاسم-الكامل" field={c.text("t004-الاسم-الكامل")} for="ri-name">Full name *</Text><input id="ri-name" name="name" required=""/></div>
-<div class="field"><Text as="label" key="t005-اسم-الجهة" field={c.text("t005-اسم-الجهة")} for="ri-entity">Entity name *</Text><input id="ri-entity" name="entity" required=""/></div>
+<div class="field"><Text as="label" field={pick(form, 'nameLabel')} for="ri-name" required /><input id="ri-name" name="name" required=""/></div>
+<div class="field"><Text as="label" field={pick(form, 'entityLabel')} for="ri-entity" required /><input id="ri-entity" name="entity" required=""/></div>
 </div>
 <div class="row-2">
-<div class="field"><Text as="label" key="t006-نوع-الجهة" field={c.text("t006-نوع-الجهة")} for="ri-type">Entity type *</Text>
-<select id="ri-type" name="type" required=""><Text as="option" key="t007-اختر" field={c.text("t007-اختر")} value="">Select…</Text><Text as="option" key="t008-جهة-حكومية" field={c.text("t008-جهة-حكومية")}>Government entity</Text><Text as="option" key="t009-مؤسسة-أكاديمية" field={c.text("t009-مؤسسة-أكاديمية")}>Academic institution</Text><Text as="option" key="t010-شركة-من-القطاع-الخاص" field={c.text("t010-شركة-من-القطاع-الخاص")}>Private sector company</Text><Text as="option" key="t011-منظمة-غير-ربحية" field={c.text("t011-منظمة-غير-ربحية")}>Non-profit organization</Text><Text as="option" key="t012-مبتكر-فرد" field={c.text("t012-مبتكر-فرد")}>Individual innovator</Text></select></div>
-<div class="field"><Text as="label" key="t013-البريد-الإلكتروني-للعمل" field={c.text("t013-البريد-الإلكتروني-للعمل")} for="ri-email">Work email *</Text><input id="ri-email" name="email" required="" type="email"/></div>
+<div class="field"><Text as="label" field={pick(form, 'entityTypeLabel')} for="ri-type" required />
+<select id="ri-type" name="type" required=""><Text as="option" field={pick(form, 'entityTypePrompt')} value="" />{form.entityTypeOptions.map((option) => (<Text as="option" field={pick(option, 'label')} value={option.value} />))}</select></div>
+<div class="field"><Text as="label" field={pick(form, 'emailLabel')} for="ri-email" required /><input id="ri-email" name="email" required="" type="email"/></div>
 </div>
 <div class="row-2">
-<div class="field"><Text as="label" key="t014-رقم-الجوال" field={c.text("t014-رقم-الجوال")} for="ri-phone">Phone number</Text><input id="ri-phone" name="phone"/></div>
-<div class="field"><Text as="label" key="t015-الموقع-الإلكتروني" field={c.text("t015-الموقع-الإلكتروني")} for="ri-site">Website</Text><input data-cms-ph="p016-https" data-ar-placeholder={c.text("p016-https").ar} id="ri-site" name="website" placeholder={c.text("p016-https").en}/></div>
+<div class="field"><Text as="label" field={pick(form, 'phoneLabel')} for="ri-phone" /><input id="ri-phone" name="phone"/></div>
+<div class="field"><Text as="label" field={pick(form, 'websiteLabel')} for="ri-site" /><input data-ar-placeholder={website.ar} id="ri-site" name="website" placeholder={english(website)}/></div>
 </div>
-<div class="field"><Text as="label" key="t017-مجال-الاهتمام" field={c.text("t017-مجال-الاهتمام")} for="ri-area">Area of interest *</Text>
-<select id="ri-area" name="area" required=""><Text as="option" key="t018-اختر" field={c.text("t018-اختر")} value="">Select…</Text><Text as="option" key="t019-قسوة-الظروف-المناخية" field={c.text("t019-قسوة-الظروف-المناخية")}>Harsh climate conditions</Text><Text as="option" key="t020-شُح-الموارد-المائية" field={c.text("t020-شُح-الموارد-المائية")}>Water scarcity</Text><Text as="option" key="t021-مخاطر-الآفات-الزراعية" field={c.text("t021-مخاطر-الآفات-الزراعية")}>Pest risks</Text><Text as="option" key="t022-تدهور-التربة" field={c.text("t022-تدهور-التربة")}>Soil degradation</Text><Text as="option" key="t023-هدر-الغذاء" field={c.text("t023-هدر-الغذاء")}>Food waste</Text><Text as="option" key="t024-أخرى-غير-محدد-بعد" field={c.text("t024-أخرى-غير-محدد-بعد")}>Other / not sure yet</Text></select>
-<Text as="p" key="t025-مرتبط-بالتحديات-الوطنية-ال" field={c.text("t025-مرتبط-بالتحديات-الوطنية-ال")} class="hint" /></div>
-<div class="field"><Text as="label" key="t026-لماذا-ترغب-بالانضمام؟" field={c.text("t026-لماذا-ترغب-بالانضمام؟")} for="ri-msg">Why do you want to join?</Text><textarea id="ri-msg" name="message"></textarea></div>
+<div class="field"><Text as="label" field={pick(form, 'areaLabel')} for="ri-area" required />
+<select id="ri-area" name="area" required=""><Text as="option" field={pick(form, 'areaPrompt')} value="" />{form.areaOptions.map((option) => (<Text as="option" field={pick(option, 'label')} value={option.value} />))}</select>
+<Text as="p" field={pick(form, 'areaHint')} class="hint" /></div>
+<div class="field"><Text as="label" field={pick(form, 'messageLabel')} for="ri-msg" /><textarea id="ri-msg" name="message"></textarea></div>
 <div class="field">
-<Text as="label" key="t027-ملف-الأعمال-أو-العرض-التعر" field={c.text("t027-ملف-الأعمال-أو-العرض-التعر")} for="ri-file">Portfolio or company profile</Text>
-<Text as="p" key="t028-PDF-أو-PPTX-أو-DOCX-حتى-10" field={c.text("t028-PDF-أو-PPTX-أو-DOCX-حتى-10")} class="hint hint--top" />
+<Text as="label" field={pick(form, 'portfolioLabel')} for="ri-file" />
+<Text as="p" field={pick(form, 'portfolioHint')} class="hint hint--top" />
 <div class="filepick">
 <input accept=".pdf,.ppt,.pptx,.doc,.docx" id="ri-file" name="portfolio" type="file"/>
-<Text as="label" key="t029-اختر-ملفًا" field={c.text("t029-اختر-ملفًا")} class="filepick__btn" for="ri-file">Choose file</Text>
-<Text as="span" key="t030-لم-يُختر-أي-ملف" field={c.text("t030-لم-يُختر-أي-ملف")} class="filepick__name">No file chosen</Text>
+<Text as="label" field={pick(form, 'chooseFileLabel')} class="filepick__btn" for="ri-file" />
+<Text as="span" field={pick(form, 'noFileLabel')} class="filepick__name" />
 </div>
 </div>
-<label class="check"><input required="" type="checkbox"/><Text as="span" key="t031-أُقرّ-بأنني-مخوّل-بتقديم-ه" field={c.text("t031-أُقرّ-بأنني-مخوّل-بتقديم-ه")}>I confirm I am authorized to submit this request on behalf of the entity named above, and I accept the <a href={`/${locale}/terms`} style="color:var(--c-link)">Terms &amp; Conditions</a> and <a href={`/${locale}/privacy`} style="color:var(--c-link)">Privacy Policy</a>.</Text></label>
+<label class="check"><input required="" type="checkbox"/><Text as="span" field={pick(form, 'consent')} prose locale={locale} /></label>
 <div class="form-actions">
-<button class="btn-solid" type="submit"><Text as="span" key="t032-إرسال-التسجيل" field={c.text("t032-إرسال-التسجيل")}>Submit registration</Text><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></button>
-<span class="form-msg" id="riMsg"><svg fill="none" height="15" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="15"><path d="M20 6L9 17l-5-5"></path></svg><Text as="span" key="t033-شكرًا-لك-تم-تسجيل-طلبك-بنج" field={c.text("t033-شكرًا-لك-تم-تسجيل-طلبك-بنج")}>Thank you — your registration has been recorded.</Text></span>
+<button class="btn-solid" type="submit"><Text as="span" field={pick(form, 'submitLabel')} /><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></button>
+<span class="form-msg" id="riMsg"><svg fill="none" height="15" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="15"><path d="M20 6L9 17l-5-5"></path></svg><Text as="span" field={pick(form, 'successMessage')} /></span>
 </div>
 </form>
 <aside class="aside-card reveal">
-<Text as="h3" key="t034-ماذا-بعد؟" field={c.text("t034-ماذا-بعد؟")} />
-<Text as="p" key="t035-أربع-خطوات-من-إرسال-الطلب-" field={c.text("t035-أربع-خطوات-من-إرسال-الطلب-")} class="aside-card__lede" />
+<Text as="h3" field={pick(info, 'heading')} />
+<Text as="p" field={pick(info, 'lede')} class="aside-card__lede" />
 
 <ol class="aside-steps">
+{info.steps.map((step, i) => (
 <li>
-<span class="aside-steps__no">1</span>
-<span><Text as="b" key="t036-المراجعة" field={c.text("t036-المراجعة")} /><Text as="span" key="t037-يراجع-فريق-التحالف-طلبك-وي" field={c.text("t037-يراجع-فريق-التحالف-طلبك-وي")} class="aside-steps__txt" /></span>
+<span class="aside-steps__no">{i + 1}</span>
+<span><Text as="b" field={pick(step, 'title')} /><Text as="span" field={pick(step, 'text')} class="aside-steps__txt" /></span>
 </li>
-<li>
-<span class="aside-steps__no">2</span>
-<span><Text as="b" key="t038-التواصل" field={c.text("t038-التواصل")} /><Text as="span" key="t039-نتواصل-معك-عبر-البريد-الإل" field={c.text("t039-نتواصل-معك-عبر-البريد-الإل")} class="aside-steps__txt" /></span>
-</li>
-<li>
-<span class="aside-steps__no">3</span>
-<span><Text as="b" key="t040-خطاب-العضوية" field={c.text("t040-خطاب-العضوية")} /><Text as="span" key="t041-تتلقّى-الجهات-المؤهّلة-خطا" field={c.text("t041-تتلقّى-الجهات-المؤهّلة-خطا")} class="aside-steps__txt" /></span>
-</li>
-<li>
-<span class="aside-steps__no">4</span>
-<span><Text as="b" key="t042-الإدراج" field={c.text("t042-الإدراج")} /><Text as="span" key="t043-بعد-التوقيع-تُدرَج-جهتك-في" field={c.text("t043-بعد-التوقيع-تُدرَج-جهتك-في")} class="aside-steps__txt" /></span>
-</li>
+))}
 </ol>
 
 <div class="aside-card__social">
-<Text as="p" key="t044-عندك-سؤال؟" field={c.text("t044-عندك-سؤال؟")} />
-<a class="aside-card__mail" href="mailto:info@safta.sa">
+<Text as="p" field={pick(info, 'questionsLabel')} />
+<a class="aside-card__mail" href={`mailto:${info.email}`}>
 <svg fill="none" height="15" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="15"><rect height="15" rx="2.5" width="19" x="2.5" y="4.5"></rect><path d="M3 6.5l9 6.5 9-6.5"></path></svg>
-<span>info@safta.sa</span>
+<span>{info.email}</span>
 </a>
 </div>
 </aside>

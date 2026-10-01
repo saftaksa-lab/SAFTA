@@ -1,8 +1,9 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Text from '../../components/content/Text.astro';
-import { getPageContent } from '../../lib/content/store';
-import { CONTACT_FIELDS } from '../../lib/content/schema/contact';
+import { getSingleton } from '../../lib/content/cache';
+import { english, pick } from '../../lib/bilingual';
+import { crumbHome } from '../../lib/ui';
 import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
@@ -11,7 +12,14 @@ export function getStaticPaths() {
 const { locale } = Astro.params;
 if (!isLocale(locale)) return new Response(null, { status: 404 });
 
-const c = await getPageContent<typeof CONTACT_FIELDS>('contact');
+const hero = getSingleton('contact_hero');
+const form = getSingleton('contact_form');
+const info = getSingleton('contact_info');
+// Placeholders swap through data-ar-placeholder, which i18n.js assigns as plain text.
+const placeholder = (name: 'namePlaceholder' | 'emailPlaceholder' | 'phonePlaceholder' | 'companyPlaceholder') => {
+  const field = pick(form, name);
+  return { placeholder: english(field), 'data-ar-placeholder': field.ar };
+};
 ---
 <BaseLayout
   locale={locale}
@@ -23,9 +31,9 @@ const c = await getPageContent<typeof CONTACT_FIELDS>('contact');
 <main>
 <section class="page-hero page-hero--plain">
 <div class="wrap">
-<p class="crumbs"><Text as="a" key="t001-الرئيسية" field={c.text("t001-الرئيسية")} href={`/${locale}`} /><span>/</span>Contact</p>
-<Text as="h1" key="t002-تواصل-معنا" field={c.text("t002-تواصل-معنا")} />
-<Text as="p" key="t003-للاستفسارات-وفرص-الشراكة-و" field={c.text("t003-للاستفسارات-وفرص-الشراكة-و")} class="lede" />
+<p class="crumbs"><Text as="a" field={crumbHome} href={`/${locale}`} /><span>/</span>Contact</p>
+<Text as="h1" field={pick(hero, 'title')} />
+<Text as="p" field={pick(hero, 'lede')} class="lede" />
 </div>
 </section>
 <section class="ribbon" id="contactMain">
@@ -34,105 +42,79 @@ const c = await getPageContent<typeof CONTACT_FIELDS>('contact');
 <form class="form reveal" id="contactForm" novalidate="">
 
 <div class="field">
-<Text as="label" key="t004-الاسم-الكامل" field={c.text("t004-الاسم-الكامل")} for="c-name">Full Name <b class="req">*</b></Text>
-<input data-cms-ph="p005-مثال-سارة-الأحمد" autocomplete="name" id="c-name" data-ar-placeholder={c.text("p005-مثال-سارة-الأحمد").ar} placeholder={c.text("p005-مثال-سارة-الأحمد").en} name="fullName" required=""/>
+<Text as="label" field={pick(form, 'nameLabel')} for="c-name" required />
+<input autocomplete="name" id="c-name" {...placeholder('namePlaceholder')} name="fullName" required=""/>
 </div>
 
 <div class="row-2">
 <div class="field">
-<Text as="label" key="t006-البريد-الإلكتروني" field={c.text("t006-البريد-الإلكتروني")} for="c-email">Email <b class="req">*</b></Text>
-<input data-cms-ph="p007-namecompanycom" autocomplete="email" id="c-email" data-ar-placeholder={c.text("p007-namecompanycom").ar} placeholder={c.text("p007-namecompanycom").en} name="email" required="" type="email"/>
+<Text as="label" field={pick(form, 'emailLabel')} for="c-email" required />
+<input autocomplete="email" id="c-email" {...placeholder('emailPlaceholder')} name="email" required="" type="email"/>
 </div>
 <div class="field">
-<Text as="label" key="t008-رقم-الجوال" field={c.text("t008-رقم-الجوال")} for="c-phone">Phone number</Text>
-<Text as="p" key="t009-أضف-رمز-الدولة-مثال-96659x" field={c.text("t009-أضف-رمز-الدولة-مثال-96659x")} class="hint hint--top" />
-<input data-cms-ph="p010-966" autocomplete="tel" data-ar-placeholder={c.text("p010-966").ar} id="c-phone" inputmode="tel" name="mobile" placeholder={c.text("p010-966").en} type="tel" value="+966"/>
+<Text as="label" field={pick(form, 'phoneLabel')} for="c-phone" />
+<Text as="p" field={pick(form, 'phoneHint')} class="hint hint--top" />
+<input autocomplete="tel" id="c-phone" inputmode="tel" name="mobile" {...placeholder('phonePlaceholder')} type="tel" value="+966"/>
 </div>
 </div>
 
 <div class="row-2">
 <div class="field">
-<Text as="label" key="t011-اسم-الجهة-أو-الشركة" field={c.text("t011-اسم-الجهة-أو-الشركة")} for="c-company">Company name <b class="req">*</b></Text>
-<input data-cms-ph="p012-مثال-الكثبان-الخضراء" autocomplete="organization" id="c-company" data-ar-placeholder={c.text("p012-مثال-الكثبان-الخضراء").ar} placeholder={c.text("p012-مثال-الكثبان-الخضراء").en} name="company" required=""/>
+<Text as="label" field={pick(form, 'companyLabel')} for="c-company" required />
+<input autocomplete="organization" id="c-company" {...placeholder('companyPlaceholder')} name="company" required=""/>
 </div>
 <div class="field">
-<Text as="label" key="t013-القطاع" field={c.text("t013-القطاع")} for="c-sector">Sector <b class="req">*</b></Text>
+<Text as="label" field={pick(form, 'sectorLabel')} for="c-sector" required />
 <select id="c-sector" name="sector" required="">
-<Text as="option" key="t014-الرجاء-الاختيار" field={c.text("t014-الرجاء-الاختيار")} value="">Please Select</Text>
-<Text as="option" key="t015-تقنيات-الزراعة" field={c.text("t015-تقنيات-الزراعة")} value="Agriculture technology">Agriculture technology</Text>
-<Text as="option" key="t016-تقنيات-الأغذية" field={c.text("t016-تقنيات-الأغذية")} value="Food technology">Food technology</Text>
-<Text as="option" key="t017-المياه-والري" field={c.text("t017-المياه-والري")} value="Water & irrigation">Water &amp; irrigation</Text>
-<Text as="option" key="t018-الزراعة-البيئية-المحكومة" field={c.text("t018-الزراعة-البيئية-المحكومة")} value="Controlled environment agriculture">Controlled environment agriculture</Text>
-<Text as="option" key="t019-البروتين-البديل" field={c.text("t019-البروتين-البديل")} value="Alternative protein">Alternative protein</Text>
-<Text as="option" key="t020-سلاسل-الإمداد-والخدمات-الل" field={c.text("t020-سلاسل-الإمداد-والخدمات-الل")} value="Supply chain & logistics">Supply chain &amp; logistics</Text>
-<Text as="option" key="t021-التقنية-الحيوية" field={c.text("t021-التقنية-الحيوية")} value="Biotechnology">Biotechnology</Text>
-<Text as="option" key="t022-الطاقة-المتجددة" field={c.text("t022-الطاقة-المتجددة")} value="Renewable energy">Renewable energy</Text>
-<Text as="option" key="t023-البيانات-والذكاء-الاصطناعي" field={c.text("t023-البيانات-والذكاء-الاصطناعي")} value="Data & artificial intelligence">Data &amp; artificial intelligence</Text>
-<Text as="option" key="t024-البحث-والأوساط-الأكاديمية" field={c.text("t024-البحث-والأوساط-الأكاديمية")} value="Research & academia">Research &amp; academia</Text>
-<Text as="option" key="t025-الجهات-الحكومية-والسياسات" field={c.text("t025-الجهات-الحكومية-والسياسات")} value="Government & policy">Government &amp; policy</Text>
-<Text as="option" key="t026-الاستثمار-والتمويل" field={c.text("t026-الاستثمار-والتمويل")} value="Investment & funding">Investment &amp; funding</Text>
-<Text as="option" key="t027-غير-ربحي" field={c.text("t027-غير-ربحي")} value="Non-profit">Non-profit</Text>
-<Text as="option" key="t028-أخرى" field={c.text("t028-أخرى")} value="Other">Other</Text>
+<Text as="option" field={pick(form, 'sectorPrompt')} value="" />
+{form.sectorOptions.map((option) => (
+<Text as="option" field={pick(option, 'label')} value={option.value} />
+))}
 </select>
 </div>
 </div>
 
 <div class="field">
-<Text as="label" key="t032-الدولة" field={c.text("t032-الدولة")} for="c-country">Country</Text>
+<Text as="label" field={pick(form, 'countryLabel')} for="c-country" />
 <select id="c-country" name="country">
-<Text as="option" key="t033-الرجاء-الاختيار" field={c.text("t033-الرجاء-الاختيار")} value="">Please Select</Text>
-<Text as="option" key="t034-المملكة-العربية-السعودية" field={c.text("t034-المملكة-العربية-السعودية")} value="Saudi Arabia">Saudi Arabia</Text>
-<Text as="option" key="t035-الإمارات-العربية-المتحدة" field={c.text("t035-الإمارات-العربية-المتحدة")} value="United Arab Emirates">United Arab Emirates</Text>
-<Text as="option" key="t036-الكويت" field={c.text("t036-الكويت")} value="Kuwait">Kuwait</Text>
-<Text as="option" key="t037-قطر" field={c.text("t037-قطر")} value="Qatar">Qatar</Text>
-<Text as="option" key="t038-البحرين" field={c.text("t038-البحرين")} value="Bahrain">Bahrain</Text>
-<Text as="option" key="t039-عُمان" field={c.text("t039-عُمان")} value="Oman">Oman</Text>
-<Text as="option" key="t040-مصر" field={c.text("t040-مصر")} value="Egypt">Egypt</Text>
-<Text as="option" key="t041-الأردن" field={c.text("t041-الأردن")} value="Jordan">Jordan</Text>
-<Text as="option" key="t042-هولندا" field={c.text("t042-هولندا")} value="Netherlands">Netherlands</Text>
-<Text as="option" key="t043-المملكة-المتحدة" field={c.text("t043-المملكة-المتحدة")} value="United Kingdom">United Kingdom</Text>
-<Text as="option" key="t044-الولايات-المتحدة" field={c.text("t044-الولايات-المتحدة")} value="United States">United States</Text>
-<Text as="option" key="t045-ألمانيا" field={c.text("t045-ألمانيا")} value="Germany">Germany</Text>
-<Text as="option" key="t046-فرنسا" field={c.text("t046-فرنسا")} value="France">France</Text>
-<Text as="option" key="t047-الصين" field={c.text("t047-الصين")} value="China">China</Text>
-<Text as="option" key="t048-اليابان" field={c.text("t048-اليابان")} value="Japan">Japan</Text>
-<Text as="option" key="t049-الهند" field={c.text("t049-الهند")} value="India">India</Text>
-<Text as="option" key="t050-أستراليا" field={c.text("t050-أستراليا")} value="Australia">Australia</Text>
-<Text as="option" key="t051-دولة-أخرى" field={c.text("t051-دولة-أخرى")} value="Other">Other</Text>
+<Text as="option" field={pick(form, 'countryPrompt')} value="" />
+{form.countryOptions.map((option) => (
+<Text as="option" field={pick(option, 'label')} value={option.value} />
+))}
 </select>
 </div>
 
 <div class="form-actions">
-<button class="btn-solid" type="submit"><Text as="span" key="t059-إرسال" field={c.text("t059-إرسال")}>Submit</Text><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></button>
-<span class="form-msg" id="cMsg"><svg fill="none" height="18" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="18"><path d="M20 6L9 17l-5-5"></path></svg><Text as="span" key="t060-تم-استلام-طلبك-سنتواصل-معك" field={c.text("t060-تم-استلام-طلبك-سنتواصل-معك")}>Your request has been received. We will be in touch shortly.</Text></span>
+<button class="btn-solid" type="submit"><Text as="span" field={pick(form, 'submitLabel')} /><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></button>
+<span class="form-msg" id="cMsg"><svg fill="none" height="18" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="18"><path d="M20 6L9 17l-5-5"></path></svg><Text as="span" field={pick(form, 'successMessage')} /></span>
 </div>
 
 </form>
 <aside class="aside-card reveal">
-<Text as="h3" key="t061-التواصل-المباشر" field={c.text("t061-التواصل-المباشر")} />
-<Text as="p" key="t062-اختر-القناة-الأنسب-لطلبك-أ" field={c.text("t062-اختر-القناة-الأنسب-لطلبك-أ")} class="aside-card__lede" />
+<Text as="h3" field={pick(info, 'heading')} />
+<Text as="p" field={pick(info, 'lede')} class="aside-card__lede" />
 
 <ul class="aside-list">
 <li>
 <span class="aside-list__ico"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="16"><rect height="15" rx="2.5" width="19" x="2.5" y="4.5"></rect><path d="M3 6.5l9 6.5 9-6.5"></path></svg></span>
-<span><Text as="b" key="t063-الاستفسارات-العامة-والدعم" field={c.text("t063-الاستفسارات-العامة-والدعم")} /><a href="mailto:info@safta.sa">info@safta.sa</a></span>
+<span><Text as="b" field={pick(info, 'generalLabel')} /><a href={`mailto:${info.email}`}>{info.email}</a></span>
 </li>
 <li>
 <span class="aside-list__ico"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="16"><path d="M12 5v14M5 12h14"></path></svg></span>
-<span><Text as="b" key="t064-العضوية" field={c.text("t064-العضوية")} /><Text as="a" key="t065-سجّل-اهتمامك-بالانضمام" field={c.text("t065-سجّل-اهتمامك-بالانضمام")} href={`/${locale}/register-interest`}>Register your interest</Text></span>
+<span><Text as="b" field={pick(info, 'membershipLabel')} /><Text as="a" field={pick(info, 'membershipLinkLabel')} href={`/${locale}/register-interest`} /></span>
 </li>
 <li>
 <span class="aside-list__ico"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="16"><path d="M4 5h16v14H4z"></path><path d="M8 9h8M8 13h5"></path></svg></span>
-<span><Text as="b" key="t066-الاستفسارات-الإعلامية" field={c.text("t066-الاستفسارات-الإعلامية")} /><Text as="a" key="t067-المركز-الإعلامي" field={c.text("t067-المركز-الإعلامي")} href={`/${locale}/media`}>Media Centre</Text></span>
+<span><Text as="b" field={pick(info, 'mediaLabel')} /><Text as="a" field={pick(info, 'mediaLinkLabel')} href={`/${locale}/media`} /></span>
 </li>
 <li>
 <span class="aside-list__ico"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="16"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span>
-<span><Text as="b" key="t068-مدة-الرد" field={c.text("t068-مدة-الرد")} /><Text as="span" key="t069-ثلاثة-أيام-عمل-في-المتوسط" field={c.text("t069-ثلاثة-أيام-عمل-في-المتوسط")} class="aside-list__txt" /></span>
+<span><Text as="b" field={pick(info, 'responseLabel')} /><Text as="span" field={pick(info, 'responseText')} class="aside-list__txt" /></span>
 </li>
 </ul>
 
 <div class="aside-card__social">
-<Text as="p" key="t070-تابعنا" field={c.text("t070-تابعنا")} />
+<Text as="p" field={pick(info, 'followLabel')} />
 <div>
 <a aria-label="LinkedIn" href="https://www.linkedin.com/company/saudi-agrifood-tech-alliance-safta/" rel="noopener" target="_blank"><svg fill="currentColor" height="15" viewBox="0 0 24 24" width="15"><path d="M4.98 3.5A2.5 2.5 0 1 0 5 8.5a2.5 2.5 0 0 0-.02-5zM3 9h4v12H3zM9 9h3.8v1.7h.05c.53-.95 1.83-1.95 3.77-1.95C20.4 8.75 21 11 21 14v7h-4v-6.2c0-1.5-.03-3.4-2.1-3.4-2.1 0-2.4 1.6-2.4 3.3V21H9z"></path></svg></a>
 <a aria-label="X" href="https://x.com/SAFTA_KSA" rel="noopener" target="_blank"><svg fill="currentColor" height="15" viewBox="0 0 24 24" width="15"><path d="M18.9 2H22l-7 8 8.2 12h-6.4l-5-7.3L5.9 22H2.8l7.5-8.6L2.4 2h6.6l4.5 6.6L18.9 2z"></path></svg></a>

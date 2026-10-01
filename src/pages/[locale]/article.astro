@@ -1,9 +1,11 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Text from '../../components/content/Text.astro';
-import { getCollectionContent } from '../../lib/content/collections/store';
-import { ARTICLES_FIELDS } from '../../lib/content/collections/articles';
-import type { TextField } from '../../lib/content/store';
+import Image from '../../components/content/Image.astro';
+import { getArticle, getSingleton } from '../../lib/content/cache';
+import { english, pick } from '../../lib/bilingual';
+import { ARTICLE_IMG } from '../../lib/safta-assets';
+import { crumbHome } from '../../lib/ui';
 import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
@@ -12,69 +14,60 @@ export function getStaticPaths() {
 const { locale } = Astro.params;
 if (!isLocale(locale)) return new Response(null, { status: 404 });
 
-const articles = await getCollectionContent<typeof ARTICLES_FIELDS>('articles');
-const all = articles.items();
+// `?id=` is the article's slug. With none, send the visitor to the list; an unknown or
+// unpublished one is a 404 (it used to show the first article instead).
 const id = Astro.url.searchParams.get('id');
-// Same fallback the old client-side lookup used: an unknown/missing id shows the first
-// record rather than a hard 404.
-const article = all.find((a) => a.id === id) ?? all[0];
+if (!id) return Astro.redirect(`/${locale}/media`);
+const article = getArticle(id);
+if (!article) return new Response(null, { status: 404 });
 
-const kind = article.text('kind');
-const title = article.text('title');
-const date = article.text('date');
-const read = article.text('read');
-const lede = article.text('lede');
-const quote = article.text('quote');
-const quoteBy = article.text('quoteBy');
-const heroImg = article.image('img');
-const body = article.list('body') as Array<{ h: TextField; p: TextField }>;
-const tags = article.list('tags') as TextField[];
+const chrome = getSingleton('article_chrome');
+const title = pick(article, 'title');
+const quote = pick(article, 'quote');
 ---
 <BaseLayout
   locale={locale}
-  title={`${title.en} | SAFTA`}
+  title={`${english(title)} | SAFTA`}
   titleAr={`${title.ar} | التحالف السعودي`}
 >
 <main>
 <article class="art">
 
 <header class="art__hero">
-<img data-cms-img="i001-gd09rackshero" alt="" id="aImg" src={heroImg.src || 'assets/img/green-dunes/gd-09-racks-hero.webp'}/>
+<Image id={article.imageId ?? chrome.defaultImageId} fallback={ARTICLE_IMG} alt="" id="aImg" />
 <div class="art__scrim"></div>
 <div class="wrap">
-<p class="crumbs"><a data-cms="t002-الرئيسية" data-ar="الرئيسية" href={`/${locale}`}>Home</a><span>/</span><a data-cms="t003-المركز-الإعلامي" data-ar="المركز الإعلامي" href={`/${locale}/media`}>Media</a><span>/</span><Text as="span" id="aKind" key="kind" field={kind} /></p>
-<Text as="h1" id="aTitle" key="title" field={title} />
-<p class="art__meta"><Text as="span" id="aDate" key="date" field={date} /><i></i><Text as="span" id="aRead" key="read" field={read} /></p>
+<p class="crumbs"><Text as="a" field={crumbHome} href={`/${locale}`} /><span>/</span><Text as="a" field={pick(chrome, 'crumbMedia')} href={`/${locale}/media`} /><span>/</span><Text as="span" id="aKind" field={pick(article, 'kind')} /></p>
+<Text as="h1" id="aTitle" field={title} />
+<p class="art__meta"><Text as="span" id="aDate" field={pick(article, 'date')} /><i></i><Text as="span" id="aRead" field={pick(article, 'readTime')} /></p>
 </div>
 </header>
 
 <div class="wrap">
 <div class="art__body reveal">
-<Text as="p" class="art__lede" id="aLede" key="lede" field={lede} />
+<Text as="p" class="art__lede" id="aLede" field={pick(article, 'lede')} />
 <div id="aSections">
-{body.map((b, i) => (
+{article.blocks.map((block) => (
   <>
-    <Text as="h2" key={`body.${i}.h`} field={b.h} />
-    <Text as="p" key={`body.${i}.p`} field={b.p} />
+    <Text as="h2" field={pick(block, 'heading')} />
+    <Text as="p" field={pick(block, 'body')} />
   </>
 ))}
 </div>
-<figure class="art__quote" hidden={!quote.en} id="aQuote"><blockquote><Text as="span" id="aQuoteTxt" key="quote" field={quote} /></blockquote><figcaption><Text as="span" id="aQuoteBy" key="quoteBy" field={quoteBy} /></figcaption></figure>
+<figure class="art__quote" hidden={!quote.ar && !quote.en} id="aQuote"><blockquote><Text as="span" id="aQuoteTxt" field={quote} /></blockquote><figcaption><Text as="span" id="aQuoteBy" field={pick(article, 'quoteBy')} /></figcaption></figure>
 <div class="art__tags" id="aTags">
-{tags.map((t, i) => (
-  <Text as="span" class="art__tag" key={`tags.${i}`} field={t} />
+{article.tags.map((tag) => (
+  <Text as="span" class="art__tag" field={pick(tag, 'label')} />
 ))}
 </div>
 </div>
 
 <div class="art__nav reveal">
-<a data-cms="t004-عودة-إلى-المركز-الإعلامي" class="btn-pill" data-ar="عودة إلى المركز الإعلامي" href={`/${locale}/media`}>Back to Media</a>
-<a data-cms="t005-سجّل-اهتمامك" class="btn-pill btn-pill--alt" data-ar="سجّل اهتمامك" href={`/${locale}/register-interest`}>Register your interest</a>
+<Text as="a" class="btn-pill" field={pick(chrome, 'backLabel')} href={`/${locale}/media`} />
+<Text as="a" class="btn-pill btn-pill--alt" field={pick(chrome, 'registerLabel')} href={`/${locale}/register-interest`} />
 </div>
 </div>
 
 </article>
 </main>
-<script slot="scripts" is:inline src="assets/content/article.js?v=28"></script>
-<script slot="scripts" is:inline src="assets/js/cms.js?v=28"></script>
 </BaseLayout>

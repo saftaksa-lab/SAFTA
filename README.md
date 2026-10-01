@@ -47,7 +47,7 @@ This auth and database layer is copied from the Water STRIP project (commit `dcf
 content store and dashboard below from commit `9526700`. Both are maintained here independently; the
 two codebases share nothing at runtime.
 
-## The dashboard (being ported)
+## The dashboard
 
 `/admin` is the new dashboard: one page per site page, each a stack of panels that save on their
 own. Content lives in SQLite (`content_singleton` plus the `member`, `working_group`, `article`
@@ -55,9 +55,17 @@ and `event` tables); every read goes through the cache in `src/lib/content/cache
 write through `src/lib/content/repo.ts`. Uploaded images go through `sharp` to WebP under
 `UPLOAD_PATH` and are served at `/media/<sha256>.webp`.
 
-**The public pages do not read it yet.** Until they are switched over, the live site still reads
-`content/*.json`, edited through the old editor, now at **`/admin/legacy`** (its APIs moved to
-`/admin/legacy/api/*`). Every new dashboard page says so in a notice at the top.
+**The public pages read it.** Each `[locale]/*.astro` page takes its values from `getSingleton`
+and the `list*`/`get*` getters in `cache.ts`, and renders them through `components/content/Text`
+(English, with the Arabic in `data-ar` for `i18n.js`; English falls back to Arabic when blank) and
+`Image` (the upload, or the slot's default art from `src/lib/safta-assets.ts`). Interface copy
+that is the same everywhere, such as the Home breadcrumb and member category names, is in
+`src/lib/ui.ts`. A missing `?id=` on `/member` or `/article` redirects to the list; an unknown or
+unpublished one is a 404.
+
+The old editor is still at `/admin/legacy`, but it no longer changes the site: it writes
+`content/*.json`, which is now only the source of the one-time legacy import. It goes away once
+that import has run.
 
 - What each surface holds: the Zod schemas in `src/lib/content/schemas/` (one file per site page)
   and the collection inputs in `repo.ts`. A fresh database starts from each schema's `initial`
@@ -84,9 +92,11 @@ src/
   pages/404.astro             site-wide 404 fallback, not locale-routed, links to /en/*
   pages/[locale]/*.astro      one file per route, rendered on demand at /en/x and /ar/x;
                                each holds only its own <main>
-  pages/uploads/[...path].ts  serves public/uploads from disk, per request
-  components/content/         Text · Image — render a field from the content store
-  lib/content/store.ts        reads content/*.json, caches the parsed JSON in memory
+  pages/uploads/[...path].ts  serves public/uploads from disk (legacy; for the old editor)
+  components/content/         Text · Image — render a content field into the public markup
+  lib/bilingual.ts · ui.ts    xAr/xEn → markup helpers · fixed interface copy
+  lib/safta-assets.ts         default art for image slots with no upload
+  lib/content/store.ts        the legacy content/*.json store, read only by /admin/legacy
   lib/auth.ts · lib/env.ts    Better Auth instance · environment variables (process.env)
   db/                         Drizzle + SQLite: generated auth schema, content-schema.ts
   pages/api/                  login · logout · Better Auth's own endpoints
@@ -123,17 +133,25 @@ sit two segments deep, so `BaseLayout` sets `<base href="/">` in `<head>` — ev
 ## Front-end scripts
 
 The scripts in `public/assets/js` are plain global IIFEs, not modules, and they run in a
-fixed order that `cms.js` depends on:
+fixed order:
 
 ```
-content/<page>.js → cms.js → i18n.js → main.js
+(page scripts, e.g. Leaflet) → i18n.js → main.js
 ```
+
+No page loads `assets/content/*.js` or `cms.js` any more; they stay only as a source for the
+legacy import. The members map (`main.js` module 13) reads its markers from a JSON
+`<script id="membersMapData">` that `members.astro` renders from member rows.
 
 `BaseLayout` renders the shared ones and exposes two slots — `scripts` (before `i18n.js`)
 and `scripts-late` (after it) — so each page keeps the exact order it had. Every tag is
 marked `is:inline` so Astro leaves it alone.
 
-## Content editing
+## Content editing (legacy)
+
+> This section describes the old `content/*.json` store behind `/admin/legacy`. The public site
+> no longer reads it (see [The dashboard](#the-dashboard)); it stays until the legacy import has
+> run, and is then deleted with this section.
 
 Content is moving off the build and into two data stores, both gitignored because they
 are the admin's data rather than source:

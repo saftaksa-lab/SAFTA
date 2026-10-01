@@ -1,12 +1,11 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Text from '../../components/content/Text.astro';
-import Value from '../../components/content/Value.astro';
-import { getPageContent } from '../../lib/content/store';
-import { MEDIA_FIELDS } from '../../lib/content/schema/media';
-import { getCollectionContent } from '../../lib/content/collections/store';
-import { EVENTS_FIELDS } from '../../lib/content/collections/events';
-import { ARTICLES_FIELDS } from '../../lib/content/collections/articles';
+import Image from '../../components/content/Image.astro';
+import { getSingleton, listArticles, listEvents } from '../../lib/content/cache';
+import { isExternal, localizeHref, pick } from '../../lib/bilingual';
+import { ARTICLE_IMG } from '../../lib/safta-assets';
+import { crumbHome } from '../../lib/ui';
 import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
@@ -15,38 +14,13 @@ export function getStaticPaths() {
 const { locale } = Astro.params;
 if (!isLocale(locale)) return new Response(null, { status: 404 });
 
-const c = await getPageContent<typeof MEDIA_FIELDS>('media');
-
-// Ported verbatim from assets/js/main.js's former module 24 (events-list IIFE) — blocks
-// javascript:/data:/vbscript: hrefs on an admin-controlled link, defaulting to
-// register-interest instead.
-function safeHref(u: string) {
-  const trimmed = String(u ?? '').trim();
-  if (!trimmed) return '/register-interest';
-  if (/^\s*(javascript|data|vbscript):/i.test(trimmed)) return '/register-interest';
-  return trimmed;
-}
-function isExternal(u: string) {
-  return /^https?:\/\//i.test(u);
-}
-
-const events = await getCollectionContent<typeof EVENTS_FIELDS>('events');
-const eventItems = events.items().map((e) => ({
-  id: e.id,
-  day: e.value('day'),
-  month: e.text('month'),
-  title: e.text('title'),
-  desc: e.text('desc'),
-  href: safeHref(e.value('link')),
-}));
-
-const articles = await getCollectionContent<typeof ARTICLES_FIELDS>('articles');
-const articleItems = articles.items().map((a) => ({
-  id: a.id,
-  date: a.text('date'),
-  title: a.text('title'),
-  img: a.image('img'),
-}));
+const banner = getSingleton('media_banner');
+const articles = listArticles();
+// An article without its own image shows the article page's default hero, as on its page.
+const defaultImageId = getSingleton('article_chrome').defaultImageId;
+// The event href is validated on save (no `javascript:` and the like), so it only needs
+// this locale's prefix when it is an on-site path.
+const events = listEvents().map((e) => ({ ...e, href: localizeHref(locale, e.href) }));
 ---
 <BaseLayout
   locale={locale}
@@ -57,9 +31,9 @@ const articleItems = articles.items().map((a) => ({
 <main>
 <section class="page-hero page-hero--plain">
 <div class="wrap">
-<p class="crumbs"><Text as="a" key="t001-الرئيسية" field={c.text("t001-الرئيسية")} href={`/${locale}`} /><span>/</span>News &amp; Events</p>
-<Text as="h1" key="t002-المركز-الإعلامي" field={c.text("t002-المركز-الإعلامي")} />
-<Text as="p" key="t003-الأخبار-والرؤى-والصور-والف" field={c.text("t003-الأخبار-والرؤى-والصور-والف")} class="lede" />
+<p class="crumbs"><Text as="a" field={crumbHome} href={`/${locale}`} /><span>/</span>News &amp; Events</p>
+<Text as="h1" field={pick(banner, 'title')} />
+<Text as="p" field={pick(banner, 'lede')} class="lede" />
 </div>
 </section>
 <section class="ribbon">
@@ -70,10 +44,10 @@ const articleItems = articles.items().map((a) => ({
 </div>
 <div class="mtab-panel is-active" id="news" role="tabpanel">
 <div class="card-row bleed reveal">
-{articleItems.map((a) => (
-  <a class="news-card" href={`/${locale}/article?id=${a.id}`}>
-    <div class="news-card__media"><img data-cms-img={`${a.id}.img`} src={a.img.src} alt="" /></div>
-    <div class="news-card__body"><Text as="p" key={`${a.id}.date`} field={a.date} class="news-card__meta" /><Text as="h3" key={`${a.id}.title`} field={a.title} /></div>
+{articles.map((a) => (
+  <a class="news-card" href={`/${locale}/article?id=${a.slug}`}>
+    <div class="news-card__media"><Image id={a.imageId ?? defaultImageId} fallback={ARTICLE_IMG} alt="" /></div>
+    <div class="news-card__body"><Text as="p" field={pick(a, 'date')} class="news-card__meta" /><Text as="h3" field={pick(a, 'title')} /></div>
     <div class="news-card__foot"><span class="circ-sm"><svg fill="none" height="13" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="13"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></div>
   </a>
 ))}
@@ -81,12 +55,12 @@ const articleItems = articles.items().map((a) => ({
 </div>
 <div class="mtab-panel" id="events" role="tabpanel" hidden>
 <div class="reveal" id="eventsList">
-{eventItems.map((e) => (
+{events.map((e) => (
   <div class="event">
-    <div class="event__date"><Value as="b" key={`${e.id}.day`} value={e.day} /><Text as="span" key={`${e.id}.month`} field={e.month} /></div>
+    <div class="event__date"><b>{e.day}</b><Text as="span" field={pick(e, 'month')} /></div>
     <div>
-      <Text as="h3" key={`${e.id}.title`} field={e.title} />
-      <Text as="p" key={`${e.id}.desc`} field={e.desc} />
+      <Text as="h3" field={pick(e, 'title')} />
+      <Text as="p" field={pick(e, 'description')} />
     </div>
     <a class="cta-circle" href={e.href} target={isExternal(e.href) ? '_blank' : undefined} rel={isExternal(e.href) ? 'noopener' : undefined}>
       <span data-ar="التفاصيل">Details</span>

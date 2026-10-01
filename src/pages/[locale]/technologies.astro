@@ -1,7 +1,10 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCollectionContent } from '../../lib/content/collections/store';
-import { GROUPS_FIELDS } from '../../lib/content/collections/groups';
+import Text from '../../components/content/Text.astro';
+import { getSingleton, listWorkingGroups } from '../../lib/content/cache';
+import { english, pick } from '../../lib/bilingual';
+import { uploadedImage } from '../../lib/safta-assets';
+import { crumbHome } from '../../lib/ui';
 import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
@@ -11,9 +14,9 @@ const { locale } = Astro.params;
 if (!isLocale(locale)) return new Response(null, { status: 404 });
 
 // Ported verbatim from assets/js/main.js's former module 22 (grid-building IIFE) — icon
-// per working-group id, falling back to a theme-keyed icon when the id itself isn't
-// recognized, and a themed gradient tile per challenge category (g.ch) when no real photo
-// has been uploaded yet.
+// per working-group slug, falling back to a theme-keyed icon when the slug itself isn't
+// recognized, and a themed gradient tile per challenge category when no photo has been
+// uploaded.
 const ICONS: Record<string, string> = {
   'palm-weevil':  'M12 21c0-5 0-8 .3-10M12 11c-1.6-3-4.8-4.4-8-4 .8 3.3 3.4 5.6 6.7 5.7M12 11c1.6-3.2 4.9-4.7 8.2-4.3-.8 3.4-3.5 5.8-6.9 5.9M12 9c-.9-2.4-3.3-3.8-6-3.6M12 9c.9-2.5 3.4-3.9 6.1-3.7',
   'cold-chain':   'M12 3v18M4.5 7.5l15 9M19.5 7.5l-15 9M12 3l-2.2 2.2M12 3l2.2 2.2M12 21l-2.2-2.2M12 21l2.2-2.2M4.5 7.5l.1 3M4.5 7.5l3-.9M19.5 16.5l-.1-3M19.5 16.5l-3 .9',
@@ -35,21 +38,10 @@ const ID_TO_CHALLENGE: Record<string, string> = { pests: 'palm-weevil', waste: '
 function iconFor(id: string, ch: string) {
   return ICONS[id] ?? ICONS[ID_TO_CHALLENGE[ch]] ?? ICONS.cea;
 }
-// Real photo only if the admin has actually uploaded one — the old static placeholder path
-// never counts, so a not-yet-replaced default renders as the themed icon tile instead.
-function realPhoto(src: string) {
-  return !!src && !/assets\/img\/groups\/wg-\d/.test(src);
-}
-
-const groups = await getCollectionContent<typeof GROUPS_FIELDS>('groups');
-const items = groups.items().map((g) => ({
-  id: g.id,
-  name: g.text('name'),
-  scope: g.text('scope'),
-  no: g.value('no'),
-  ch: g.value('ch'),
-  img: g.image('img'),
-}));
+const banner = getSingleton('technologies_banner');
+const intro = getSingleton('technologies_intro');
+// A group with no uploaded photo renders as the themed icon tile.
+const groups = listWorkingGroups().map((g) => ({ ...g, photo: uploadedImage(g.imageId) }));
 ---
 <BaseLayout
   locale={locale}
@@ -62,42 +54,40 @@ const items = groups.items().map((g) => ({
 <main>
 <section class="page-hero page-hero--plain">
 <div class="wrap">
-<p class="crumbs"><a data-cms="t001-الرئيسية" data-ar="الرئيسية" href={`/${locale}`}>Home</a><span>/</span>Working Groups</p>
-<h1 data-cms="t002-مجموعات-العمل" data-ar="مجموعات العمل">Working Groups</h1>
-<p data-cms="t003-مجموعات-العمل-النشطة-في-ال" class="lede" data-ar="مجموعات العمل النشطة في التحالف، مصنّفة حسب التحدي القطاعي الذي تعالجه.">The Alliance’s active working groups, grouped by the sector challenge each one addresses.</p>
+<p class="crumbs"><Text as="a" field={crumbHome} href={`/${locale}`} /><span>/</span>Working Groups</p>
+<Text as="h1" field={pick(banner, 'title')} />
+<Text as="p" field={pick(banner, 'lede')} class="lede" />
 </div>
 </section>
 <section class="ribbon">
 <div class="wrap">
 <div class="sec-head reveal">
 <div class="sec-head__txt">
-<p data-cms="t004-النطاق" class="eyebrow" data-ar="النطاق">Scope</p>
-<h2 data-cms="t005-9-مجموعات-عمل-نشطة" class="h-section" data-ar="9 مجموعات عمل نشطة">9 active working groups</h2>
-<p data-cms="t006-تسع-مجموعات-عمل-يقودها-خبر" class="lede" data-ar="تسع مجموعات عمل يقودها خبراء من الجهات الأعضاء، تُعنى بصناعة الأفكار واقتراح الحلول والسياسات التي تسرّع تبنّي التقنيات في منظومة الزراعة والغذاء.">Nine working groups led by experts from member organizations — generating ideas and proposing the solutions and policies that accelerate technology adoption across the agrifood system.</p>
+<Text as="p" field={pick(intro, 'eyebrow')} class="eyebrow" />
+<Text as="h2" field={pick(intro, 'heading')} class="h-section" />
+<Text as="p" field={pick(intro, 'lede')} class="lede" />
 </div>
 </div>
-<p class="demo-note"><svg fill="none" height="17" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="17"><circle cx="12" cy="12" r="9"></circle><path d="M12 8h.01M11 12h1v4h1"></path></svg><span data-cms="t007-المصدر-جدول-مجموعات-العمل-" data-ar="&lt;b&gt;المصدر:&lt;/b&gt; جدول مجموعات العمل الرسمي والتقرير السنوي الأول 2024–2025. أوراق السياسات نفسها لم تُعتمد للنشر العام بعد."><b data-ar="المصدر:">Source:</b> the official working-groups register and the First Annual Report 2024–2025. The policy notes themselves are not yet approved for public release.</span></p>
+<p class="demo-note"><svg fill="none" height="17" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="17"><circle cx="12" cy="12" r="9"></circle><path d="M12 8h.01M11 12h1v4h1"></path></svg><Text as="span" field={pick(intro, 'sourceNote')} prose locale={locale} /></p>
 <div class="grid-4" id="groupGrid">
-{items.map((g) => (
+{groups.map((g) => (
   <article class="wg-item">
-  {realPhoto(g.img.src) ? (
+  {g.photo ? (
     <figure class="wg-item__media">
-      <img loading="lazy" alt={g.name.en} src={g.img.src} />
+      <img loading="lazy" alt={english(pick(g, 'name'))} src={g.photo.src} width={g.photo.width} height={g.photo.height} />
     </figure>
   ) : (
-    <figure class="wg-item__media wg-item__media--art" style={`background:${THEME[g.ch] ?? THEME.climate}`}>
-      <span class="wg-item__no">{g.no}</span>
-      <svg class="wg-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d={iconFor(g.id, g.ch)}></path></svg>
+    <figure class="wg-item__media wg-item__media--art" style={`background:${THEME[g.challenge] ?? THEME.climate}`}>
+      <span class="wg-item__no">{g.number}</span>
+      <svg class="wg-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d={iconFor(g.slug, g.challenge)}></path></svg>
     </figure>
   )}
-    <h3 class="wg-item__name" data-ar={g.name.ar || g.name.en}>{g.name.en || g.name.ar}</h3>
-    <p class="wg-item__desc" data-ar={g.scope.ar || g.scope.en}>{g.scope.en || g.scope.ar}</p>
+    <Text as="h3" class="wg-item__name" field={pick(g, 'name')} />
+    <Text as="p" class="wg-item__desc" field={pick(g, 'scope')} />
   </article>
 ))}
 </div>
 </div>
 </section>
 </main>
-<script slot="scripts" is:inline src="assets/content/technologies.js?v=28"></script>
-<script slot="scripts" is:inline src="assets/js/cms.js?v=28"></script>
 </BaseLayout>

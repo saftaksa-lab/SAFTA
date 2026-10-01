@@ -1,15 +1,22 @@
 ---
-import type { ImageField } from '../../lib/content/store';
+/**
+ * An image slot: the uploaded media when `id` resolves, otherwise `fallback`
+ * (the slot's default art from src/lib/safta-assets.ts).
+ *
+ * Alt text is single-language, because i18n.js never swaps `alt`. Pass `alt`
+ * to decide it here (`""` for a decorative slide background); leave it out to
+ * use the media row's own alt text.
+ */
+import { resolveImage } from '../../lib/safta-assets';
 
 interface Props {
-  /** content key, kept in data-cms-img so the admin can still target this node */
-  key: string;
-  field: ImageField;
+  id: string | null;
+  fallback: string;
+  alt?: string;
   [attr: string]: unknown;
 }
 
-const { key, field, ...rest } = Astro.props;
+const { id, fallback, alt, ...rest } = Astro.props;
+const image = resolveImage(id, fallback);
 ---
-{/* alt stays single-language: i18n.js swaps innerHTML and placeholders, never alt, so
-    field.altAr has no consumer on the page yet. */}
-<img data-cms-img={key} src={field.src} alt={field.alt} {...rest} />
+<img src={image.src} width={image.width} height={image.height} alt={alt ?? image.alt} {...rest} />

@@ -25,6 +25,15 @@ function renderInline(text: string, mapHref: (href: string) => string): string {
 }
 
 /**
+ * One line of prose with no block wrapper — for a field that sits inside an
+ * existing element, such as the consent text inside its `<label>`. Line breaks
+ * collapse to spaces; lists and paragraphs are not recognised.
+ */
+export function renderInlineProse(text: string, mapHref: (href: string) => string = (href) => href): string {
+  return renderInline(text.trim().split(/\s*\n\s*/).join(' '), mapHref);
+}
+
+/**
  * `mapHref` rewrites each link target — the English site passes `localizePath`
  * so a relative link such as `/cookies` stays on the English pages.
  */

@@ -1,10 +1,11 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Text from '../../components/content/Text.astro';
-import { getPageContent } from '../../lib/content/store';
-import { getCollectionContent } from '../../lib/content/collections/store';
-import { MEMBERS_FIELDS as MEMBERS_PAGE_FIELDS } from '../../lib/content/schema/members';
-import { MEMBERS_FIELDS } from '../../lib/content/collections/members';
+import { getSingleton, listMembers } from '../../lib/content/cache';
+import { english, pick } from '../../lib/bilingual';
+import { uploadedImage } from '../../lib/safta-assets';
+import { crumbHome, memberCategoryLabels } from '../../lib/ui';
+import { MEMBER_CATEGORIES } from '../../db/content-schema';
 import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
@@ -13,16 +14,27 @@ export function getStaticPaths() {
 const { locale } = Astro.params;
 if (!isLocale(locale)) return new Response(null, { status: 404 });
 
-// Hero copy comes from content/members-page.json (this page's own schema module, not the
-// _members collection below — see schema/members.ts for why it has a distinct file name).
-const c = await getPageContent<typeof MEMBERS_PAGE_FIELDS>('members');
+const banner = getSingleton('members_banner');
+const intro = getSingleton('members_intro');
+const mapCopy = getSingleton('members_map');
+const members = listMembers().map((m) => ({ ...m, logo: uploadedImage(m.logoId) }));
 
-const members = await getCollectionContent<typeof MEMBERS_FIELDS>('members');
-const items = members.items().map((m) => ({
-  id: m.id,
-  name: m.text('name'),
-  logo: m.image('logo'),
-}));
+// Map markers: members with both coordinates. The block is left out when there are none.
+// Every text value carries both languages so the popup can follow the language switch.
+const both = (field: { ar: string; en: string }) => ({ ar: field.ar, en: english(field) });
+const pins = members
+  .filter((m) => m.lat !== null && m.lng !== null)
+  .map((m) => ({
+    lat: m.lat,
+    lng: m.lng,
+    cat: m.category,
+    catLabel: both(memberCategoryLabels[m.category]),
+    name: both(pick(m, 'name')),
+    city: both(pick(m, 'city')),
+    url: `/${locale}/member?id=${m.slug}`,
+  }));
+// Inside a <script> element, so `<` is escaped: a name cannot close the element.
+const pinsJson = JSON.stringify(pins).replace(/</g, '\\u003c');
 ---
 <BaseLayout
   locale={locale}
@@ -31,35 +43,52 @@ const items = members.items().map((m) => ({
   description="Government, academic, private sector and non-profit entities working together on agrifood technology."
   current="members"
 >
-<link slot="head" crossorigin="" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" referrerpolicy="no-referrer" rel="stylesheet"/>
+{pins.length > 0 && <link slot="head" crossorigin="" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" referrerpolicy="no-referrer" rel="stylesheet"/>}
 <main>
 <section class="page-hero page-hero--plain">
 <div class="wrap">
-<p class="crumbs"><Text as="a" key="t001-الرئيسية" field={c.text("t001-الرئيسية")} href={`/${locale}`} /><span>/</span>Members</p>
-<Text as="h1" key="t002-الأعضاء" field={c.text("t002-الأعضاء")} />
-<Text as="p" key="t003-جهات-حكومية-وأكاديمية-ومن-" field={c.text("t003-جهات-حكومية-وأكاديمية-ومن-")} class="lede" />
+<p class="crumbs"><Text as="a" field={crumbHome} href={`/${locale}`} /><span>/</span>Members</p>
+<Text as="h1" field={pick(banner, 'title')} />
+<Text as="p" field={pick(banner, 'lede')} class="lede" />
 </div>
 </section>
 <section class="ribbon">
 <div class="wrap">
 <div class="sec-head reveal">
 <div class="sec-head__txt">
-<Text as="p" key="t004-التحالف" field={c.text("t004-التحالف")} class="eyebrow" />
-<Text as="h2" key="t005-الأعضاء" field={c.text("t005-الأعضاء")} class="h-section" />
-<Text as="p" key="t006-جهات-حكومية-ومؤسسات-أكاديم" field={c.text("t006-جهات-حكومية-ومؤسسات-أكاديم")} class="lede" />
+<Text as="p" field={pick(intro, 'eyebrow')} class="eyebrow" />
+<Text as="h2" field={pick(intro, 'heading')} class="h-section" />
+<Text as="p" field={pick(intro, 'lede')} class="lede" />
 </div>
 </div>
+{pins.length > 0 && (
+<div class="memmap reveal">
+<div class="memmap__head">
+<Text as="h3" field={pick(mapCopy, 'heading')} />
+<Text as="p" field={pick(mapCopy, 'lede')} />
+</div>
+<div class="memmap__canvas" id="membersMap"></div>
+<div class="memmap__foot">
+<ul class="memmap__legend">
+{MEMBER_CATEGORIES.map((cat) => (
+<li><i data-cat={cat}></i><Text as="span" field={memberCategoryLabels[cat]} /></li>
+))}
+</ul>
+<Text as="p" class="memmap__src" field={pick(mapCopy, 'sourceNote')} />
+</div>
+<script is:inline type="application/json" id="membersMapData" set:html={pinsJson} />
+</div>
+)}
 <div class="grid-3" id="memberGrid">
-{items.map((m, i) => (
-  <a class={`mcard member-card member-card--${'abcdef'[i % 6]} reveal`} href={`/${locale}/member?id=${m.id}`}>
-    <span class="member-card__logo"><img alt="" loading="lazy" src={m.logo.src} /></span>
-    <h3 data-ar={m.name.ar || m.name.en}>{m.name.en || m.name.ar}</h3>
+{members.map((m, i) => (
+  <a class={`mcard member-card member-card--${'abcdef'[i % 6]} reveal`} href={`/${locale}/member?id=${m.slug}`}>
+    <span class="member-card__logo">{m.logo ? <img alt="" loading="lazy" src={m.logo.src} width={m.logo.width} height={m.logo.height} /> : m.initials}</span>
+    <Text as="h3" field={pick(m, 'name')} />
   </a>
 ))}
 </div>
 </div>
 </section>
 </main>
-<script slot="scripts" is:inline crossorigin="" integrity="sha512-BwHfrr4c9kmRkLw6iXFdzcdWV/PGkVgiIyIWLLlTSXzWQzxuSg4DiQUCpauz/EWjgk5TYQqX/kvn9pG1NpYfqg==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script slot="scripts" is:inline src="assets/js/members-map-data.js"></script>
+{pins.length > 0 && <script slot="scripts" is:inline crossorigin="" integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>}
 </BaseLayout>

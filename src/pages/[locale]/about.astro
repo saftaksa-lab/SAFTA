@@ -2,11 +2,10 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Text from '../../components/content/Text.astro';
 import Image from '../../components/content/Image.astro';
-import { getPageContent } from '../../lib/content/store';
-import { getCollectionContent } from '../../lib/content/collections/store';
-import { ABOUT_FIELDS } from '../../lib/content/schema/about';
-import { ROLES_FIELDS } from '../../lib/content/collections/roles';
-import { CHALLENGES_FIELDS } from '../../lib/content/collections/challenges';
+import { getSingleton } from '../../lib/content/cache';
+import { english, pick } from '../../lib/bilingual';
+import { challengeImages, FOUNDING_STATEMENT_IMG, imageFor } from '../../lib/safta-assets';
+import { crumbHome } from '../../lib/ui';
 import { isLocale } from '../../lib/locale';
 import { youtubeEmbedUrl } from '../../lib/youtube';
 
@@ -19,36 +18,23 @@ const { locale } = Astro.params;
 // so this also narrows `locale` from string to 'en' | 'ar' for BaseLayout below.
 if (!isLocale(locale)) return new Response(null, { status: 404 });
 
-// Copy comes from ./content/about.json (gitignored, admin-owned), cached in memory. The
-// <typeof ABOUT_FIELDS> type argument narrows c.text()/c.image() to this page's own keys,
-// so a typo'd key or calling .text() on an image key is a compile-time error.
-const c = await getPageContent<typeof ABOUT_FIELDS>('about');
+const hero = getSingleton('about_hero');
+const mission = getSingleton('about_mission');
+const glance = getSingleton('about_glance');
+const roles = getSingleton('about_roles');
+const challengesIntro = getSingleton('about_challenges_intro');
+// The same list the home page's slider renders.
+const challenges = getSingleton('challenges').items;
+const founding = getSingleton('about_founding_statement');
 
 // The reel is a YouTube link an admin pastes, not an uploaded file. youtubeEmbedUrl returns
-// null for a blank or unrecognisable value, which is what drops the video out of the layout
-// below rather than rendering an iframe pointed at nothing.
-const reelEmbed = youtubeEmbedUrl(c.text('t008-youtube').en);
+// null for a blank value, which drops the video out of the layout below.
+const reelEmbed = youtubeEmbedUrl(mission.youtubeUrl);
 
-// The "Four roles" list is a real addable/deletable collection (content/roles.json) rather
-// than fixed page fields, so the admin can add or remove a role instead of only editing
-// the existing four. See src/lib/content/collections/roles.ts.
-const roles = await getCollectionContent<typeof ROLES_FIELDS>('roles');
-const roleItems = roles.items().map((r) => ({
-  id: r.id,
-  title: r.text('title'),
-  description: r.text('description'),
-}));
-
-// The national challenges below come from the same content/challenges.json the home page's
-// slider renders — they used to be a separate set of about-page fields and had drifted out
-// of sync with it. See src/lib/content/collections/challenges.ts.
-const challenges = await getCollectionContent<typeof CHALLENGES_FIELDS>('challenges');
-const challengeItems = challenges.items().map((ch) => ({
-  id: ch.id,
-  title: ch.text('title'),
-  description: ch.text('description'),
-  image: ch.image('image'),
-}));
+// The tape mixes both languages and mirrors on the switch: English reads "Soon · قريبًا ·…",
+// Arabic "قريبًا · Soon ·…". So the second word is the field with its languages swapped.
+const soon = pick(glance, 'soon');
+const soonSwapped = { ar: english(soon), en: soon.ar };
 ---
 <BaseLayout
   locale={locale}
@@ -60,23 +46,24 @@ const challengeItems = challenges.items().map((ch) => ({
 <main>
 <section class="page-hero page-hero--plain">
 <div class="wrap">
-<p class="crumbs"><Text as="a" key="t001-الرئيسية" field={c.text("t001-الرئيسية")} href={`/${locale}`} /><span>/</span>About SAFTA</p>
-<Text as="h1" key="t002-عن-التحالف" field={c.text("t002-عن-التحالف")} />
-<Text as="p" key="t003-منصة-وطنية-للتعاون-والتنسي" field={c.text("t003-منصة-وطنية-للتعاون-والتنسي")} class="lede" />
+<p class="crumbs"><Text as="a" field={crumbHome} href={`/${locale}`} /><span>/</span>About SAFTA</p>
+<Text as="h1" field={pick(hero, 'title')} />
+<Text as="p" field={pick(hero, 'lede')} class="lede" />
 </div>
 </section>
 <section class="ribbon">
 <div class="wrap">
 <div class="sec-head reveal">
 <div class="sec-head__txt">
-<Text as="p" key="t004-الرسالة-والرؤية" field={c.text("t004-الرسالة-والرؤية")} class="eyebrow" />
-<Text as="h2" key="t005-منصة-وطنية-لتسريع-تبنّي-تق" field={c.text("t005-منصة-وطنية-لتسريع-تبنّي-تق")} class="h-section" />
+<Text as="p" field={pick(mission, 'eyebrow')} class="eyebrow" />
+<Text as="h2" field={pick(mission, 'heading')} class="h-section" />
 </div>
 </div>
 <div class:list={['split', 'reveal', !reelEmbed && 'split--single']}>
 <div>
-<Text as="p" key="t006-تأسّس-التحالف-السعودي-لتقن" field={c.text("t006-تأسّس-التحالف-السعودي-لتقن")} style="font-size:17px;line-height:29px;margin-bottom:20px;" />
-<Text as="p" key="t007-يُعدّ-التحالف-أحد-أبرز-مخر" field={c.text("t007-يُعدّ-التحالف-أحد-أبرز-مخر")} style="font-size:17px;line-height:29px;" />
+{mission.paragraphs.map((para, i) => (
+<Text as="p" field={pick(para, 'text')} style={i < mission.paragraphs.length - 1 ? 'font-size:17px;line-height:29px;margin-bottom:20px;' : 'font-size:17px;line-height:29px;'} />
+))}
 </div>
 {reelEmbed && (
 <figure class="video-embed" id="aboutReel">
@@ -89,18 +76,17 @@ const challengeItems = challenges.items().map((ch) => ({
 </div>
 </div>
 </section>
-<!-- v5: قسم «نظرة عامة / At a glance» مخفي مؤقتًا بطلب فريق سافتا — لإظهاره احذف hidden -->
-<section class="ribbon ribbon--grey glance glance--soon" aria-describedby="glanceSoon" hidden>
+<!-- «نظرة عامة / At a glance» stays hidden until about_glance.hidden is unticked in the dashboard -->
+<section class="ribbon ribbon--grey glance glance--soon" aria-describedby="glanceSoon" hidden={glance.hidden}>
 <div class="wrap reveal glance__panel">
 <div class="soon-veil" id="glanceSoon" aria-hidden="true">
-<span class="soon-tape"><Text as="b" key="t011-قريبًا" field={c.text("t011-قريبًا")} /><i>·</i><Text as="b" key="t012-Soon" field={c.text("t012-Soon")} /><i>·</i><Text as="b" key="t013-قريبًا" field={c.text("t013-قريبًا")} /><i>·</i><Text as="b" key="t014-Soon" field={c.text("t014-Soon")} /></span>
+<span class="soon-tape"><Text as="b" field={soon} /><i>·</i><Text as="b" field={soonSwapped} /><i>·</i><Text as="b" field={soon} /><i>·</i><Text as="b" field={soonSwapped} /></span>
 </div>
-<Text as="h2" key="t015-نظرة-عامة" field={c.text("t015-نظرة-عامة")} class="h-section" />
+<Text as="h2" field={pick(glance, 'heading')} class="h-section" />
 <div class="stats" style="grid-template-columns:repeat(4,1fr)">
-<div class="stat"><b data-count="24">0</b><Text as="p" key="t016-مجموعة-عمل-مستهدفة" field={c.text("t016-مجموعة-عمل-مستهدفة")} /></div>
-<div class="stat"><b data-count="4">0</b><Text as="p" key="t017-أدوار-مؤسسية-أساسية" field={c.text("t017-أدوار-مؤسسية-أساسية")} /></div>
-<div class="stat"><b data-count="4">0</b><Text as="p" key="t018-قطاعات-ممثَّلة" field={c.text("t018-قطاعات-ممثَّلة")} /></div>
-<div class="stat"><b data-count="3">0</b><Text as="p" key="t019-استراتيجيات-وطنية-متوائمة" field={c.text("t019-استراتيجيات-وطنية-متوائمة")} /></div>
+{glance.stats.map((stat) => (
+<div class="stat"><b data-count={stat.value}>0</b><Text as="p" field={pick(stat, 'label')} /></div>
+))}
 </div>
 </div>
 </section>
@@ -108,17 +94,17 @@ const challengeItems = challenges.items().map((ch) => ({
 <div class="wrap">
 <div class="sec-head reveal">
 <div class="sec-head__txt">
-<Text as="p" key="t039-الأدوار-المؤسسية" field={c.text("t039-الأدوار-المؤسسية")} class="eyebrow" />
-<Text as="h2" key="t040-أربعة-أدوار-توجّه-عمل-التح" field={c.text("t040-أربعة-أدوار-توجّه-عمل-التح")} class="h-section" />
-<Text as="p" key="t041-انبثق-التحالف-عن-الخطة-الت" field={c.text("t041-انبثق-التحالف-عن-الخطة-الت")} class="lede" />
+<Text as="p" field={pick(roles, 'eyebrow')} class="eyebrow" />
+<Text as="h2" field={pick(roles, 'heading')} class="h-section" />
+<Text as="p" field={pick(roles, 'lede')} class="lede" />
 </div>
 </div>
 <div class="grid-4 reveal">
-{roleItems.map((r, i) => (
+{roles.items.map((r, i) => (
   <div class="fact" style="border-top-width:2px;padding-top:22px">
     <b>{String(i + 1).padStart(2, '0')}</b>
-    <Text as="h3" key={`${r.id}.title`} field={r.title} style="font-size:20px;font-weight:500;margin:6px 0 12px" />
-    <Text as="p" key={`${r.id}.description`} field={r.description} style="font-size:15px;line-height:25px;color:var(--c-text-soft)" />
+    <Text as="h3" field={pick(r, 'title')} style="font-size:20px;font-weight:500;margin:6px 0 12px" />
+    <Text as="p" field={pick(r, 'description')} style="font-size:15px;line-height:25px;color:var(--c-text-soft)" />
   </div>
 ))}
 </div>
@@ -128,17 +114,17 @@ const challengeItems = challenges.items().map((ch) => ({
 <div class="wrap">
 <div class="sec-head reveal">
 <div class="sec-head__txt">
-<Text as="p" key="t020-السياق-الوطني" field={c.text("t020-السياق-الوطني")} class="eyebrow" />
-<Text as="h2" key="t021-تحديات-تجعل-الابتكار-ضرورة" field={c.text("t021-تحديات-تجعل-الابتكار-ضرورة")} class="h-section" />
-<Text as="p" key="t022-تواجه-أنظمة-الزراعة-والغذا" field={c.text("t022-تواجه-أنظمة-الزراعة-والغذا")} class="lede" />
+<Text as="p" field={pick(challengesIntro, 'eyebrow')} class="eyebrow" />
+<Text as="h2" field={pick(challengesIntro, 'heading')} class="h-section" />
+<Text as="p" field={pick(challengesIntro, 'lede')} class="lede" />
 </div>
 </div>
 <div class="grid-3 reveal">
-{challengeItems.map((ch) => (
+{challenges.map((ch) => (
   <article class="tri__card">
-    <figure><img data-cms-img={`${ch.id}.image`} src={ch.image.src} alt={ch.title.en || ch.title.ar} loading="lazy" /></figure>
-    <Text as="h3" key={`${ch.id}.title`} field={ch.title} />
-    <Text as="p" key={`${ch.id}.description`} field={ch.description} />
+    <figure><Image id={ch.imageId} fallback={imageFor(challengeImages, ch.id)} alt={english(pick(ch, 'title'))} loading="lazy" /></figure>
+    <Text as="h3" field={pick(ch, 'title')} />
+    <Text as="p" field={pick(ch, 'description')} />
   </article>
 ))}
 </div>
@@ -147,11 +133,11 @@ const challengeItems = challenges.items().map((ch) => ({
 <section class="ribbon">
 <div class="wrap">
 <div class="split reveal">
-<figure><Image key="i050-phmembership" field={c.image("i050-phmembership")} /></figure>
+<figure><Image id={founding.imageId} fallback={FOUNDING_STATEMENT_IMG} alt="" /></figure>
 <div>
-<Text as="p" key="t051-البيان-التأسيسي" field={c.text("t051-البيان-التأسيسي")} class="eyebrow" />
-<Text as="h3" key="t052-يمثّل-تأسيسه-فرصة-تاريخية-" field={c.text("t052-يمثّل-تأسيسه-فرصة-تاريخية-")} style="font-family:var(--f-head);font-size:27px;line-height:38px;font-weight:500;margin:16px 0 24px" />
-<a class="cta-circle" href={`/${locale}/members`}><Text as="span" key="t053-تعرّف-على-المتحالفين" field={c.text("t053-تعرّف-على-المتحالفين")} /><span class="circ"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></a>
+<Text as="p" field={pick(founding, 'eyebrow')} class="eyebrow" />
+<Text as="h3" field={pick(founding, 'quote')} style="font-family:var(--f-head);font-size:27px;line-height:38px;font-weight:500;margin:16px 0 24px" />
+<a class="cta-circle" href={`/${locale}/members`}><Text as="span" field={pick(founding, 'ctaLabel')} /><span class="circ"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span></a>
 </div>
 </div>
 </div>

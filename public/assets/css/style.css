@@ -1173,6 +1173,28 @@ body { overflow-x: clip; }
 [dir="rtl"] .lightbox__nav--prev { transform: translateY(-50%) scaleX(-1); }
 [dir="rtl"] .lightbox__nav--next { transform: translateY(-50%) scaleX(-1); }
 
+/* ---------- 33.6 members map ------------------------------------------- */
+/* The block was designed (section 35 has its mobile rules) but its desktop rules
+   and markup never shipped. Rebuilt with the CMS port: markers come from member
+   rows, drawn by main.js module 13. */
+.memmap { margin: 34px 0 48px; }
+.memmap__head { margin-bottom: 18px; max-width: 760px; }
+.memmap__head h3 { font-family: var(--f-head); font-size: 22px; line-height: 30px; font-weight: 500; }
+[lang="ar"] .memmap__head h3 { font-family: var(--f-body); }
+.memmap__head p { margin-top: 6px; font-size: 15px; line-height: 24px; color: var(--c-text-soft); }
+.memmap__canvas { position: relative; z-index: 0; height: 440px; border: 1px solid var(--c-grey-line); background: var(--c-grey-bg); }
+.memmap__foot { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-top: 16px; }
+.memmap__legend { display: flex; flex-wrap: wrap; gap: 20px; list-style: none; margin: 0; padding: 0; }
+.memmap__legend li { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--c-text-soft); }
+.memmap__legend i { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--c-green-deep); }
+.memmap__src { font-size: 12px; color: var(--c-text-soft); }
+.memmap__pop { display: flex; flex-direction: column; gap: 3px; min-width: 160px; font-family: var(--f-body); }
+.memmap__pop strong { font-size: 14px; line-height: 20px; color: var(--c-text); }
+.memmap__pop small { font-size: 12px; color: var(--c-text-soft); }
+.memmap__pop a { margin-top: 4px; font-size: 13px; font-weight: 600; color: var(--c-link); }
+.memmap__cat { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+[dir="rtl"] .memmap__pop { text-align: right; }
+
 /* =======================================================================
    35. MOBILE PASS — إعادة ضبط تجربة الجوال بالكامل
    -----------------------------------------------------------------------
