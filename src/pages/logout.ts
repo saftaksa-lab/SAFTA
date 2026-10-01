@@ -1,11 +1,3 @@
-import type { APIRoute } from 'astro';
-import { destroySession } from '../lib/auth/session';
-
-const SESSION_COOKIE = 'safta_admin_sid';
-
-export const POST: APIRoute = ({ cookies, redirect }) => {
-  const sid = cookies.get(SESSION_COOKIE)?.value;
-  if (sid) destroySession(sid);
-  cookies.delete(SESSION_COOKIE, { path: '/' });
-  return redirect('/en/login');
-};
+// The legacy dashboard (public/admin/admin.js) still posts here. Deleted with it in the
+// cleanup phase; see /api/logout for the real handler.
+export { POST } from './api/logout.ts';

@@ -1,14 +1,29 @@
 import { defineMiddleware } from 'astro:middleware';
-import { validateSession } from './lib/auth/session';
+import { auth } from './lib/auth.ts';
 
-const SESSION_COOKIE = 'safta_admin_sid';
+export const onRequest = defineMiddleware(async (context, next) => {
+  // Uploaded images are public and never depend on who is asking, so they skip the
+  // session lookup, which is a database read per request.
+  const path = context.url.pathname;
+  if (path.startsWith('/media/') || path.startsWith('/uploads/')) {
+    context.locals.user = null;
+    context.locals.session = null;
+    return next();
+  }
 
-export const onRequest = defineMiddleware((context, next) => {
-  if (!context.url.pathname.startsWith('/admin')) return next();
+  const result = await auth.api.getSession({ headers: context.request.headers });
 
-  const sid = context.cookies.get(SESSION_COOKIE)?.value;
-  if (sid && validateSession(sid)) return next();
+  context.locals.user = result?.user ?? null;
+  context.locals.session = result?.session ?? null;
 
-  context.cookies.delete(SESSION_COOKIE, { path: '/' });
-  return context.redirect('/en/login');
+  if (path.startsWith('/admin')) {
+    if (!context.locals.user) {
+      return context.redirect('/en/login', 302);
+    }
+    if (context.locals.user.role !== 'admin') {
+      return new Response('Forbidden', { status: 403 });
+    }
+  }
+
+  return next();
 });

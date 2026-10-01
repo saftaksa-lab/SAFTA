@@ -1,10 +1,12 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
   return [{ params: { locale: 'en' } }, { params: { locale: 'ar' } }];
 }
 const { locale } = Astro.params;
+if (!isLocale(locale)) return new Response(null, { status: 404 });
 ---
 <BaseLayout
   locale={locale}

@@ -8,10 +8,40 @@ admin panel can authenticate and pages can read editable content at request time
 
 ```bash
 npm install
-npm run dev       # http://127.0.0.1:4321
+cp .env.example .env   # then fill it in — see "Admin account" below
+npm run dev       # migrate + seed the admin, then http://127.0.0.1:4321
 npm run build     # → dist/
-npm run preview   # serve dist/ locally
+npm start         # migrate + seed the admin, then serve dist/
+npm run db:generate   # after a change to src/db/*schema.ts: write a migration to drizzle/
+npm run db:migrate    # apply migrations to DATABASE_PATH
+npm run db:seed       # create the .env admin if missing (idempotent)
+npx astro check       # typecheck — keep it clean
 ```
+
+`better-sqlite3` is a native module; its install script is allowed in `package.json`
+(`allowScripts`). If it fails to load after a fresh `npm ci`, run `npm rebuild better-sqlite3`.
+
+## Admin account
+
+There is exactly one admin, created from `.env` on first launch (`ADMIN_EMAIL`,
+`ADMIN_PASSWORD`, optional `ADMIN_NAME`) by [scripts/seed-admin.ts](scripts/seed-admin.ts),
+which `npm run dev` and `npm start` run every time. It only ever **creates** the account:
+once it exists, changing `ADMIN_PASSWORD` does nothing. Sign-up is disabled.
+
+Auth is [Better Auth](https://better-auth.com) 1.7 with users and sessions in SQLite
+(`DATABASE_PATH`, default `data/safta.db`, gitignored), so a restart no longer signs anyone out.
+Sign in at `/en/login` or `/ar/login`; the form posts to `/api/login`. Astro's CSRF origin check
+is on, so `curl` needs `-H "Origin: http://127.0.0.1:4321"`. In production `BETTER_AUTH_URL` must be the
+public `https://` origin **at build time**: `astro.config.mjs` derives `security.allowedDomains`
+from it so the reverse proxy's `X-Forwarded-Proto/Host` are trusted. Without that, every login
+POST behind a TLS-terminating proxy gets a 403. Read
+[docs/better-auth.md](docs/better-auth.md) before changing auth code — 1.7 differs from most
+tutorials.
+
+This auth and database layer is copied from the Water STRIP project (commit `dcfba70`) and is
+maintained here independently; the two codebases share nothing at runtime. The rest of the CMS
+(content in SQLite, the new dashboard) is being ported in phases and replaces `content/*.json`
+and `public/admin/` when it lands.
 
 Both servers bind `127.0.0.1` explicitly (`server.host` in `astro.config.mjs`). Astro's
 default is `localhost`, which Node 17+ resolves to `::1` first — that leaves the server on
@@ -32,15 +62,19 @@ src/
   pages/uploads/[...path].ts  serves public/uploads from disk, per request
   components/content/         Text · Image — render a field from the content store
   lib/content/store.ts        reads content/*.json, caches the parsed JSON in memory
-  lib/auth/                   password hashing and the in-memory session map
-  middleware.ts               gates /admin behind a valid session
+  lib/auth.ts · lib/env.ts    Better Auth instance · environment variables (process.env)
+  db/                         Drizzle + SQLite: generated auth schema, content-schema.ts
+  pages/api/                  login · logout · Better Auth's own endpoints
+  middleware.ts               loads the session; gates /admin to the admin role
 public/
   assets/                     css · js · img · video · content — served as-is, paths unchanged
   admin/                      the content control centre (plain HTML/JS, not built by Astro)
   uploads/                    admin-uploaded images and documents (gitignored)
   robots.txt
 content/                      per-page editable copy as JSON (gitignored)
-scripts/                      seed-content.mjs · hash-password.mjs
+scripts/                      seed-content.mjs · seed-admin.ts
+drizzle/                      SQL migrations (generated, committed)
+data/                         SQLite database and uploads (gitignored)
 ```
 
 Every page is bilingual: English is the visible markup, `data-ar="..."` on the same
@@ -229,13 +263,3 @@ the legacy dot-path one, and a POST through `/admin/api/collection/[name]` — i
 not-yet-scheduled pass. Prove the storage primitive on its own with
 `node scripts/test-collections.mjs` (esbuild-bundles the collection modules and asserts against
 them directly, the same technique used to test the page validators).
-
-**Known issue, unrelated to any of the above:** Vite's built-in `dotenv-expand` treats any
-`$word` in a `.env` value as a variable reference and blanks it if undefined. A
-`scrypt$<salt>$<hash>` value from `npm run hash-password` trips this whenever either hex
-segment happens to start with a letter (`a`–`f`) rather than a digit — roughly 60% of
-freshly generated hashes, by chance alone — silently truncating `ADMIN_PASSWORD_HASH` at
-build time and locking out the admin account with no error at build or login time. Not
-introduced by anything above; flagged here because it was found while testing the schema
-API and is worth fixing before the next password rotation (e.g. by base64- or
-hex-encoding the stored hash, or escaping `$` as `$$` when writing `.env`).

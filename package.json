@@ -3,13 +3,19 @@
   "type": "module",
   "version": "5.0.0",
   "private": true,
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
-    "dev": "astro dev",
+    "dev": "npm run setup && astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "start": "node ./dist/server/entry.mjs",
-    "hash-password": "node scripts/hash-password.mjs",
+    "start": "npm run setup && node ./dist/server/entry.mjs",
     "astro": "astro",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "node scripts/seed-admin.ts",
+    "setup": "npm run db:migrate && npm run db:seed",
     "seed:content": "node scripts/seed-content.mjs",
     "seed:collections": "node scripts/seed-collections.mjs",
     "predev": "npm run seed:content && npm run seed:collections",
@@ -17,10 +23,29 @@
   },
   "dependencies": {
     "@astrojs/node": "^11.1.4",
+    "@astrojs/react": "^6.0.6",
+    "@better-auth/drizzle-adapter": "^1.7.7",
     "astro": "^7.2.9",
+    "better-auth": "^1.7.7",
+    "better-sqlite3": "^12.11.1",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.3",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "sharp": "^0.35.5",
     "zod": "^4.5.4"
   },
+  "allowScripts": {
+    "esbuild": true,
+    "better-sqlite3": true
+  },
   "devDependencies": {
-    "@types/node": "^26.4.0"
+    "@astrojs/check": "^0.9.10",
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/node": "^26.4.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "drizzle-kit": "^0.31.11",
+    "typescript": "^6.0.3"
   }
 }

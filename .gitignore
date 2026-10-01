@@ -7,3 +7,5 @@ graphify-out
 # they don't also swallow src/lib/content, src/components/content or public/assets/content.
 /content/
 /public/uploads/
+# SQLite database and uploaded media (see .env.example: DATABASE_PATH, UPLOAD_PATH).
+/data/
