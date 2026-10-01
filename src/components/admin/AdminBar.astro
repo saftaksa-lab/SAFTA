@@ -1,0 +1,33 @@
+---
+// Dashboard topbar. Sign-out stays a plain form POST to /api/logout so it
+// works without JavaScript.
+interface Props {
+  name: string;
+  role: string;
+}
+
+const { name, role } = Astro.props;
+
+const roleLabels: Record<string, string> = {
+  admin: 'مدير',
+  user: 'عضو',
+};
+---
+
+<header class="admin-bar">
+  <div class="admin-bar__inner">
+    <a class="admin-bar__brand" href="/admin">
+      <img class="admin-bar__mark" src="/assets/img/logo-mark.png" alt="" width="30" height="30" />
+      <span class="admin-bar__label">لوحة التحكّم</span>
+    </a>
+
+    <div class="admin-bar__user">
+      <span class="admin-bar__user-name">{name}</span>
+      <span class="admin-bar__user-role">{roleLabels[role] ?? role}</span>
+    </div>
+
+    <form class="admin-bar__signout" method="POST" action="/api/logout">
+      <button class="button" type="submit">تسجيل الخروج</button>
+    </form>
+  </div>
+</header>

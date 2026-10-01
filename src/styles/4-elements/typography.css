@@ -1,0 +1,67 @@
+/* -----------------------------------------------------------------------------
+   Elements / typography
+   Bare HTML elements only. A component that needs different type sets it on
+   its own class — it never reaches back in here to change an element.
+   -------------------------------------------------------------------------- */
+body {
+  background: var(--c-surface);
+  color: var(--c-text);
+  font-family: var(--f-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: var(--fw-regular);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--f-head);
+  font-weight: var(--fw-medium);
+  color: inherit;
+}
+
+h1 {
+  font-size: var(--fs-display);
+  line-height: var(--lh-display);
+}
+
+h2 {
+  font-size: var(--fs-section);
+  line-height: var(--lh-section);
+}
+
+h3 {
+  font-size: var(--fs-intro);
+  line-height: var(--lh-intro);
+}
+
+h4 {
+  font-size: var(--fs-lede);
+  line-height: var(--lh-lede);
+  font-weight: var(--fw-semibold);
+}
+
+small {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+
+strong,
+b {
+  font-weight: var(--fw-semibold);
+}
+
+/* Latin fragments — emails, the SAFTA wordmark, file sizes — must stay
+   left-to-right and legible when they sit inside Arabic prose. */
+:is(code, samp, kbd) {
+  font-family: ui-monospace, 'SFMono-Regular', 'Cascadia Mono', monospace;
+  font-size: 0.92em;
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+::selection {
+  background: var(--brand-green-light);
+  color: var(--c-text-invert);
+}

@@ -1,0 +1,14 @@
+/* -----------------------------------------------------------------------------
+   Utilities / state
+   Shared state classes, usually toggled by JavaScript. Component-specific
+   appearance for a state belongs in that component, keyed off the same class
+   (e.g. `.admin-nav__link.is-active`) — only universal behaviour lives here.
+   -------------------------------------------------------------------------- */
+.is-hidden {
+  display: none !important;
+}
+
+.is-disabled {
+  opacity: 0.55 !important;
+  pointer-events: none !important;
+}

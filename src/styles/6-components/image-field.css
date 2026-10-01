@@ -1,0 +1,126 @@
+/* -----------------------------------------------------------------------------
+   Component / image-field
+   A dashboard image slot: the preview frame, choose/replace/remove, and the
+   alt-text step before an upload. Labelling and messages reuse .form.
+   -------------------------------------------------------------------------- */
+.image-field__frame {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  max-inline-size: 360px;
+  border: 1px solid var(--c-line);
+  border-radius: 4px;
+  background: var(--c-surface);
+  overflow: hidden;
+}
+
+.image-field__frame img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/* Logos keep their proportions, and the checkerboard shows transparency. */
+.image-field__frame--logo {
+  aspect-ratio: 2 / 1;
+  max-inline-size: 240px;
+  background: repeating-conic-gradient(var(--c-surface-sunken) 0 25%, var(--c-surface) 0 50%) 0 0 /
+    16px 16px;
+}
+
+.image-field__frame--logo img {
+  object-fit: contain;
+  padding: 12px;
+}
+
+.image-field__empty {
+  padding: 16px;
+  text-align: center;
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+  color: var(--c-text-soft);
+}
+
+.image-field__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-block-start: 12px;
+}
+
+.image-field__button {
+  height: 34px;
+  padding-inline: 14px;
+  border: 1px solid var(--c-line-strong);
+  border-radius: 4px;
+  background: var(--c-surface);
+  color: var(--c-text);
+  font-family: inherit;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.image-field__button:hover {
+  border-color: var(--c-action);
+  color: var(--c-action);
+}
+
+.image-field__button--danger {
+  color: var(--c-text-soft);
+}
+
+.image-field__button--danger:hover {
+  border-color: var(--c-danger);
+  color: var(--c-danger);
+}
+
+.image-field__link {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--c-text-soft);
+  font-family: inherit;
+  font-size: var(--fs-small);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.image-field__link:hover:not(:disabled) {
+  color: var(--c-action);
+}
+
+.image-field__link:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.image-field__pending {
+  max-inline-size: 480px;
+  margin-block-start: 14px;
+}
+
+.image-field__filename {
+  margin-block-end: 12px;
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+  color: var(--c-text-soft);
+  overflow-wrap: anywhere;
+}
+
+.image-field__notice {
+  margin-block-start: 7px;
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+  font-weight: var(--fw-semibold);
+  color: var(--c-action);
+}
+
+@media (--bp-phone) {
+  .image-field__frame {
+    max-inline-size: none;
+  }
+}

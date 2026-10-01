@@ -1,0 +1,8 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import Panels from '../../components/admin/Panels.astro';
+---
+
+<AdminLayout title="الأخبار والفعاليات" lede="المركز الإعلامي: الأخبار والفعاليات وصفحة الخبر.">
+  <Panels panels={['media_banner', 'articles', 'events', 'article_chrome']} />
+</AdminLayout>

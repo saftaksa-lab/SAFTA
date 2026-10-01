@@ -1,0 +1,123 @@
+/* -----------------------------------------------------------------------------
+   Component / button
+   One base class with modifiers. `.button` alone is never used on its own —
+   always pair it with a variant.
+   -------------------------------------------------------------------------- */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  white-space: nowrap;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0;
+  cursor: pointer;
+  transition:
+    background var(--dur-base),
+    color var(--dur-base),
+    border-color var(--dur-base),
+    transform var(--dur-base),
+    filter var(--dur-base);
+}
+
+.button__icon {
+  flex: none;
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+
+/* Arrow glyphs point along the reading direction, so they mirror in RTL.
+   Download / external-link marks must not — those stay upright. */
+.button__icon--directional {
+  transform: scaleX(-1);
+}
+
+.button:hover .button__icon--directional {
+  transform: scaleX(-1) translateX(5px);
+}
+
+.button[disabled],
+.button[aria-disabled='true'] {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* --- Variants ------------------------------------------------------------ */
+
+.button--solid {
+  height: 52px;
+  padding-inline: 34px;
+  background: var(--c-action);
+  color: var(--c-text-invert);
+  border-radius: 4px;
+}
+
+.button--solid:hover {
+  background: var(--c-action-hover);
+  color: var(--c-text-invert);
+  transform: translateY(-2px);
+}
+
+.button--pill {
+  height: 40px;
+  padding-inline: 22px;
+  border-radius: 100px;
+  border: 1px solid currentColor;
+  font-size: 13px;
+}
+
+.button--pill-solid {
+  background: var(--g-brand);
+  color: var(--c-text-invert);
+  border-color: transparent;
+}
+
+.button--pill-solid:hover {
+  color: var(--c-text-invert);
+  filter: brightness(1.09);
+}
+
+.button--ghost {
+  height: 44px;
+  padding-inline: 20px;
+  border: 1px solid var(--c-line);
+  border-radius: 4px;
+  background: var(--c-surface);
+  color: var(--c-text);
+}
+
+.button--ghost:hover {
+  border-color: var(--c-action);
+  color: var(--c-action);
+}
+
+/* Fills its container — used for the login submit. */
+.button--block {
+  width: 100%;
+}
+
+/* The identity-gradient pill CTA — awards panel, about-banner. */
+.button--brand {
+  height: 50px;
+  padding-inline: 26px;
+  border-radius: 100px;
+  background: var(--g-brand);
+  color: var(--brand-ink);
+  font-weight: var(--fw-bold);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.22);
+}
+
+.button--brand:hover {
+  color: var(--brand-ink);
+  transform: translateY(-2px);
+  filter: brightness(1.07);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+}
+
+.button--brand .button__icon {
+  transform: scaleX(-1);
+}
+
+.button--brand:hover .button__icon {
+  transform: scaleX(-1) translateX(5px);
+}

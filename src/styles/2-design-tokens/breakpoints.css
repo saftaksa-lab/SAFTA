@@ -1,0 +1,17 @@
+/* -----------------------------------------------------------------------------
+   Design tokens / breakpoints
+   Media queries cannot read custom properties, so these are @custom-media
+   rules resolved at build time by postcss-custom-media (see postcss.config.mjs).
+   Use `@media (--bp-tab)`, never a literal pixel value.
+
+   The scale mirrors the approved mockup, which breaks at 900px for layout and
+   480px for the compressed phone type scale.
+   -------------------------------------------------------------------------- */
+@custom-media --bp-lap (max-width: 1150px);
+@custom-media --bp-tab (max-width: 900px);
+@custom-media --bp-phone (max-width: 480px);
+
+/* Above the main layout break — for the handful of desktop-only rules. */
+@custom-media --bp-desk (min-width: 901px);
+
+@custom-media --motion-reduce (prefers-reduced-motion: reduce);

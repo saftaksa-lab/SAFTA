@@ -1,0 +1,79 @@
+---
+/**
+ * Renders a dashboard page's panels, in the order given. Each name is either a
+ * singleton key (`home_hero`) or a collection (`members`); the two sets never
+ * share a name. Reads go through the content cache, as they must.
+ */
+import SingletonEditor from './SingletonEditor.tsx';
+import CollectionEditor from './CollectionEditor.tsx';
+import { sections, collections, type CollectionKey } from './sections.ts';
+import {
+  getMedia,
+  getSingleton,
+  listAllArticles,
+  listAllEvents,
+  listAllMembers,
+  listAllWorkingGroups,
+  type MediaView,
+} from '../../lib/content/cache.ts';
+import { collectionMediaRefs } from '../../lib/content/repo.ts';
+import { collectMediaIds, type MediaRef } from '../../lib/content/schemas/fields.ts';
+import { singletons, type SingletonKey } from '../../lib/content/schemas/index.ts';
+
+interface Props {
+  panels: Array<SingletonKey | CollectionKey>;
+}
+
+const { panels } = Astro.props;
+
+const listAll: Record<CollectionKey, () => ReadonlyArray<Record<string, unknown>>> = {
+  members: listAllMembers,
+  workingGroups: listAllWorkingGroups,
+  articles: listAllArticles,
+  events: listAllEvents,
+};
+
+const isCollection = (name: string): name is CollectionKey => Object.hasOwn(collections, name);
+
+// The cache deep-freezes what it returns and React builds new objects from
+// these, so every island gets a structural clone. Server-owned columns are
+// dropped: they are not content, and a Date does not survive the trip.
+const loaded = panels.map((name) => {
+  if (isCollection(name)) {
+    const rows = listAll[name]().map(({ updatedAt: _a, updatedBy: _b, ...rest }) => structuredClone(rest));
+    return { kind: 'collection' as const, name, rows, refs: collectionMediaRefs(name, rows) };
+  }
+  const data = structuredClone(getSingleton(name)) as Record<string, unknown>;
+  return { kind: 'singleton' as const, name, data, refs: collectMediaIds(singletons[name].schema, data) };
+});
+
+// Previews for every image the saved content already references, shared by
+// all the page's islands.
+const media: Record<string, MediaView> = {};
+for (const ref of loaded.flatMap((p): MediaRef[] => p.refs)) {
+  const view = getMedia(ref.id);
+  if (view) media[ref.id] = { ...view };
+}
+---
+
+{
+  loaded.map((panel) =>
+    panel.kind === 'collection' ? (
+      <CollectionEditor
+        collectionKey={panel.name}
+        spec={collections[panel.name]}
+        initial={panel.rows}
+        media={media}
+        client:load
+      />
+    ) : (
+      <SingletonEditor
+        sectionKey={panel.name}
+        spec={sections[panel.name]}
+        initial={panel.data}
+        media={media}
+        client:load
+      />
+    ),
+  )
+}

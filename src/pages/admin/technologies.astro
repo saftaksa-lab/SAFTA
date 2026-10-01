@@ -1,0 +1,8 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import Panels from '../../components/admin/Panels.astro';
+---
+
+<AdminLayout title="مجموعات العمل" lede="صفحة مجموعات العمل وبطاقات المجموعات.">
+  <Panels panels={['technologies_banner', 'technologies_intro', 'workingGroups']} />
+</AdminLayout>

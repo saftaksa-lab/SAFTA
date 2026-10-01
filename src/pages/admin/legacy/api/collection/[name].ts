@@ -7,9 +7,9 @@ import {
   readCollectionDataWithRevision,
   validateCollectionUpdate,
   writeCollectionData,
-} from '../../../../lib/content/collections/store';
-import { REVISION_HEADER } from '../../../../lib/content/json-file';
-import { getCollectionFields, isEditableCollection } from '../../../../lib/content/collections/registry';
+} from '../../../../../lib/content/collections/store';
+import { REVISION_HEADER } from '../../../../../lib/content/json-file';
+import { getCollectionFields, isEditableCollection } from '../../../../../lib/content/collections/registry';
 
 /**
  * Read/write endpoint for the admin panel's live editing of ./content/{groups,articles,events}.json

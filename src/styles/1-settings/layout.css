@@ -1,0 +1,43 @@
+/* -----------------------------------------------------------------------------
+   Settings / layout
+   Global structural configuration for the whole site. Values only — nothing
+   here paints. Measured from the approved mockup's grid.
+   -------------------------------------------------------------------------- */
+:root {
+  /* Content grid: 1632px shell - (128px x 2) padding = a 1376px column. */
+  --wrap-max: 1632px;
+  --wrap-pad: 128px;
+
+  /* Card rows are allowed to bleed 64px past the column, on both sides. */
+  --bleed: 64px;
+
+  /* Gutter between siblings inside a row. */
+  --gap: 20px;
+
+  /* Vertical rhythm between full-width sections. */
+  --sec-pad: 120px;
+
+  /* Fixed header height; page heroes offset themselves by it. */
+  --header-h: 88px;
+
+  /* The admin shell runs narrower than the marketing site. */
+  --admin-bar-h: 64px;
+  --admin-nav-w: 248px;
+  --admin-wrap-max: 1100px;
+}
+
+@media (--bp-tab) {
+  :root {
+    --wrap-pad: 24px;
+    --bleed: 0px;
+    --sec-pad: 64px;
+    --header-h: 72px;
+  }
+}
+
+@media (--bp-phone) {
+  :root {
+    --wrap-pad: 18px;
+    --sec-pad: 48px;
+  }
+}

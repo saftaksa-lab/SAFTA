@@ -7,9 +7,9 @@ import {
   readPageDataWithRevision,
   validatePageUpdate,
   writePageData,
-} from '../../../../lib/content/store';
-import { REVISION_HEADER } from '../../../../lib/content/json-file';
-import { isEditablePage } from '../../../../lib/content/schema/registry';
+} from '../../../../../lib/content/store';
+import { REVISION_HEADER } from '../../../../../lib/content/json-file';
+import { isEditablePage } from '../../../../../lib/content/schema/registry';
 
 /**
  * Read/write endpoint for the admin panel's live editing of ./content/<page>.json.

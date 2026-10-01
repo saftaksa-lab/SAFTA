@@ -1,0 +1,8 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import Panels from '../../components/admin/Panels.astro';
+---
+
+<AdminLayout title="الأعضاء" lede="دليل الأعضاء وخريطتهم وصفحة كل عضو.">
+  <Panels panels={['members_banner', 'members_intro', 'members', 'members_map', 'member_chrome']} />
+</AdminLayout>

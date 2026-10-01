@@ -30,7 +30,7 @@ var SCHEMA = window.SAFTA_SCHEMA || {};
 var BASE   = window.SAFTA_BASE   || {};
 
 /* إعدادات الموقع العامة (src/lib/content/settings.ts) — أعلام تُخفي أقساماً كاملة عن
-   الموقع، منفصلة عن نظام المسودة/النشر أعلاه لأنها تُحفظ فورًا عبر /admin/api/settings
+   الموقع، منفصلة عن نظام المسودة/النشر أعلاه لأنها تُحفظ فورًا عبر /admin/legacy/api/settings
    بدل المرور بخطوة «حفظ ونشر». انظر awardsToggleHtml/bindAwardsToggle أدناه. */
 var SITE_SETTINGS = { hideAwards: false };
 
@@ -360,7 +360,7 @@ function apiBackedViews() {
 function syncApiBackedSchema() {
   var views = apiBackedViews().filter(function (v) { return SCHEMA[v].kind !== 'data'; });
   return Promise.all(views.map(function (v) {
-    return fetch('/admin/api/schema/' + v)
+    return fetch('/admin/legacy/api/schema/' + v)
       .then(function (r) { if (!r.ok) throw new Error('bad status'); return r.json(); })
       .then(function (data) { SCHEMA[v] = Object.assign({}, SCHEMA[v], data); })
       .catch(function () {
@@ -373,7 +373,7 @@ function syncApiBackedBaseline() {
   var views = apiBackedViews();
   return Promise.all(views.map(function (v) {
     var sc = SCHEMA[v];
-    var url = sc.kind === 'data' ? '/admin/api/collection/' + sc.store : '/admin/api/content/' + v;
+    var url = sc.kind === 'data' ? '/admin/legacy/api/collection/' + sc.store : '/admin/legacy/api/content/' + v;
     return fetch(url)
       .then(function (r) {
         if (!r.ok) throw new Error('bad status');
@@ -392,7 +392,7 @@ function syncApiBackedBaseline() {
 }
 
 function syncSiteSettings() {
-  return fetch('/admin/api/settings')
+  return fetch('/admin/legacy/api/settings')
     .then(function (r) { if (!r.ok) throw new Error('bad status'); return r.json(); })
     .then(function (data) { SITE_SETTINGS.hideAwards = !!data.hideAwards; })
     .catch(function () {
@@ -614,7 +614,7 @@ function fieldHtml(f, viewOverride) {
 }
 
 /* إظهار/إخفاء قسم الجوائز عن الموقع بالكامل (الرئيسية + القائمة الجانبية) — إعداد
-   موقع منفصل عن حقول النص أعلاه، يُحفظ فورًا عبر /admin/api/settings بدل انتظار
+   موقع منفصل عن حقول النص أعلاه، يُحفظ فورًا عبر /admin/legacy/api/settings بدل انتظار
    «حفظ ونشر» (انظر SITE_SETTINGS وsyncSiteSettings أعلاه). */
 function awardsToggleHtml() {
   var checked = SITE_SETTINGS.hideAwards;
@@ -636,7 +636,7 @@ function bindAwardsToggle(pane) {
   el.addEventListener('change', function () {
     var hide = !el.checked;
     el.disabled = true;
-    fetch('/admin/api/settings', {
+    fetch('/admin/legacy/api/settings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ hideAwards: hide }),
@@ -736,7 +736,7 @@ function bindPane() {
         var fd = new FormData();
         fd.append('file', file);
         toast('يتم رفع الصورة…');
-        fetch('/admin/api/uploads', { method: 'POST', body: fd })
+        fetch('/admin/legacy/api/uploads', { method: 'POST', body: fd })
           .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
           .then(function (res) {
             if (!res.ok) { toast((res.j && res.j.error) || 'تعذّر رفع الصورة'); return; }
@@ -1189,7 +1189,7 @@ function publishApiBacked() {
   if (!views.length) return Promise.resolve([]);
   return Promise.all(views.map(function (v) {
     var sc = SCHEMA[v];
-    var url = sc.kind === 'data' ? '/admin/api/collection/' + sc.store : '/admin/api/content/' + v;
+    var url = sc.kind === 'data' ? '/admin/legacy/api/collection/' + sc.store : '/admin/legacy/api/content/' + v;
     var body = sc.kind === 'data' ? S.cur[sc.store] : S.cur.pages[v];
     return fetch(url, {
       method: 'POST',

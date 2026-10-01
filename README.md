@@ -15,6 +15,11 @@ npm start         # migrate + seed the admin, then serve dist/
 npm run db:generate   # after a change to src/db/*schema.ts: write a migration to drizzle/
 npm run db:migrate    # apply migrations to DATABASE_PATH
 npm run db:seed       # create the .env admin if missing (idempotent)
+npm run content:migrate          # create missing singletons, upgrade old ones (part of setup)
+npm run content:export [file]    # the database content as one JSON envelope
+npm run content:import <file> [--dry-run]
+npm run content:reset -- --yes   # wipe all database content and uploaded media
+npm run check:admin   # every dashboard panel matches its schema — keep it passing
 npx astro check       # typecheck — keep it clean
 ```
 
@@ -38,10 +43,30 @@ POST behind a TLS-terminating proxy gets a 403. Read
 [docs/better-auth.md](docs/better-auth.md) before changing auth code — 1.7 differs from most
 tutorials.
 
-This auth and database layer is copied from the Water STRIP project (commit `dcfba70`) and is
-maintained here independently; the two codebases share nothing at runtime. The rest of the CMS
-(content in SQLite, the new dashboard) is being ported in phases and replaces `content/*.json`
-and `public/admin/` when it lands.
+This auth and database layer is copied from the Water STRIP project (commit `dcfba70`), and the
+content store and dashboard below from commit `9526700`. Both are maintained here independently; the
+two codebases share nothing at runtime.
+
+## The dashboard (being ported)
+
+`/admin` is the new dashboard: one page per site page, each a stack of panels that save on their
+own. Content lives in SQLite (`content_singleton` plus the `member`, `working_group`, `article`
+and `event` tables); every read goes through the cache in `src/lib/content/cache.ts` and every
+write through `src/lib/content/repo.ts`. Uploaded images go through `sharp` to WebP under
+`UPLOAD_PATH` and are served at `/media/<sha256>.webp`.
+
+**The public pages do not read it yet.** Until they are switched over, the live site still reads
+`content/*.json`, edited through the old editor, now at **`/admin/legacy`** (its APIs moved to
+`/admin/legacy/api/*`). Every new dashboard page says so in a notice at the top.
+
+- What each surface holds: the Zod schemas in `src/lib/content/schemas/` (one file per site page)
+  and the collection inputs in `repo.ts`. A fresh database starts from each schema's `initial`
+  value, which is SAFTA's current text; images start empty.
+- How each panel looks: `src/components/admin/sections.ts` lists every panel's fields as data, and
+  one renderer (`FieldList.tsx`) draws them. Admins edit values only; the field lists are code.
+  `npm run check:admin` fails if a panel and its schema disagree in either direction.
+- Collections are edited and saved as a whole list; the server sets each row's `order` from its
+  position, so moving a row up or down is saved.
 
 Both servers bind `127.0.0.1` explicitly (`server.host` in `astro.config.mjs`). Astro's
 default is `localhost`, which Node 17+ resolves to `::1` first — that leaves the server on
@@ -66,13 +91,17 @@ src/
   db/                         Drizzle + SQLite: generated auth schema, content-schema.ts
   pages/api/                  login · logout · Better Auth's own endpoints
   middleware.ts               loads the session; gates /admin to the admin role
+  lib/content/                cache · repo · schemas/ · media · io (database content store)
+  components/admin/           the dashboard: sections.ts (panel fields) · FieldList · editors
+  pages/admin/                dashboard pages; api/ (content, media, collections); legacy/
+  pages/media/[file].ts       serves uploaded images from UPLOAD_PATH
 public/
   assets/                     css · js · img · video · content — served as-is, paths unchanged
-  admin/                      the content control centre (plain HTML/JS, not built by Astro)
+  admin/                      the old content control centre, served at /admin/legacy
   uploads/                    admin-uploaded images and documents (gitignored)
   robots.txt
 content/                      per-page editable copy as JSON (gitignored)
-scripts/                      seed-content.mjs · seed-admin.ts
+scripts/                      seed-content.mjs · seed-admin.ts · content.ts · check-admin-specs.ts
 drizzle/                      SQL migrations (generated, committed)
 data/                         SQLite database and uploads (gitignored)
 ```
@@ -131,17 +160,17 @@ and `npm run build` run it first to fill in anything missing (it never overwrite
 request. Astro copies `public/` into the build output only once, at build time, so
 without that route a file uploaded after a deploy would 404 until the next build.
 
-`/admin` (`public/admin/`) is the editor UI. For pages on the new stores it now writes
+`/admin/legacy` (`public/admin/`) is the editor UI. For pages on the new stores it now writes
 straight through three API routes gated by the same session middleware as the rest of
-`/admin`:
+`/admin/legacy`:
 
-- `src/pages/admin/api/content/[page].ts` — GET returns a page's current
+- `src/pages/admin/legacy/api/content/[page].ts` — GET returns a page's current
   `content/<page>.json`; POST replaces it, validated against that page's **schema
   module**, not against whatever is currently on disk (see below).
-- `src/pages/admin/api/schema/[page].ts` — GET returns a page's editable-field layout
+- `src/pages/admin/legacy/api/schema/[page].ts` — GET returns a page's editable-field layout
   (sections, cards, labels) straight from the same schema module the admin panel used to
   keep only in the hand-maintained `public/admin/schema.js`.
-- `src/pages/admin/api/uploads.ts` — accepts one image (≤3MB, `image/*`), writes it into
+- `src/pages/admin/legacy/api/uploads.ts` — accepts one image (≤3MB, `image/*`), writes it into
   `public/uploads/` under a generated name, and returns the path to store in a field.
   Publishing a page prunes any upload an edit just replaced (`pruneReplacedUploads` in
   `store.ts`) — deleted only once the file that stopped referencing it is actually
@@ -167,7 +196,7 @@ layout) and `content/<page>.json` (which key is text vs. image) and emits
 `src/lib/content/schema/<page>.ts`, failing loudly if the two disagree. Re-run it after
 changing a page's field layout in the admin UI rather than hand-editing the generated
 file. `public/admin/schema.js` stays in place as a local fallback: `admin.js` fetches
-`/admin/api/schema/<page>` at boot for every `apiBacked` page and overwrites the static
+`/admin/legacy/api/schema/<page>` at boot for every `apiBacked` page and overwrites the static
 copy with the server's version, only falling back to the bundled one if that fetch fails.
 
 `admin.js` also refreshes its notion of "original" content for `apiBacked` pages from the
@@ -227,7 +256,7 @@ Unlike a page, removing an existing record id is never accepted regardless of `a
 delete button only ever undid a not-yet-published add, never an already-saved record, and
 `validateCollectionUpdate` in `collections/store.ts` is what actually enforces that now (a bare
 `z.record(...)` validator has no opinion on a shrinking key set on its own — an empty `{}` body
-would otherwise silently wipe an addable collection). `src/pages/admin/api/collection/[name].ts`
+would otherwise silently wipe an addable collection). `src/pages/admin/legacy/api/collection/[name].ts`
 exposes the same GET/POST shape as the page content route, gated by the same `/admin` session
 middleware.
 
@@ -259,7 +288,7 @@ above no longer read those files at all. Publishing an edit through the current 
 changes what the live site shows; the two are reconciled only by re-running
 `npm run seed:collections -- --force` afterward. Closing this gap — `apiBacked: true` on these
 three `schema.js` entries, an admin field engine that speaks the `{en,ar}`-object shape instead of
-the legacy dot-path one, and a POST through `/admin/api/collection/[name]` — is a separate,
+the legacy dot-path one, and a POST through `/admin/legacy/api/collection/[name]` — is a separate,
 not-yet-scheduled pass. Prove the storage primitive on its own with
 `node scripts/test-collections.mjs` (esbuild-bundles the collection modules and asserts against
 them directly, the same technique used to test the page validators).

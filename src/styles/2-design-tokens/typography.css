@@ -1,0 +1,38 @@
+/* -----------------------------------------------------------------------------
+   Design tokens / typography
+   IBM Plex Sans Arabic, self-hosted through @fontsource and imported by
+   src/layouts/AdminLayout.astro. It is also the public site's Arabic face.
+   The scale is authored for Arabic: it runs slightly larger and with more
+   leading than the Latin equivalent, because Arabic needs the extra height.
+   -------------------------------------------------------------------------- */
+:root {
+  --f-body: 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
+  --f-head: 'IBM Plex Sans Arabic', system-ui, sans-serif;
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  /* Type scale — size / line-height pairs, largest first. */
+  --fs-display: clamp(32px, 5vw, 58px);
+  --lh-display: 1.22;
+
+  --fs-section: clamp(26px, 3.4vw, 40px);
+  --lh-section: 1.3;
+
+  --fs-intro: clamp(19px, 2vw, 24px);
+  --lh-intro: 1.55;
+
+  --fs-lede: 18px;
+  --lh-lede: 1.65;
+
+  --fs-body: 16px;
+  --lh-body: 1.75;
+
+  --fs-small: 14px;
+  --lh-small: 1.55;
+
+  --fs-micro: 12.5px;
+  --lh-micro: 1.5;
+}

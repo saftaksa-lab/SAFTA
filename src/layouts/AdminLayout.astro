@@ -1,0 +1,93 @@
+---
+import AdminBar from '../components/admin/AdminBar.astro';
+import SaveAllBar from '../components/admin/SaveAllBar.tsx';
+import '@fontsource/ibm-plex-sans-arabic/400.css';
+import '@fontsource/ibm-plex-sans-arabic/500.css';
+import '@fontsource/ibm-plex-sans-arabic/600.css';
+import '@fontsource/ibm-plex-sans-arabic/700.css';
+import '../styles/admin.css';
+
+interface Props {
+  title: string;
+  lede?: string;
+}
+
+const { title, lede } = Astro.props;
+
+// Access is enforced in src/middleware.ts, so a user is guaranteed here.
+const user = Astro.locals.user!;
+
+// Adding a CMS section should be an entry here, never a change to the shell's
+// markup.
+const sections = [
+  { label: 'نظرة عامة', href: '/admin' },
+  { label: 'الصفحة الرئيسية', href: '/admin/home' },
+  { label: 'عن التحالف', href: '/admin/about' },
+  { label: 'مجموعات العمل', href: '/admin/technologies' },
+  { label: 'الأخبار والفعاليات', href: '/admin/media' },
+  { label: 'الأعضاء', href: '/admin/members' },
+  { label: 'تواصل معنا', href: '/admin/contact' },
+  { label: 'سجّل اهتمامك', href: '/admin/register-interest' },
+];
+
+const currentPath = Astro.url.pathname;
+---
+
+<html dir="rtl" lang="ar">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{`${title} | لوحة التحكّم`}</title>
+    <meta name="theme-color" content="#015C44" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" href="/assets/img/logo-mark.png" />
+  </head>
+
+  <body>
+    <a class="u-visually-hidden u-skip-link" href="#main">تخطَّ إلى المحتوى</a>
+    <AdminBar name={user.name} role={user.role ?? 'user'} />
+    <SaveAllBar client:load />
+
+    <div class="admin-shell">
+      <aside class="admin-shell__nav">
+        <nav class="admin-nav" aria-label="أقسام لوحة التحكّم">
+          <p class="admin-nav__heading">الأقسام</p>
+          <ul class="admin-nav__list">
+            {
+              sections.map((section) => (
+                <li>
+                  <a
+                    class:list={['admin-nav__link', currentPath === section.href && 'is-active']}
+                    href={section.href}
+                    aria-current={currentPath === section.href ? 'page' : undefined}
+                  >
+                    {section.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+      </aside>
+
+      <main class="admin-shell__main" id="main">
+        <div class="admin-shell__content">
+          <h1 class="admin-shell__title">{title}</h1>
+          {lede && <p class="admin-shell__lede">{lede}</p>}
+          {/*
+            Until the public pages read from the database (Phase 3 of the port),
+            nothing saved here reaches the site. Remove this notice in that phase.
+          */}
+          <div class="admin-notice" role="note">
+            <p>
+              <strong>هذه اللوحة الجديدة قيد الإعداد.</strong> ما يُحفظ هنا لا يظهر في الموقع بعد، لأن
+              صفحات الموقع ما زالت تقرأ من المحرّر السابق.
+            </p>
+            <p>لتعديل الموقع الآن استخدم <a href="/admin/legacy">المحرّر السابق</a>.</p>
+          </div>
+          <slot />
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

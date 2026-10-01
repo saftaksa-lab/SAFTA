@@ -1,0 +1,62 @@
+/* -----------------------------------------------------------------------------
+   Elements / forms
+   Bare control defaults so every form in the project starts consistent.
+   Layout and labelling live in 6-components/form.css.
+   -------------------------------------------------------------------------- */
+input,
+select,
+textarea {
+  width: 100%;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--c-text);
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 4px;
+  padding: 13px 16px;
+  transition:
+    border-color var(--dur-base),
+    box-shadow var(--dur-base);
+}
+
+textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 0;
+  border-color: var(--c-action);
+  box-shadow: 0 0 0 3px var(--c-focus-ring);
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  accent-color: var(--c-action);
+}
+
+/* Email and password are always Latin, so they read left-to-right even though
+   the document direction is RTL. The field still aligns to the start edge. */
+input[type='email'],
+input[type='password'],
+input[type='tel'],
+input[type='url'] {
+  direction: ltr;
+  text-align: start;
+}
+
+::placeholder {
+  color: var(--c-text-soft);
+  opacity: 0.7;
+}
+
+fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}

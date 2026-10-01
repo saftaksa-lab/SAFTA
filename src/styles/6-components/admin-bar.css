@@ -1,0 +1,93 @@
+/* -----------------------------------------------------------------------------
+   Component / admin-bar
+   The dashboard topbar. Intentionally plainer and more compact than the public
+   site-header — CMS chrome should never be mistaken for the marketing design.
+   -------------------------------------------------------------------------- */
+.admin-bar {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: var(--z-header);
+  background: var(--c-surface-dark);
+  color: var(--c-text-invert);
+}
+
+.admin-bar__inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: var(--admin-bar-h);
+  padding-inline: 24px;
+}
+
+.admin-bar__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-inline-end: auto;
+  /* It is a link, but on the dark bar the link colour has no contrast. */
+  color: var(--c-text-invert);
+}
+
+.admin-bar__brand:hover {
+  color: var(--c-text-invert-soft);
+}
+
+.admin-bar__mark {
+  height: 30px;
+  width: auto;
+}
+
+.admin-bar__label {
+  font-family: var(--f-head);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.4px;
+}
+
+.admin-bar__user {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.35;
+}
+
+.admin-bar__user-name {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+}
+
+.admin-bar__user-role {
+  font-size: var(--fs-micro);
+  color: var(--c-text-invert-soft);
+}
+
+.admin-bar__signout {
+  display: flex;
+}
+
+.admin-bar__signout .button {
+  height: 36px;
+  padding-inline: 16px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: var(--c-text-invert);
+  font-size: 13px;
+}
+
+.admin-bar__signout .button:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.45);
+  color: var(--c-text-invert);
+}
+
+@media (--bp-phone) {
+  .admin-bar__inner {
+    padding-inline: 16px;
+    gap: 12px;
+  }
+
+  .admin-bar__label,
+  .admin-bar__user {
+    display: none;
+  }
+}

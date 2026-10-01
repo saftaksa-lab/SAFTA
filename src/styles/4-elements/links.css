@@ -1,0 +1,19 @@
+/* -----------------------------------------------------------------------------
+   Elements / links and focus
+   -------------------------------------------------------------------------- */
+a {
+  color: var(--c-link);
+  transition: color var(--dur-base);
+}
+
+a:hover {
+  color: var(--brand-green-light);
+}
+
+/* One focus treatment for the whole project. Keyboard users get a visible
+   ring everywhere; pointer users never see it. */
+:focus-visible {
+  outline: 2px solid var(--brand-green-light);
+  outline-offset: 2px;
+  border-radius: 2px;
+}

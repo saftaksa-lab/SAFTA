@@ -1,0 +1,55 @@
+/* -----------------------------------------------------------------------------
+   Component / admin-shell
+   Two-column frame for the dashboard: section nav beside the content column.
+   Collapses to a single stacked column below the tablet break.
+   -------------------------------------------------------------------------- */
+.admin-shell {
+  display: grid;
+  grid-template-columns: var(--admin-nav-w) minmax(0, 1fr);
+  align-items: start;
+  min-height: calc(100dvh - var(--admin-bar-h));
+}
+
+.admin-shell__nav {
+  position: sticky;
+  inset-block-start: var(--admin-bar-h);
+  align-self: stretch;
+  background: var(--c-surface-sunken);
+  border-inline-end: 1px solid var(--c-line);
+  min-height: calc(100dvh - var(--admin-bar-h));
+}
+
+.admin-shell__main {
+  padding: 40px 32px 72px;
+}
+
+.admin-shell__content {
+  max-width: var(--admin-wrap-max);
+  margin-inline: auto;
+}
+
+.admin-shell__title {
+  margin-block-end: 8px;
+}
+
+.admin-shell__lede {
+  color: var(--c-text-soft);
+  margin-block-end: 32px;
+}
+
+@media (--bp-tab) {
+  .admin-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-shell__nav {
+    position: static;
+    min-height: 0;
+    border-inline-end: 0;
+    border-block-end: 1px solid var(--c-line);
+  }
+
+  .admin-shell__main {
+    padding: 28px 20px 56px;
+  }
+}

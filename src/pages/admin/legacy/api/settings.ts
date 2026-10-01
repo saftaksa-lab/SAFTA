@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
-import { REVISION_HEADER } from '../../../lib/content/json-file';
-import { getSiteSettingsWithRevision, updateSiteSettings } from '../../../lib/content/settings';
+import { REVISION_HEADER } from '../../../../lib/content/json-file';
+import { getSiteSettingsWithRevision, updateSiteSettings } from '../../../../lib/content/settings';
 
 /**
  * Read/write endpoint for site-wide feature flags (src/lib/content/settings.ts) — currently

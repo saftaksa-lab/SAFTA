@@ -1,0 +1,60 @@
+/* -----------------------------------------------------------------------------
+   Component / editor
+   The save bar at the foot of a dashboard section panel: submit, undo, and the
+   live region that reports unsaved / saving / saved.
+   -------------------------------------------------------------------------- */
+.editor__bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-block-start: 10px;
+  padding-block-start: 20px;
+  border-block-start: 1px solid var(--c-line);
+}
+
+.editor__reset {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--c-text-soft);
+  font-family: inherit;
+  font-size: var(--fs-small);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.editor__reset:hover:not(:disabled) {
+  color: var(--c-action);
+}
+
+.editor__reset:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.editor__status {
+  margin: 0;
+  margin-inline-start: auto;
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+  font-weight: var(--fw-semibold);
+  color: var(--c-text-soft);
+}
+
+.editor__status--saved {
+  color: var(--c-action);
+}
+
+@media (--bp-phone) {
+  .editor__bar {
+    gap: 12px;
+  }
+
+  .editor__status {
+    margin-inline-start: 0;
+    flex-basis: 100%;
+  }
+}

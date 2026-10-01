@@ -1,0 +1,15 @@
+/* -----------------------------------------------------------------------------
+   Settings / z-index
+   Every stacking value in the project is named here. Never write a bare
+   z-index in a component — add a step to this scale instead, so the whole
+   stacking order stays readable in one place.
+   -------------------------------------------------------------------------- */
+:root {
+  --z-base: 1;
+  --z-raised: 10;
+  --z-sticky: 100;
+  --z-header: 200;
+  --z-drawer: 300;
+  --z-overlay: 400;
+  --z-save-all: 500;
+}

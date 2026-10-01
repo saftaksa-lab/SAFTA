@@ -1,0 +1,41 @@
+/* =============================================================================
+   SAFTA — /admin stylesheet entry point
+   The dashboard's own layered stylesheet, copied from waterstrip with SAFTA's
+   colours. Public pages never load it: they use public/assets/css/style.css.
+   Layers run 1-settings -> 7-utilities, and a layer may only depend on the
+   layers above it. Breakpoints are @custom-media (2-design-tokens/breakpoints.css),
+   and everything uses logical properties, because the dashboard is RTL.
+   ========================================================================== */
+
+@import './2-design-tokens/breakpoints.css';
+
+@import './1-settings/layout.css';
+@import './1-settings/z-index.css';
+
+@import './2-design-tokens/color.css';
+@import './2-design-tokens/typography.css';
+@import './2-design-tokens/motion.css';
+
+@import './3-generic/reset.css';
+
+@import './4-elements/typography.css';
+@import './4-elements/links.css';
+@import './4-elements/forms.css';
+
+@import './6-components/button.css';
+@import './6-components/form.css';
+@import './6-components/admin-bar.css';
+@import './6-components/admin-nav.css';
+@import './6-components/admin-shell.css';
+@import './6-components/panel.css';
+@import './6-components/item-list.css';
+@import './6-components/image-field.css';
+@import './6-components/editor.css';
+@import './6-components/save-all-bar.css';
+@import './6-components/admin-notice.css';
+
+@import './7-utilities/visually-hidden.css';
+@import './7-utilities/text.css';
+@import './7-utilities/state.css';
+
+@import './shame.css';

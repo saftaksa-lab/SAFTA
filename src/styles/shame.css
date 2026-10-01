@@ -1,0 +1,15 @@
+/* -----------------------------------------------------------------------------
+   shame.css
+   The last file in the cascade, and the only place a hack is allowed to live.
+
+   Every rule in here MUST carry a comment saying:
+     1. what it fixes,
+     2. why the proper fix was not done at the time,
+     3. what the proper fix would be.
+
+   If a rule could have gone into one of the numbered layers cleanly, it does
+   not belong here — put it in the layer. An empty shame.css means the layer
+   boundaries are still holding.
+   -------------------------------------------------------------------------- */
+
+/* (empty — keep it that way for as long as possible) */

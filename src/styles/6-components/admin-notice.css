@@ -1,0 +1,19 @@
+/* -----------------------------------------------------------------------------
+   Component / admin-notice
+   A page-wide notice under the dashboard title, for a state that applies to
+   every section on the page rather than to one field.
+   -------------------------------------------------------------------------- */
+.admin-notice {
+  margin-block-end: 28px;
+  padding: 14px 18px;
+  border: 1px solid var(--c-line-strong);
+  border-inline-start: 4px solid var(--c-action);
+  border-radius: 8px;
+  background: var(--c-surface-sunken);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+
+.admin-notice p + p {
+  margin-block-start: 6px;
+}

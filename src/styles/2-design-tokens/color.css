@@ -1,0 +1,47 @@
+/* -----------------------------------------------------------------------------
+   Design tokens / colour
+   SAFTA's palette, the same values the public stylesheet declares
+   (public/assets/css/style.css). Components must use the semantic aliases
+   below, not the raw --brand-* values, so a future palette change stays a
+   one-file edit.
+   -------------------------------------------------------------------------- */
+:root {
+  /* Raw brand palette */
+  --brand-green-deep: #015c44;
+  --brand-green-mid: #2fa58c;
+  --brand-green-light: #63bd69;
+  --brand-blue: #4689c8;
+
+  --brand-ink: #0e2f2a;
+  --brand-white: #ffffff;
+
+  /* Semantic aliases — this is what components reference. */
+  --c-text: var(--brand-ink);
+  --c-text-soft: #4b6660;
+  --c-text-invert: var(--brand-white);
+  --c-text-invert-soft: rgba(255, 255, 255, 0.88);
+
+  --c-surface: var(--brand-white);
+  --c-surface-sunken: #f2f7f4;
+  --c-surface-dark: var(--brand-ink);
+
+  --c-line: #d3e0da;
+  --c-line-strong: #b5ccc2;
+
+  --c-action: var(--brand-green-deep);
+  --c-action-hover: #014633;
+  --c-focus-ring: rgba(99, 189, 105, 0.4);
+
+  --c-link: var(--brand-green-deep);
+
+  --c-danger: #c0392b;
+  --c-danger-surface: #fdf1f0;
+
+  /* The identity gradient: light green -> teal -> blue. */
+  --g-brand: linear-gradient(
+    90deg,
+    var(--brand-green-light) 0%,
+    var(--brand-green-mid) 48%,
+    var(--brand-blue) 100%
+  );
+}

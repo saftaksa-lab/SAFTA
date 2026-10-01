@@ -1,0 +1,61 @@
+/* -----------------------------------------------------------------------------
+   Component / admin-nav
+   Section list down the side of the dashboard. It holds one item today; it
+   exists so that adding CMS sections is a data change, not a layout change.
+   -------------------------------------------------------------------------- */
+.admin-nav {
+  padding-block: 28px;
+  padding-inline: 16px;
+}
+
+.admin-nav__heading {
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.8px;
+  color: var(--c-text-soft);
+  padding-inline: 12px;
+  margin-block-end: 12px;
+}
+
+.admin-nav__list {
+  display: grid;
+  gap: 2px;
+}
+
+.admin-nav__link {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 4px;
+  font-size: 14.5px;
+  color: var(--c-text);
+  transition:
+    background var(--dur-fast),
+    color var(--dur-fast);
+}
+
+.admin-nav__link:hover {
+  background: var(--c-surface);
+  color: var(--c-action);
+}
+
+.admin-nav__link.is-active {
+  background: var(--c-surface);
+  color: var(--c-action);
+  font-weight: var(--fw-semibold);
+  /* Marker on the start edge — the right, in RTL. `box-shadow: inset` has no
+     logical form, so the border does the job and stays direction-aware. */
+  border-inline-start: 3px solid var(--c-action);
+  padding-inline-start: 9px;
+}
+
+@media (--bp-tab) {
+  .admin-nav {
+    padding-block: 16px;
+  }
+
+  .admin-nav__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}

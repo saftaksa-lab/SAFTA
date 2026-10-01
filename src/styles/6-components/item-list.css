@@ -1,0 +1,110 @@
+/* -----------------------------------------------------------------------------
+   Component / item-list
+   Repeatable rows inside a dashboard panel — one per hero slide, award, partner.
+   Carries the reorder and remove controls; the fields inside are .form.
+   -------------------------------------------------------------------------- */
+.item-list {
+  display: grid;
+  gap: 16px;
+}
+
+.item-list__item {
+  border: 1px solid var(--c-line);
+  border-radius: 5px;
+  padding: 18px 20px 20px;
+  background: var(--c-surface-sunken);
+}
+
+.item-list__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-block-end: 18px;
+  padding-block-end: 12px;
+  border-block-end: 1px solid var(--c-line);
+}
+
+.item-list__title {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  font-weight: var(--fw-semibold);
+  color: var(--c-text-soft);
+  margin: 0;
+}
+
+.item-list__controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+.item-list__button {
+  min-width: 30px;
+  height: 30px;
+  padding-inline: 9px;
+  border: 1px solid var(--c-line);
+  border-radius: 4px;
+  background: var(--c-surface);
+  color: var(--c-text-soft);
+  font-size: var(--fs-micro);
+  line-height: 1;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.item-list__button:hover:not(:disabled) {
+  border-color: var(--c-action);
+  color: var(--c-action);
+}
+
+.item-list__button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.item-list__button--danger:hover:not(:disabled) {
+  border-color: var(--c-danger);
+  color: var(--c-danger);
+}
+
+.item-list__add {
+  justify-self: start;
+  padding: 10px 18px;
+  border: 1px dashed var(--c-line-strong);
+  border-radius: 4px;
+  background: none;
+  color: var(--c-text-soft);
+  font-family: inherit;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.item-list__add:hover:not(:disabled) {
+  border-color: var(--c-action);
+  color: var(--c-action);
+}
+
+.item-list__add:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (--bp-phone) {
+  .item-list__item {
+    padding: 16px 14px 18px;
+  }
+
+  .item-list__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .item-list__controls {
+    justify-content: flex-start;
+  }
+}

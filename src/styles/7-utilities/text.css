@@ -1,0 +1,18 @@
+/* -----------------------------------------------------------------------------
+   Utilities / text
+   Single-purpose overrides. Reach for these sparingly — a repeated pair of
+   utilities on the same element usually means a component is missing.
+   -------------------------------------------------------------------------- */
+.u-text-center {
+  text-align: center !important;
+}
+
+.u-text-start {
+  text-align: start !important;
+}
+
+/* Isolates a Latin run (email, URL, the SAFTA wordmark) inside Arabic. */
+.u-ltr {
+  direction: ltr !important;
+  unicode-bidi: isolate !important;
+}

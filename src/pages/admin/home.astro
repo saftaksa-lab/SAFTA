@@ -1,0 +1,8 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import Panels from '../../components/admin/Panels.astro';
+---
+
+<AdminLayout title="الصفحة الرئيسية" lede="نصوص الصفحة الرئيسية وصورها. كل قسم يُحفظ على حدة.">
+  <Panels panels={['home_hero', 'home_discover', 'home_challenges_intro', 'challenges', 'home_awards', 'home_partners']} />
+</AdminLayout>

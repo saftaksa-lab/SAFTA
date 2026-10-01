@@ -1,0 +1,138 @@
+/* -----------------------------------------------------------------------------
+   Component / form
+   Field layout, labelling and messaging. Control appearance itself is set on
+   the bare elements in 4-elements/forms.css.
+   -------------------------------------------------------------------------- */
+.form {
+  display: grid;
+  gap: 22px;
+}
+
+.form__field {
+  display: block;
+}
+
+/* A labelled group of fields — a repeatable list, a fixed set of options. */
+.form__group {
+  display: grid;
+  gap: 12px;
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* A field pair on one line — e.g. email and phone side by side. */
+.form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+
+@media (--bp-tab) {
+  .form__row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* The card-style variant used where a form sits beside other content. */
+.form--panel {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 18px;
+  padding: 40px 42px;
+  box-shadow: 0 10px 40px rgba(11, 44, 37, 0.06);
+}
+
+@media (--bp-tab) {
+  .form--panel {
+    padding: 24px 20px;
+    border-radius: 14px;
+  }
+}
+
+.form__label {
+  display: block;
+  font-size: 13.5px;
+  line-height: 1.45;
+  font-weight: var(--fw-semibold);
+  color: var(--c-text-soft);
+  margin-block-end: 9px;
+}
+
+.form__required {
+  color: var(--c-danger);
+  font-weight: var(--fw-bold);
+  margin-inline-start: 3px;
+}
+
+.form__hint {
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+  color: var(--c-text-soft);
+  margin-block-start: 7px;
+}
+
+/* A checkbox with its label wrapping to multiple lines, e.g. a consent line
+   with inline links — the checkbox stays aligned to the first line. */
+.form__check {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+
+.form__check input {
+  margin-block-start: 2px;
+}
+
+.form__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  margin-block-start: 8px;
+}
+
+/* Inline validation / submission feedback. */
+.form__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 13px 16px;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--c-danger) 30%, transparent);
+  background: var(--c-danger-surface);
+  color: var(--c-danger);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+
+.form__error-icon {
+  flex: none;
+  margin-block-start: 2px;
+}
+
+/* Per-field message, sitting under the control the server rejected. */
+.form__message {
+  font-size: var(--fs-micro);
+  line-height: var(--lh-micro);
+  font-weight: var(--fw-semibold);
+  color: var(--c-danger);
+  margin-block-start: 7px;
+}
+
+/* Whole-form submission feedback, next to the submit button. Hidden by
+   default; a page's inline script reveals it once the form validates. */
+.form__status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--fs-small);
+  color: var(--c-action);
+}
+
+.form__status[hidden] {
+  display: none;
+}

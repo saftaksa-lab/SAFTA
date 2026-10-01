@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { isEditablePage, getAdminSchema } from '../../../../lib/content/schema/registry';
+import { isEditablePage, getAdminSchema } from '../../../../../lib/content/schema/registry';
 
 /**
  * Serves a page's editable-field layout straight from its schema module
