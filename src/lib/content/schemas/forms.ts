@@ -32,44 +32,12 @@ export const contactHero = defineSingleton<Banner>({
   },
 });
 
-/** The `<option value>`s the contact form submits. English, as they have always been. */
-export const CONTACT_SECTORS = [
-  'Agriculture technology',
-  'Food technology',
-  'Water & irrigation',
-  'Controlled environment agriculture',
-  'Alternative protein',
-  'Supply chain & logistics',
-  'Biotechnology',
-  'Renewable energy',
-  'Data & artificial intelligence',
-  'Research & academia',
-  'Government & policy',
-  'Investment & funding',
-  'Non-profit',
-  'Other',
-] as const;
-
-export const CONTACT_COUNTRIES = [
-  'Saudi Arabia',
-  'United Arab Emirates',
-  'Kuwait',
-  'Qatar',
-  'Bahrain',
-  'Oman',
-  'Egypt',
-  'Jordan',
-  'Netherlands',
-  'United Kingdom',
-  'United States',
-  'Germany',
-  'France',
-  'China',
-  'Japan',
-  'India',
-  'Australia',
-  'Other',
-] as const;
+const CONTACT_MESSAGE_DEFAULTS = {
+  messageLabelAr: 'الرسالة',
+  messageLabelEn: 'Message',
+  messagePlaceholderAr: 'اكتب رسالتك هنا…',
+  messagePlaceholderEn: 'Write your message here…',
+};
 
 const contactFormSchema = z.object({
   ...bilingual('nameLabel', 60),
@@ -79,14 +47,8 @@ const contactFormSchema = z.object({
   ...bilingual('phoneLabel', 60),
   ...bilingual('phoneHint', 160),
   ...bilingual('phonePlaceholder', 80),
-  ...bilingual('companyLabel', 60),
-  ...bilingual('companyPlaceholder', 80),
-  ...bilingual('sectorLabel', 60),
-  ...bilingual('sectorPrompt', 60),
-  sectorOptions: fixedOptions(CONTACT_SECTORS),
-  ...bilingual('countryLabel', 60),
-  ...bilingual('countryPrompt', 60),
-  countryOptions: fixedOptions(CONTACT_COUNTRIES),
+  ...bilingual('messageLabel', 60),
+  ...bilingual('messagePlaceholder', 160),
   ...bilingual('submitLabel', 40),
   ...bilingual('successMessage', 200),
 });
@@ -95,9 +57,17 @@ export type ContactForm = z.infer<typeof contactFormSchema>;
 
 export const contactForm = defineSingleton<ContactForm>({
   key: 'contact_form',
-  version: 1,
+  version: 2,
   schema: contactFormSchema,
-  migrations: [],
+  migrations: [
+    // v1 → v2: the form is down to name, email, phone and a message. The company,
+    // sector and country fields go; the message field arrives with its defaults.
+    (data) => {
+      const dropped = /^(company|sector|country)[A-Z]/;
+      const kept = Object.entries(data as Record<string, unknown>).filter(([key]) => !dropped.test(key));
+      return { ...Object.fromEntries(kept), ...CONTACT_MESSAGE_DEFAULTS };
+    },
+  ],
   initial: {
     nameLabelAr: 'الاسم الكامل',
     nameLabelEn: 'Full Name',
@@ -113,54 +83,7 @@ export const contactForm = defineSingleton<ContactForm>({
     phoneHintEn: 'Kindly add the country code. Exp: +96659xxxxxxx',
     phonePlaceholderAr: '‎+966',
     phonePlaceholderEn: '+966',
-    companyLabelAr: 'اسم الجهة أو الشركة',
-    companyLabelEn: 'Company name',
-    companyPlaceholderAr: 'مثال: الكثبان الخضراء',
-    companyPlaceholderEn: 'e.g. Green Dunes',
-    sectorLabelAr: 'القطاع',
-    sectorLabelEn: 'Sector',
-    sectorPromptAr: 'الرجاء الاختيار',
-    sectorPromptEn: 'Please Select',
-    sectorOptions: optionsFrom([
-      ['Agriculture technology', 'تقنيات الزراعة', 'Agriculture technology'],
-      ['Food technology', 'تقنيات الأغذية', 'Food technology'],
-      ['Water & irrigation', 'المياه والري', 'Water & irrigation'],
-      ['Controlled environment agriculture', 'الزراعة البيئية المحكومة', 'Controlled environment agriculture'],
-      ['Alternative protein', 'البروتين البديل', 'Alternative protein'],
-      ['Supply chain & logistics', 'سلاسل الإمداد والخدمات اللوجستية', 'Supply chain & logistics'],
-      ['Biotechnology', 'التقنية الحيوية', 'Biotechnology'],
-      ['Renewable energy', 'الطاقة المتجددة', 'Renewable energy'],
-      ['Data & artificial intelligence', 'البيانات والذكاء الاصطناعي', 'Data & artificial intelligence'],
-      ['Research & academia', 'البحث والأوساط الأكاديمية', 'Research & academia'],
-      ['Government & policy', 'الجهات الحكومية والسياسات', 'Government & policy'],
-      ['Investment & funding', 'الاستثمار والتمويل', 'Investment & funding'],
-      ['Non-profit', 'غير ربحي', 'Non-profit'],
-      ['Other', 'أخرى', 'Other'],
-    ]),
-    countryLabelAr: 'الدولة',
-    countryLabelEn: 'Country',
-    countryPromptAr: 'الرجاء الاختيار',
-    countryPromptEn: 'Please Select',
-    countryOptions: optionsFrom([
-      ['Saudi Arabia', 'المملكة العربية السعودية', 'Saudi Arabia'],
-      ['United Arab Emirates', 'الإمارات العربية المتحدة', 'United Arab Emirates'],
-      ['Kuwait', 'الكويت', 'Kuwait'],
-      ['Qatar', 'قطر', 'Qatar'],
-      ['Bahrain', 'البحرين', 'Bahrain'],
-      ['Oman', 'عُمان', 'Oman'],
-      ['Egypt', 'مصر', 'Egypt'],
-      ['Jordan', 'الأردن', 'Jordan'],
-      ['Netherlands', 'هولندا', 'Netherlands'],
-      ['United Kingdom', 'المملكة المتحدة', 'United Kingdom'],
-      ['United States', 'الولايات المتحدة', 'United States'],
-      ['Germany', 'ألمانيا', 'Germany'],
-      ['France', 'فرنسا', 'France'],
-      ['China', 'الصين', 'China'],
-      ['Japan', 'اليابان', 'Japan'],
-      ['India', 'الهند', 'India'],
-      ['Australia', 'أستراليا', 'Australia'],
-      ['Other', 'دولة أخرى', 'Other'],
-    ]),
+    ...CONTACT_MESSAGE_DEFAULTS,
     submitLabelAr: 'إرسال',
     submitLabelEn: 'Submit',
     successMessageAr: 'تم استلام طلبك. سنتواصل معك قريبًا.',

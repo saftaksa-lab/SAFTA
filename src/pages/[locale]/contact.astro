@@ -16,7 +16,7 @@ const hero = getSingleton('contact_hero');
 const form = getSingleton('contact_form');
 const info = getSingleton('contact_info');
 // Placeholders swap through data-ar-placeholder, which i18n.js assigns as plain text.
-const placeholder = (name: 'namePlaceholder' | 'emailPlaceholder' | 'phonePlaceholder' | 'companyPlaceholder') => {
+const placeholder = (name: 'namePlaceholder' | 'emailPlaceholder' | 'phonePlaceholder' | 'messagePlaceholder') => {
   const field = pick(form, name);
   return { placeholder: english(field), 'data-ar-placeholder': field.ar };
 };
@@ -58,30 +58,9 @@ const placeholder = (name: 'namePlaceholder' | 'emailPlaceholder' | 'phonePlaceh
 </div>
 </div>
 
-<div class="row-2">
 <div class="field">
-<Text as="label" field={pick(form, 'companyLabel')} for="c-company" required />
-<input autocomplete="organization" id="c-company" {...placeholder('companyPlaceholder')} name="company" required=""/>
-</div>
-<div class="field">
-<Text as="label" field={pick(form, 'sectorLabel')} for="c-sector" required />
-<select id="c-sector" name="sector" required="">
-<Text as="option" field={pick(form, 'sectorPrompt')} value="" />
-{form.sectorOptions.map((option) => (
-<Text as="option" field={pick(option, 'label')} value={option.value} />
-))}
-</select>
-</div>
-</div>
-
-<div class="field">
-<Text as="label" field={pick(form, 'countryLabel')} for="c-country" />
-<select id="c-country" name="country">
-<Text as="option" field={pick(form, 'countryPrompt')} value="" />
-{form.countryOptions.map((option) => (
-<Text as="option" field={pick(option, 'label')} value={option.value} />
-))}
-</select>
+<Text as="label" field={pick(form, 'messageLabel')} for="c-message" required />
+<textarea id="c-message" {...placeholder('messagePlaceholder')} name="message" required="" rows="6"></textarea>
 </div>
 
 <div class="form-actions">
