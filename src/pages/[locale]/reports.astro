@@ -1,0 +1,75 @@
+---
+// Ported from waterstrip's reports page and built from SAFTA's own inner-page
+// pieces (.page-hero, .sec-head, .docs/.doc rows). Each report carries an Arabic
+// and an English link list, and the page shows only the list for its own
+// language — no fallback (src/lib/content/schemas/reports.ts).
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Text from '../../components/content/Text.astro';
+import { getSingleton } from '../../lib/content/cache';
+import { pick } from '../../lib/bilingual';
+import { crumbHome, reportsUi } from '../../lib/ui';
+import { isLocale } from '../../lib/locale';
+
+export function getStaticPaths() {
+  return [{ params: { locale: 'en' } }, { params: { locale: 'ar' } }];
+}
+const { locale } = Astro.params;
+if (!isLocale(locale)) return new Response(null, { status: 404 });
+
+const banner = getSingleton('reports_banner');
+const intro = getSingleton('reports_intro');
+const { items: reports } = getSingleton('reports_list');
+
+// i18n.js swaps text only, never attributes, so the link's title is chosen here.
+const external = reportsUi.external[locale];
+
+/** The host shown beside each link, so a reader knows where it leads. */
+function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return '';
+  }
+}
+---
+<BaseLayout
+  locale={locale}
+  title="Reports | SAFTA"
+  titleAr="التقارير | التحالف السعودي"
+  description="The Alliance’s reports and studies on agrifood technology."
+  current="reports"
+>
+<main>
+<section class="page-hero page-hero--plain">
+<div class="wrap">
+<p class="crumbs"><Text as="a" field={crumbHome} href={`/${locale}`} /><span>/</span><Text field={pick(banner, 'title')} /></p>
+<Text as="h1" field={pick(banner, 'title')} />
+<Text as="p" field={pick(banner, 'lede')} class="lede" />
+</div>
+</section>
+<section class="ribbon">
+<div class="wrap">
+<div class="sec-head reveal">
+<div class="sec-head__txt">
+<Text as="p" field={pick(intro, 'eyebrow')} class="eyebrow" />
+<Text as="h2" field={pick(intro, 'heading')} class="h-section" />
+<Text as="p" field={pick(intro, 'lede')} class="lede" />
+</div>
+</div>
+{reports.length === 0 && <Text as="p" field={reportsUi.empty} class="lede reveal" />}
+{reports.map((report) => {
+  const links = locale === 'en' ? report.linksEn : report.linksAr;
+  return (
+    <div class="docs reveal">
+      <Text as="h3" field={pick(report, 'title')} />
+      <Text as="p" field={pick(report, 'description')} class="docs__desc" />
+      {links.map((link) => (
+        <div class="doc"><div class="doc__row"><a href={link.url} rel="noopener" target="_blank" title={external}>{link.label}</a><span class="doc__info">{hostOf(link.url)}</span><a aria-label={`${link.label} — ${external}`} class="doc__btn" href={link.url} rel="noopener" target="_blank" tabindex="-1"><svg fill="none" height="18" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="18" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"></path></svg></a></div></div>
+      ))}
+    </div>
+  );
+})}
+</div>
+</section>
+</main>
+</BaseLayout>

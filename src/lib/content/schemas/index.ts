@@ -37,6 +37,7 @@ import {
   registerForm,
   registerInfo,
 } from './forms.ts';
+import { reportsBanner, reportsIntro, reportsList } from './reports.ts';
 import type { SingletonDefinition } from './types.ts';
 
 /** Iteration type. The payload generic is erased because the surfaces differ. */
@@ -64,6 +65,9 @@ export const singletons = {
   members_intro: membersIntro,
   members_map: membersMap,
   member_chrome: memberChrome,
+  reports_banner: reportsBanner,
+  reports_intro: reportsIntro,
+  reports_list: reportsList,
   contact_hero: contactHero,
   contact_form: contactForm,
   contact_info: contactInfo,

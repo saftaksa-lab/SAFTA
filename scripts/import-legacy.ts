@@ -773,6 +773,10 @@ const built = {
     ...register.text('t044', 'questionsLabel'),
     email: initial('register_info').email,
   },
+  // No legacy counterpart: the reports page is new in v5 (ported from waterstrip).
+  reports_banner: initial('reports_banner'),
+  reports_intro: initial('reports_intro'),
+  reports_list: initial('reports_list'),
 } satisfies { [K in SingletonKey]: SingletonData<K> };
 
 /**

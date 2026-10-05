@@ -8,14 +8,14 @@ import { z } from 'zod';
 import { defineSingleton } from './types.ts';
 import { bilingual, contactEmail, itemId, mediaId } from './fields.ts';
 
-const bannerSchema = z.object({
+export const bannerSchema = z.object({
   ...bilingual('title', 80),
   ...bilingual('lede', 400),
 });
 
 export type Banner = z.infer<typeof bannerSchema>;
 
-const introSchema = z.object({
+export const introSchema = z.object({
   ...bilingual('eyebrow', 60),
   ...bilingual('heading', 120),
   ...bilingual('lede', 600),

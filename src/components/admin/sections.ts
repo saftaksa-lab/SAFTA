@@ -27,6 +27,28 @@ const intro = (title: string): SectionSpec => ({ title, fields: [eyebrow, headin
 const PROSE_HINT =
   'نص عادي. للخط العريض: **نص**، وللرابط: [النص](‎/terms‎). لا تُقبل وسوم HTML.';
 
+/** One of a report's two link lists. The label is in that list's language only. */
+const reportLinks = (name: string, label: string, hint: string, itemLabel: string): FieldSpec => ({
+  kind: 'list',
+  name,
+  label,
+  hint,
+  itemLabel,
+  idPrefix: 'rl',
+  min: 0,
+  max: 10,
+  fields: [
+    { kind: 'plain', name: 'label', label: 'نص الرابط' },
+    {
+      kind: 'plain',
+      name: 'url',
+      label: 'الرابط',
+      hint: 'رابط كامل يبدأ بـ https://‎، ويُفتح في نافذة جديدة.',
+      ltr: true,
+    },
+  ],
+});
+
 // Singletons -------------------------------------------------------------------
 
 export const sections = {
@@ -294,6 +316,29 @@ export const sections = {
       { kind: 'text', name: 'crumbMedia', label: 'اسم المركز الإعلامي في مسار التنقل' },
       { kind: 'text', name: 'backLabel', label: 'نص زر العودة' },
       { kind: 'text', name: 'registerLabel', label: 'نص زر التسجيل', hint: 'يفتح الزر صفحة «سجّل اهتمامك».' },
+    ],
+  },
+  reports_banner: banner('أعلى الصفحة'),
+  reports_intro: intro('المقدّمة'),
+  reports_list: {
+    title: 'التقارير',
+    lede: 'قائمة التقارير في صفحة «التقارير». لكل تقرير روابط عربية تظهر في النسخة العربية من الموقع فقط، وروابط إنجليزية تظهر في النسخة الإنجليزية فقط.',
+    fields: [
+      {
+        kind: 'list',
+        name: 'items',
+        label: 'التقارير',
+        itemLabel: 'التقرير',
+        idPrefix: 'rp',
+        min: 0,
+        max: 30,
+        fields: [
+          { kind: 'text', name: 'title', label: 'العنوان' },
+          { kind: 'text', name: 'description', label: 'الوصف', rows: 3 },
+          reportLinks('linksAr', 'الروابط العربية', 'تظهر في النسخة العربية من الموقع فقط.', 'رابط عربي'),
+          reportLinks('linksEn', 'الروابط الإنجليزية', 'تظهر في النسخة الإنجليزية من الموقع فقط. اكتب نص الرابط بالإنجليزية.', 'رابط إنجليزي'),
+        ],
+      },
     ],
   },
   members_banner: banner('أعلى الصفحة'),

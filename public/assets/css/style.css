@@ -3383,3 +3383,8 @@ html, body { max-width: 100%; overflow-x: hidden; }
 
 /* ★ v5 — ضمان إخفاء العناصر ذات hidden (بعض الأقسام تستخدم display:flex) */
 [hidden] { display: none !important; } /* v5-hidden-guard */
+
+/* ★ v5 — صفحة التقارير (src/pages/[locale]/reports.astro): وصف تحت عنوان كل تقرير، ومسافة بين التقارير المتتالية.
+   Matches .docs > h3's inset and .doc__panel p's type. */
+.docs__desc { padding-inline: 10px; margin-bottom: 12px; max-width: 780px; font-size: 15px; line-height: 24px; color: var(--c-text-soft); }
+.docs + .docs { margin-top: 24px; }

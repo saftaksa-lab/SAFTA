@@ -18,3 +18,9 @@ export const memberCategoryLabels: Record<(typeof MEMBER_CATEGORIES)[number], Bi
   private: { ar: 'قطاع خاص', en: 'Private sector' },
   nonprofit: { ar: 'غير ربحي', en: 'Non-profit' },
 };
+
+/** The reports page's fixed lines: its empty state and the new-tab note on each link. */
+export const reportsUi = {
+  empty: { ar: 'لا توجد تقارير منشورة حاليًا.', en: 'No reports have been published yet.' },
+  external: { ar: 'يفتح في نافذة جديدة', en: 'Opens in a new tab' },
+} satisfies Record<string, Bilingual>;

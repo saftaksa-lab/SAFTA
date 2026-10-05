@@ -1,0 +1,8 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import Panels from '../../components/admin/Panels.astro';
+---
+
+<AdminLayout title="التقارير" lede="صفحة التقارير وروابطها.">
+  <Panels panels={['reports_banner', 'reports_intro', 'reports_list']} />
+</AdminLayout>
