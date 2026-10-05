@@ -595,6 +595,14 @@ about.same('t012', 't011', { swapped: true });
 about.same('t014', 't011', { swapped: true });
 about.drop(['t023'], '"See the working groups": not on any page');
 
+/** `t015`…`t028` for (15, 28): a run of legacy text keys. */
+const textKeys = (from: number, to: number) =>
+  Array.from({ length: to - from + 1 }, (_, i) => `t${String(from + i).padStart(3, '0')}`);
+contact.drop(
+  ['t011', 'p012', 't013', 't014', ...textKeys(15, 28), 't032', 't033', ...textKeys(34, 51)],
+  'The contact form lost its company, sector and country fields (SAFTA, October 2026).',
+);
+
 const foundingEyebrow = about.text('t051', 'eyebrow');
 
 const built = {
