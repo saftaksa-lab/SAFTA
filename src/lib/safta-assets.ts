@@ -22,10 +22,8 @@ export const heroImages: Record<string, string> = {
   'hero-3': 'assets/img/green-dunes/gd-09-racks-hero.webp',
 };
 
-export const discoverImages: Record<string, string> = {
-  'discover-1': 'assets/img/gallery/kaust-1-thumb.jpg',
-  'discover-2': 'assets/img/gallery/kaust-4-thumb.jpg',
-};
+/** The home page's working-groups block. */
+export const DISCOVER_IMG = 'assets/img/gallery/kaust-1.jpg';
 
 export const challengeImages: Record<string, string> = {
   'water-scarcity': 'assets/img/placeholders/ph-water-scarcity.svg',

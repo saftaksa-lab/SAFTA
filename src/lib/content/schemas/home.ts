@@ -80,28 +80,67 @@ export const homeHero = defineSingleton<HomeHero>({
 // ---------------------------------------------------------------------------
 // home_discover
 
-const discoverTile = z.object({
-  id: itemId,
+const homeDiscoverSchema = z.object({
   ...bilingual('eyebrow', 60),
-  ...bilingual('heading', 160),
+  ...bilingual('intro', 400),
+  // The working-groups block below the intro: a boxed image with this copy beside it.
+  ...bilingual('title', 60),
+  ...bilingual('lede', 200),
+  ...bilingual('body', 500),
+  ...bilingual('ctaLabel', 60),
   href: siteHref,
   imageId: mediaId.nullable(),
 });
 
-const homeDiscoverSchema = z.object({
-  ...bilingual('eyebrow', 60),
-  ...bilingual('intro', 400),
-  /** Fixed at two: the markup is a two-tile row. */
-  tiles: z.array(discoverTile).length(2),
-});
-
 export type HomeDiscover = z.infer<typeof homeDiscoverSchema>;
+
+const DISCOVER_BODY = {
+  bodyAr:
+    'تضم مجموعات العمل خبراء من الجهات الحكومية والمؤسسات البحثية والقطاع الخاص، يعملون معًا على تطوير حلول تقنية لتحديات قطاع الزراعة والغذاء.',
+  bodyEn:
+    'Each working group brings together experts from government, research and industry to develop technology solutions to the sector’s challenges.',
+  ctaLabelAr: 'استعرض مجموعات العمل',
+  ctaLabelEn: 'Explore the working groups',
+};
 
 export const homeDiscover = defineSingleton<HomeDiscover>({
   key: 'home_discover',
-  version: 1,
+  version: 2,
   schema: homeDiscoverSchema,
-  migrations: [],
+  migrations: [
+    // v1 → v2: the two-tile row became one working-groups block (SAFTA, October 2026).
+    // The first tile carries over; the second ("What we do") is dropped.
+    (data) => {
+      const v1 = data as {
+        eyebrowAr: string;
+        eyebrowEn: string;
+        introAr: string;
+        introEn: string;
+        tiles: Array<{
+          eyebrowAr: string;
+          eyebrowEn: string;
+          headingAr: string;
+          headingEn: string;
+          href: string;
+          imageId: string | null;
+        }>;
+      };
+      const tile = v1.tiles[0]!;
+      return {
+        eyebrowAr: v1.eyebrowAr,
+        eyebrowEn: v1.eyebrowEn,
+        introAr: v1.introAr,
+        introEn: v1.introEn,
+        titleAr: tile.eyebrowAr,
+        titleEn: tile.eyebrowEn,
+        ledeAr: tile.headingAr,
+        ledeEn: tile.headingEn,
+        ...DISCOVER_BODY,
+        href: tile.href,
+        imageId: tile.imageId,
+      };
+    },
+  ],
   initial: {
     eyebrowAr: 'تعرّف على التحالف',
     eyebrowEn: 'Discover SAFTA',
@@ -109,26 +148,13 @@ export const homeDiscover = defineSingleton<HomeDiscover>({
       'نحن التحالف الوطني السعودي لتقنيات الزراعة والغذاء — نجمع الجهات الحكومية والمؤسسات البحثية والقطاع الخاص لتعزيز الأمن الغذائي.',
     introEn:
       'We are Saudi Arabia’s national alliance for agrifood technology — bringing together government entities, research institutions and the private sector to strengthen food security.',
-    tiles: [
-      {
-        id: 'discover-1',
-        eyebrowAr: 'مجموعات العمل',
-        eyebrowEn: 'Working groups',
-        headingAr: '9 مجموعات عمل تعالج تحديات الزراعة والغذاء في المملكة',
-        headingEn: '9 working groups tackling the Kingdom’s agrifood challenges',
-        href: '/technologies',
-        imageId: null,
-      },
-      {
-        id: 'discover-2',
-        eyebrowAr: 'ما نقوم به',
-        eyebrowEn: 'What we do',
-        headingAr: 'من الري الذكي إلى خفض الفاقد الغذائي — الابتكار هو المفتاح',
-        headingEn: 'From smart irrigation to food-loss reduction, innovation is key',
-        href: '/about',
-        imageId: null,
-      },
-    ],
+    titleAr: 'مجموعات العمل',
+    titleEn: 'Working groups',
+    ledeAr: '9 مجموعات عمل تعالج تحديات الزراعة والغذاء في المملكة',
+    ledeEn: '9 working groups tackling the Kingdom’s agrifood challenges',
+    ...DISCOVER_BODY,
+    href: '/technologies',
+    imageId: null,
   },
 });
 
@@ -136,34 +162,69 @@ export const homeDiscover = defineSingleton<HomeDiscover>({
 // home_challenges_intro
 
 const homeChallengesIntroSchema = z.object({
-  ...bilingual('eyebrow', 60),
-  ...bilingual('heading', 400),
+  /** The section heading above the challenge cards. */
+  ...bilingual('title', 60),
 });
 
 export type HomeChallengesIntro = z.infer<typeof homeChallengesIntroSchema>;
 
 export const homeChallengesIntro = defineSingleton<HomeChallengesIntro>({
   key: 'home_challenges_intro',
-  version: 1,
+  version: 2,
   schema: homeChallengesIntroSchema,
-  migrations: [],
+  migrations: [
+    // v1 → v2: the intro paragraph was removed and the eyebrow became the heading (SAFTA, October 2026).
+    (data) => {
+      const v1 = data as { eyebrowAr: string; eyebrowEn: string };
+      return { titleAr: v1.eyebrowAr, titleEn: v1.eyebrowEn };
+    },
+  ],
   initial: {
-    eyebrowAr: 'التحديات',
-    eyebrowEn: 'Challenges',
-    headingAr:
-      'يواجه قطاع الزراعة والغذاء مجموعة من التحديات المترابطة التي تؤثّر في الإنتاجية والاستدامة والأمن الغذائي والمرونة الاقتصادية.',
-    headingEn:
-      'The agrifood sector is facing a range of interconnected challenges that are affecting productivity, sustainability, food security, and economic resilience.',
+    titleAr: 'التحديات',
+    titleEn: 'Challenges',
   },
 });
 
 // ---------------------------------------------------------------------------
-// challenges — read by the home slider and the about grid
+// challenges — read by the home cards and the about grid
+
+/** The icons a challenge card can show. The drawings are in src/lib/challenge-icons.ts. */
+export const CHALLENGE_ICONS = [
+  'droplet',
+  'sun',
+  'bug',
+  'sprout',
+  'trash',
+  'globe',
+  'cpu',
+  'leaf',
+  'chart',
+  'users',
+] as const;
+export type ChallengeIcon = (typeof CHALLENGE_ICONS)[number];
+
+const SHIPPED_ICONS: Record<string, ChallengeIcon> = {
+  'water-scarcity': 'droplet',
+  'harsh-climate': 'sun',
+  'pest-risks': 'bug',
+  'soil-degradation': 'sprout',
+  'food-waste': 'trash',
+  'import-dependency': 'globe',
+  'tech-gaps': 'cpu',
+};
+
+/** The icon a challenge starts with: the shipped one for the seven SAFTA launched with, a leaf otherwise. */
+export function defaultChallengeIcon(id: string): ChallengeIcon {
+  return SHIPPED_ICONS[id] ?? 'leaf';
+}
 
 const challenge = z.object({
   id: itemId,
   ...bilingual('title', 120),
   ...bilingual('description', 400),
+  /** Shown on the home page cards. */
+  icon: z.enum(CHALLENGE_ICONS),
+  /** Shown on the about page grid only; the home cards have no image. */
   imageId: mediaId.nullable(),
 });
 
@@ -176,9 +237,15 @@ export type Challenge = z.infer<typeof challenge>;
 
 export const challenges = defineSingleton<Challenges>({
   key: 'challenges',
-  version: 1,
+  version: 2,
   schema: challengesSchema,
-  migrations: [],
+  migrations: [
+    // v1 → v2: the home slider became a grid of icon cards (SAFTA, October 2026).
+    (data) => {
+      const v1 = data as { items: Array<{ id: string }> };
+      return { items: v1.items.map((item) => ({ ...item, icon: defaultChallengeIcon(item.id) })) };
+    },
+  ],
   initial: {
     items: [
       {
@@ -188,6 +255,7 @@ export const challenges = defineSingleton<Challenges>({
         descriptionAr: 'الزراعة هي أكبر مستهلك للمياه في المملكة، ما يجعل رفع الكفاءة أولوية وطنية.',
         descriptionEn:
           'Agriculture is the largest consumer of water in the Kingdom, making efficiency a national priority.',
+        icon: 'droplet',
         imageId: null,
       },
       {
@@ -196,6 +264,7 @@ export const challenges = defineSingleton<Challenges>({
         titleEn: 'Harsh climate conditions',
         descriptionAr: 'ارتفاع درجات الحرارة ومحدودية الأراضي الصالحة للزراعة يقيّدان ما يمكن زراعته وأين.',
         descriptionEn: 'High temperatures and limited arable land constrain what can be grown, and where.',
+        icon: 'sun',
         imageId: null,
       },
       {
@@ -204,6 +273,7 @@ export const challenges = defineSingleton<Challenges>({
         titleEn: 'Pest risks',
         descriptionAr: 'خسائر المحاصيل بسبب الآفات والأمراض تخفض الإنتاجية وترفع تكاليف المدخلات.',
         descriptionEn: 'Crop losses from pests and disease reduce yields and increase input costs.',
+        icon: 'bug',
         imageId: null,
       },
       {
@@ -212,6 +282,7 @@ export const challenges = defineSingleton<Challenges>({
         titleEn: 'Soil degradation',
         descriptionAr: 'الملوحة وتراجع المادة العضوية يقلّلان القدرة الإنتاجية للأراضي الزراعية.',
         descriptionEn: 'Salinity and declining organic matter reduce the productive capacity of farmland.',
+        icon: 'sprout',
         imageId: null,
       },
       {
@@ -220,6 +291,7 @@ export const challenges = defineSingleton<Challenges>({
         titleEn: 'Food waste',
         descriptionAr: 'الفاقد بين الحصاد والاستهلاك يضعف العائد من كل لتر ماء مستخدم.',
         descriptionEn: 'Losses between harvest and consumption weaken the return on every litre of water used.',
+        icon: 'trash',
         imageId: null,
       },
       {
@@ -230,6 +302,7 @@ export const challenges = defineSingleton<Challenges>({
           'اعتماد نسبة كبيرة من الإمداد الغذائي على الاستيراد يتركه عرضة لتقلّبات الأسعار العالمية واضطرابات سلاسل الإمداد.',
         descriptionEn:
           'A large share of the food supply is imported, leaving it exposed to global price swings and disruptions along trade routes.',
+        icon: 'globe',
         imageId: null,
       },
       {
@@ -240,6 +313,7 @@ export const challenges = defineSingleton<Challenges>({
           'تفاوت الوصول إلى التقنيات الحديثة والإرشاد الزراعي يبطئ تبنّيها في المزارع، وخصوصًا الحيازات الصغيرة.',
         descriptionEn:
           'Uneven access to modern technology and agricultural extension slows adoption on farms, smaller holdings most of all.',
+        icon: 'cpu',
         imageId: null,
       },
     ],

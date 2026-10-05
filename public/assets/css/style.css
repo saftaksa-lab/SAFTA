@@ -342,6 +342,32 @@ ul { margin: 0; padding: 0; list-style: none; }
 }
 .tile:hover .tile__arrow { background: #fff; color: var(--c-text); }
 
+/* Working-groups block: the image in its own rounded box, the copy beside it. */
+.wg-feature {
+  margin-top: 66px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center;
+}
+.wg-feature__txt .h-section { margin: 0 0 22px; color: var(--c-green-deep); }
+.wg-feature__lede { font-size: 20px; line-height: 30px; font-weight: 500; margin: 0 0 16px; }
+.wg-feature__txt .lede { color: var(--c-text-soft); margin: 0 0 34px; max-width: 52ch; }
+.wg-feature__txt .btn-brand { color: #06231D; }
+.wg-feature__media {
+  margin: 0; overflow: hidden; border-radius: 24px;
+  aspect-ratio: 4 / 5; background: var(--c-grey-line);
+  box-shadow: 0 18px 48px rgba(14, 47, 42, .14);
+}
+.wg-feature__media img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform .9s cubic-bezier(.22,1,.36,1);
+}
+.wg-feature__media:hover img { transform: scale(1.04); }
+@media (max-width: 900px) {
+  .wg-feature { grid-template-columns: 1fr; gap: 28px; margin-top: 32px; }
+  .wg-feature__media { order: -1; aspect-ratio: 4 / 3; border-radius: 18px; }
+  .wg-feature__lede { font-size: 16px; line-height: 25px; }
+  .wg-feature__txt .lede { margin-bottom: 24px; }
+}
+
 /* ---------- 10. WHAT WE BELIEVE (5-item drag slider) -------------------- */
 .believe__intro { max-width: 700px; }
 .believe__intro .eyebrow { margin-bottom: 26px; }
@@ -2879,31 +2905,51 @@ html, body { max-width: 100%; overflow-x: hidden; }
 }
 
 /* =======================================================================
-   ★ تعديل ٦ — قسم «التحديات»: شكل واحد موحّد لكل البطاقات
+   ★ تعديل ٦ — قسم «التحديات»: بطاقات بأيقونة بدل شريط الصور
    -----------------------------------------------------------------------
-   كان التصميم متعرّجًا: البطاقة الفردية بارتفاع 320px والزوجية 228px
-   مع إزاحة 46px للأسفل — فتبدو الخمس مختلفة الأحجام والمواضع.
-
-   الآن: مستطيل عرضي واحد بنسبة 16/11 لكل البطاقات، بلا إزاحة ولا فروق.
+   كل تحدٍّ مربّع أبيض بإطار خفيف: الأيقونة في دائرة بجانب العنوان،
+   والوصف تحتهما. ثلاثة أعمدة، ثم عمودان، ثم عمود واحد على الجوال.
    ======================================================================= */
-.challenges .slide:nth-child(odd)  img,
-.challenges .slide:nth-child(even) img {
-  height: auto !important;
-  margin-top: 0 !important;
+.challenges__title { margin: 0 0 48px; color: var(--c-green-deep); }
+.chcards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
 }
-.challenges .slide figure {
-  aspect-ratio: 16 / 11;              /* المستطيل العرضي المعتمد */
-  overflow: hidden;
+.chcard {
+  background: var(--c-white);
+  border: 1px solid var(--c-grey-line);
+  border-radius: 18px;
+  padding: 28px 28px 30px;
+  box-shadow: 0 6px 24px -18px rgba(14, 47, 42, .35);
+  transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
 }
-.challenges .slide figure img {
-  width: 100%;
-  height: 100% !important;
-  object-fit: cover;
-  display: block;
+.chcard:hover {
+  border-color: rgba(70, 137, 200, .45);
+  box-shadow: 0 14px 34px -20px rgba(14, 47, 42, .4);
+  transform: translateY(-2px);
 }
-/* المحاذاة: كل البطاقات تبدأ من نفس الخط العلوي */
-.challenges .slider__track { align-items: flex-start; }
-.challenges .slide { align-self: flex-start; }
+.chcard__head { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.chcard__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(70, 137, 200, .12);
+  color: var(--c-green-deep);
+}
+.chcard h3 { margin: 0; font-size: 19px; line-height: 27px; font-weight: 700; color: var(--c-text); }
+.chcard p { margin: 0; font-size: 15px; line-height: 25px; color: var(--c-text-soft); }
+@media (max-width: 900px) {
+  .chcards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .challenges__title { margin-bottom: 32px; }
+}
+@media (max-width: 600px) {
+  .chcards { grid-template-columns: 1fr; }
+  .chcard { padding: 22px 20px 24px; }
+}
 
 /* =======================================================================
    ★ تعديل ٧ — «جوائز التميّز» بحالة قريبًا

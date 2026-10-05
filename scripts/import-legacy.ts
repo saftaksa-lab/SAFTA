@@ -54,6 +54,7 @@ import {
 import { MEDIA_MIME_TYPES } from '../src/lib/content/media-paths.ts';
 import type { MediaInput } from '../src/lib/content/repo.ts';
 import { singletons, type SingletonData, type SingletonKey } from '../src/lib/content/schemas/index.ts';
+import { defaultChallengeIcon } from '../src/lib/content/schemas/home.ts';
 import { crumbHome, memberCategoryLabels } from '../src/lib/ui.ts';
 
 const USAGE = 'Usage: node scripts/import-legacy.ts [--dry-run] [--replace] [--from <dir>] [--out <file>]';
@@ -92,19 +93,25 @@ const problem = (message: string) => void problems.push(message);
 // Known content fixes. Each applies only while the stored value still matches
 // `from` exactly, so a value someone has since corrected is left alone.
 
-const FIXES: Array<{ key: string; field: 'ar' | 'en' | 'alt_ar'; from: string; to: string }> = [
+const FIXES: Array<{ key: string; field: 'ar' | 'en' | 'alt_ar' | 'src'; from: string; to: string }> = [
   { key: 'contact:t002', field: 'ar', from: 'تواصل معنا kuyiky', to: 'تواصل معنا' },
-  // The discover tiles' Arabic alt text was a copy of the English.
+  // The discover image's Arabic alt text was a copy of the English.
   {
     key: 'index:i018',
     field: 'alt_ar',
     from: 'Open raceway ponds for algae cultivation at KAUST',
     to: 'أحواض مفتوحة لاستزراع الطحالب في كاوست',
   },
-  { key: 'index:i021', field: 'alt_ar', from: 'What we do', to: 'ما نقوم به' },
+  // The working-groups block shows this photo at half the page width; the thumbnail is too small.
+  {
+    key: 'index:i018',
+    field: 'src',
+    from: 'assets/img/gallery/kaust-1-thumb.jpg',
+    to: 'assets/img/gallery/kaust-1.jpg',
+  },
 ];
 
-function fixed(key: string, field: 'ar' | 'en' | 'alt_ar', value: string): string {
+function fixed(key: string, field: 'ar' | 'en' | 'alt_ar' | 'src', value: string): string {
   const fix = FIXES.find((f) => f.key === key && f.field === field && f.from === value);
   return fix ? fix.to : value;
 }
@@ -365,7 +372,8 @@ class LegacyPage {
   async image(prefix: string, fallbackAlt: { ar: string; en: string }): Promise<string | null> {
     const value = this.raw(prefix) as { src?: unknown } | undefined;
     const where = `${this.name}:${prefix}`;
-    return image(value?.src, pageAlt(value, where, fallbackAlt), where);
+    const src = typeof value?.src === 'string' ? fixed(where, 'src', value.src) : value?.src;
+    return image(src, pageAlt(value, where, fallbackAlt), where);
   }
 
   /** Read and discarded, with the reason kept here rather than in a comment elsewhere. */
@@ -509,30 +517,24 @@ for (const [i, keys] of heroKeys.entries()) {
   });
 }
 
-const discoverKeys = [
-  { image: 'i018', eyebrow: 't019', heading: 't020' },
-  { image: 'i021', eyebrow: 't022', heading: 't023' },
-];
+// The legacy page had two tiles; the home page now keeps only the working-groups one.
+const discoverTitle = index.text('t019', 'title');
 const homeDiscover: SingletonData<'home_discover'> = {
   ...index.text('t016', 'eyebrow'),
   ...index.text('t017', 'intro'),
-  tiles: [],
+  ...discoverTitle,
+  ...index.text('t020', 'lede'),
+  bodyAr: initial('home_discover').bodyAr,
+  bodyEn: initial('home_discover').bodyEn,
+  ctaLabelAr: initial('home_discover').ctaLabelAr,
+  ctaLabelEn: initial('home_discover').ctaLabelEn,
+  href: initial('home_discover').href,
+  imageId: await index.image('i018', { ar: discoverTitle.titleAr, en: discoverTitle.titleEn }),
 };
-for (const [i, keys] of discoverKeys.entries()) {
-  const eyebrow = index.text(keys.eyebrow, 'eyebrow');
-  homeDiscover.tiles.push({
-    id: initial('home_discover').tiles[i]!.id,
-    ...eyebrow,
-    ...index.text(keys.heading, 'heading'),
-    href: initial('home_discover').tiles[i]!.href,
-    imageId: await index.image(keys.image, { ar: eyebrow.eyebrowAr, en: eyebrow.eyebrowEn }),
-  });
-}
+index.drop(['i021', 't022', 't023'], 'The "What we do" tile was removed from the home page (SAFTA, October 2026).');
 
-const homeChallengesIntro: SingletonData<'home_challenges_intro'> = {
-  ...index.text('t024', 'eyebrow'),
-  ...index.text('t025', 'heading'),
-};
+const homeChallengesIntro: SingletonData<'home_challenges_intro'> = index.text('t024', 'title');
+index.drop(['t025'], 'The challenges intro paragraph was removed from the home page (SAFTA, October 2026).');
 
 const awardKeys = [
   ['t049', 't050'],
@@ -563,6 +565,7 @@ for (const [id, r] of records('challenges', ['title', 'description', 'image'])) 
     id,
     ...title,
     ...pair(r.description, 'description', `${where}.description`),
+    icon: defaultChallengeIcon(id),
     imageId: await image((r.image as { src?: unknown } | undefined)?.src, titleAlt(title), `${where}.image`),
   });
 }

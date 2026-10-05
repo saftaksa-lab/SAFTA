@@ -4,7 +4,8 @@ import Text from '../../components/content/Text.astro';
 import Image from '../../components/content/Image.astro';
 import { getSingleton } from '../../lib/content/cache';
 import { english, localizeHref, pick } from '../../lib/bilingual';
-import { challengeImages, discoverImages, heroImages, imageFor, partnerLogos } from '../../lib/safta-assets';
+import { DISCOVER_IMG, heroImages, imageFor, partnerLogos } from '../../lib/safta-assets';
+import { challengeIcons } from '../../lib/challenge-icons';
 import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
@@ -16,7 +17,7 @@ if (!isLocale(locale)) return new Response(null, { status: 404 });
 const hero = getSingleton('home_hero');
 const discover = getSingleton('home_discover');
 const challengesIntro = getSingleton('home_challenges_intro');
-// One list behind both this slider and the about page's card grid.
+// One list behind both these cards and the about page's grid.
 const challenges = getSingleton('challenges').items;
 const awards = getSingleton('home_awards');
 const partners = getSingleton('home_partners').items;
@@ -75,42 +76,37 @@ const partners = getSingleton('home_partners').items;
 <Text as="p" field={pick(discover, 'eyebrow')} class="eyebrow" />
 <Text as="h2" field={pick(discover, 'intro')} class="h-intro" />
 </div>
-<div class="card-row bleed reveal" style="margin-top:66px">
-{discover.tiles.map((tile) => (
-<a class="tile" href={localizeHref(locale, tile.href)}>
-<Image media={tile.imageId} fallback={imageFor(discoverImages, tile.id)} />
-<div class="tile__txt">
-<Text as="p" field={pick(tile, 'eyebrow')} class="eyebrow eyebrow--light" />
-<Text as="h3" field={pick(tile, 'heading')} />
-</div>
-<span class="tile__arrow"><svg fill="none" height="14" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="14"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></span>
+<div class="wg-feature reveal">
+<div class="wg-feature__txt">
+<Text as="h3" field={pick(discover, 'title')} class="h-section" />
+<Text as="p" field={pick(discover, 'lede')} class="wg-feature__lede" />
+<Text as="p" field={pick(discover, 'body')} class="lede" />
+<a class="btn-brand" href={localizeHref(locale, discover.href)}>
+<Text as="span" field={pick(discover, 'ctaLabel')} />
+<svg fill="none" height="15" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24" width="15"><path d="M5 12h13M13 6l6 6-6 6"></path></svg>
 </a>
-))}
+</div>
+<figure class="wg-feature__media">
+<Image media={discover.imageId} fallback={DISCOVER_IMG} loading="lazy" />
+</figure>
 </div>
 </div>
 </section>
 <!-- =============== 3. CHALLENGES =============== -->
-<section class="ribbon believe challenges" id="challenges">
+<section class="ribbon challenges" id="challenges">
 <div class="wrap">
-<div class="believe__intro reveal">
-<Text as="p" field={pick(challengesIntro, 'eyebrow')} class="eyebrow" />
-<Text as="h2" field={pick(challengesIntro, 'heading')} class="h-intro" />
-<div class="slider-nav" id="believeNav">
-<button aria-label="Previous" class="slider-nav__btn" data-dir="prev" type="button"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="16"><path d="M19 12H6M13 6l-6 6 6 6"></path></svg></button>
-<button aria-label="Next" class="slider-nav__btn" data-dir="next" type="button"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></button>
-</div>
-</div>
-<div class="slider bleed reveal" id="believeSlider" role="group" style="margin-top:64px" tabindex="0">
-<div class="slider__track">
+<Text as="h2" field={pick(challengesIntro, 'title')} class="h-section challenges__title reveal" />
+<div class="chcards reveal">
 {challenges.map((ch) => (
-  <article class="slide">
-    <figure><Image media={ch.imageId} fallback={imageFor(challengeImages, ch.id)} alt={english(pick(ch, 'title'))} loading="lazy" /></figure>
-    <Text as="h4" field={pick(ch, 'title')} />
+  <article class="chcard">
+    <div class="chcard__head">
+      <span class="chcard__icon" aria-hidden="true"><svg fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" viewBox="0 0 24 24" width="24" set:html={challengeIcons[ch.icon]} /></span>
+      <Text as="h3" field={pick(ch, 'title')} />
+    </div>
+    <Text as="p" field={pick(ch, 'description')} />
   </article>
 ))}
 </div>
-</div>
-<div class="scrollbar" id="believeBar"><i></i></div>
 </div>
 </section>
 <!-- =============== 9b. SAFTA EXCELLENCE AWARDS =============== -->
