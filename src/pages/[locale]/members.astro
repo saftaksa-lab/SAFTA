@@ -33,7 +33,8 @@ const pins = members
     city: both(pick(m, 'city')),
     url: `/${locale}/member?id=${m.slug}`,
   }));
-// Inside a <script> element, so `<` is escaped: a name cannot close the element.
+// Embedded in an inline script element, so `<` is escaped: a name cannot close the element.
+// (Don't write the tag itself here: Vite's dependency scan would read the rest as script.)
 const pinsJson = JSON.stringify(pins).replace(/</g, '\\u003c');
 ---
 <BaseLayout
