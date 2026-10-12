@@ -1,14 +1,11 @@
 /**
- * The contact and register-interest pages: their heroes, the form labels, and
- * the info panels beside the forms.
- *
- * Required-field markers are not content: the markup renders `<b class="req">*</b>`
- * after every label whose input is `required`. Select options are a fixed set
- * (see `fixedOptions`), because each `value` is what the form submits.
+ * The contact and register-interest pages: their heroes and the info panels
+ * beside the forms. The forms themselves are HubSpot embeds
+ * (src/components/HubSpotForm.astro), so their labels are not content here.
  */
 import { z } from 'zod';
 import { defineSingleton } from './types.ts';
-import { bilingual, contactEmail, fixedOptions, itemId, optionsFrom } from './fields.ts';
+import { bilingual, contactEmail, itemId } from './fields.ts';
 import type { Banner } from './listings.ts';
 
 const heroSchema = z.object({
@@ -29,65 +26,6 @@ export const contactHero = defineSingleton<Banner>({
     titleEn: 'Contact us',
     ledeAr: 'للاستفسارات وفرص الشراكة وطلبات الدعم، تواصل معنا.',
     ledeEn: 'For inquiries, partnership opportunities or support requests, please contact us.',
-  },
-});
-
-const CONTACT_MESSAGE_DEFAULTS = {
-  messageLabelAr: 'الرسالة',
-  messageLabelEn: 'Message',
-  messagePlaceholderAr: 'اكتب رسالتك هنا…',
-  messagePlaceholderEn: 'Write your message here…',
-};
-
-const contactFormSchema = z.object({
-  ...bilingual('nameLabel', 60),
-  ...bilingual('namePlaceholder', 80),
-  ...bilingual('emailLabel', 60),
-  ...bilingual('emailPlaceholder', 80),
-  ...bilingual('phoneLabel', 60),
-  ...bilingual('phoneHint', 160),
-  ...bilingual('phonePlaceholder', 80),
-  ...bilingual('messageLabel', 60),
-  ...bilingual('messagePlaceholder', 160),
-  ...bilingual('submitLabel', 40),
-  ...bilingual('successMessage', 200),
-});
-
-export type ContactForm = z.infer<typeof contactFormSchema>;
-
-export const contactForm = defineSingleton<ContactForm>({
-  key: 'contact_form',
-  version: 2,
-  schema: contactFormSchema,
-  migrations: [
-    // v1 → v2: the form is down to name, email, phone and a message. The company,
-    // sector and country fields go; the message field arrives with its defaults.
-    (data) => {
-      const dropped = /^(company|sector|country)[A-Z]/;
-      const kept = Object.entries(data as Record<string, unknown>).filter(([key]) => !dropped.test(key));
-      return { ...Object.fromEntries(kept), ...CONTACT_MESSAGE_DEFAULTS };
-    },
-  ],
-  initial: {
-    nameLabelAr: 'الاسم الكامل',
-    nameLabelEn: 'Full Name',
-    namePlaceholderAr: 'مثال: سارة الأحمد',
-    namePlaceholderEn: 'e.g. Sara Al-Ahmed',
-    emailLabelAr: 'البريد الإلكتروني',
-    emailLabelEn: 'Email',
-    emailPlaceholderAr: 'name@company.com',
-    emailPlaceholderEn: 'name@company.com',
-    phoneLabelAr: 'رقم الجوال',
-    phoneLabelEn: 'Phone number',
-    phoneHintAr: 'أضف رمز الدولة. مثال: ‎+96659xxxxxxx',
-    phoneHintEn: 'Kindly add the country code. Exp: +96659xxxxxxx',
-    phonePlaceholderAr: '‎+966',
-    phonePlaceholderEn: '+966',
-    ...CONTACT_MESSAGE_DEFAULTS,
-    submitLabelAr: 'إرسال',
-    submitLabelEn: 'Submit',
-    successMessageAr: 'تم استلام طلبك. سنتواصل معك قريبًا.',
-    successMessageEn: 'Your request has been received. We will be in touch shortly.',
   },
 });
 
@@ -154,119 +92,6 @@ export const registerHero = defineSingleton<Banner>({
     ledeAr: 'عرّفنا بجهتك والتحدي الذي ترغب بالعمل عليه، وسنتواصل معك بحزمة العضوية.',
     ledeEn:
       'Tell us who you are and which challenge you want to work on. We will follow up with the membership pack.',
-  },
-});
-
-/**
- * These selects had no `value` before, so they submitted their visible text —
- * Arabic once the page switched language. The English label is now the fixed
- * value, matching what an English visitor already submitted.
- */
-export const REGISTER_ENTITY_TYPES = [
-  'Government entity',
-  'Academic institution',
-  'Private sector company',
-  'Non-profit organization',
-  'Individual innovator',
-] as const;
-
-export const REGISTER_AREAS = [
-  'Harsh climate conditions',
-  'Water scarcity',
-  'Pest risks',
-  'Soil degradation',
-  'Food waste',
-  'Other / not sure yet',
-] as const;
-
-const registerFormSchema = z.object({
-  ...bilingual('nameLabel', 60),
-  ...bilingual('entityLabel', 60),
-  ...bilingual('entityTypeLabel', 60),
-  ...bilingual('entityTypePrompt', 60),
-  entityTypeOptions: fixedOptions(REGISTER_ENTITY_TYPES),
-  ...bilingual('emailLabel', 60),
-  ...bilingual('phoneLabel', 60),
-  ...bilingual('websiteLabel', 60),
-  ...bilingual('websitePlaceholder', 80),
-  ...bilingual('areaLabel', 60),
-  ...bilingual('areaPrompt', 60),
-  areaOptions: fixedOptions(REGISTER_AREAS),
-  ...bilingual('areaHint', 200),
-  ...bilingual('messageLabel', 80),
-  ...bilingual('portfolioLabel', 80),
-  ...bilingual('portfolioHint', 160),
-  ...bilingual('chooseFileLabel', 40),
-  ...bilingual('noFileLabel', 40),
-  /** Prose (src/lib/prose.ts), for the links to the terms and the privacy policy. */
-  ...bilingual('consent', 600),
-  ...bilingual('submitLabel', 40),
-  ...bilingual('successMessage', 200),
-});
-
-export type RegisterForm = z.infer<typeof registerFormSchema>;
-
-export const registerForm = defineSingleton<RegisterForm>({
-  key: 'register_form',
-  version: 1,
-  schema: registerFormSchema,
-  migrations: [],
-  initial: {
-    nameLabelAr: 'الاسم الكامل',
-    nameLabelEn: 'Full name',
-    entityLabelAr: 'اسم الجهة',
-    entityLabelEn: 'Entity name',
-    entityTypeLabelAr: 'نوع الجهة',
-    entityTypeLabelEn: 'Entity type',
-    entityTypePromptAr: 'اختر…',
-    entityTypePromptEn: 'Select…',
-    entityTypeOptions: optionsFrom([
-      ['Government entity', 'جهة حكومية', 'Government entity'],
-      ['Academic institution', 'مؤسسة أكاديمية', 'Academic institution'],
-      ['Private sector company', 'شركة من القطاع الخاص', 'Private sector company'],
-      ['Non-profit organization', 'منظمة غير ربحية', 'Non-profit organization'],
-      ['Individual innovator', 'مبتكر فرد', 'Individual innovator'],
-    ]),
-    emailLabelAr: 'البريد الإلكتروني للعمل',
-    emailLabelEn: 'Work email',
-    phoneLabelAr: 'رقم الجوال',
-    phoneLabelEn: 'Phone number',
-    websiteLabelAr: 'الموقع الإلكتروني',
-    websiteLabelEn: 'Website',
-    websitePlaceholderAr: 'https://',
-    websitePlaceholderEn: 'https://',
-    areaLabelAr: 'مجال الاهتمام',
-    areaLabelEn: 'Area of interest',
-    areaPromptAr: 'اختر…',
-    areaPromptEn: 'Select…',
-    areaOptions: optionsFrom([
-      ['Harsh climate conditions', 'قسوة الظروف المناخية', 'Harsh climate conditions'],
-      ['Water scarcity', 'شُح الموارد المائية', 'Water scarcity'],
-      ['Pest risks', 'مخاطر الآفات الزراعية', 'Pest risks'],
-      ['Soil degradation', 'تدهور التربة', 'Soil degradation'],
-      ['Food waste', 'هدر الغذاء', 'Food waste'],
-      ['Other / not sure yet', 'أخرى / غير محدد بعد', 'Other / not sure yet'],
-    ]),
-    areaHintAr: 'مرتبط بالتحديات الوطنية الخمسة التي يعمل عليها التحالف.',
-    areaHintEn: 'Maps to the five national challenges the Alliance works on.',
-    messageLabelAr: 'لماذا ترغب بالانضمام؟',
-    messageLabelEn: 'Why do you want to join?',
-    portfolioLabelAr: 'ملف الأعمال أو العرض التعريفي',
-    portfolioLabelEn: 'Portfolio or company profile',
-    portfolioHintAr: 'PDF أو PPTX أو DOCX · حتى 10 م.ب · اختياري',
-    portfolioHintEn: 'PDF, PPTX or DOCX · up to 10MB · optional',
-    chooseFileLabelAr: 'اختر ملفًا',
-    chooseFileLabelEn: 'Choose file',
-    noFileLabelAr: 'لم يُختر أي ملف',
-    noFileLabelEn: 'No file chosen',
-    consentAr:
-      'أُقرّ بأنني مخوّل بتقديم هذا الطلب نيابةً عن الجهة المذكورة أعلاه، وأوافق على [الشروط والأحكام](/terms) و[سياسة الخصوصية](/privacy).',
-    consentEn:
-      'I confirm I am authorized to submit this request on behalf of the entity named above, and I accept the [Terms & Conditions](/terms) and [Privacy Policy](/privacy).',
-    submitLabelAr: 'إرسال التسجيل',
-    submitLabelEn: 'Submit registration',
-    successMessageAr: 'شكرًا لك — تم تسجيل طلبك بنجاح.',
-    successMessageEn: 'Thank you — your registration has been recorded.',
   },
 });
 

@@ -1,6 +1,7 @@
 /**
- * Brings every singleton row up to the schema version this build expects, and
- * inserts rows for surfaces that do not have one yet.
+ * Brings every singleton row up to the schema version this build expects,
+ * inserts rows for surfaces that do not have one yet, and deletes the rows of
+ * retired ones.
  *
  * Runs in `npm run setup`, immediately after `db:migrate`, so the app may assume
  * current-version content everywhere. Migration is eager on purpose: migrating
@@ -13,11 +14,16 @@ import { db } from '../src/db/index.ts';
 import { contentSingleton } from '../src/db/content-schema.ts';
 import { singletonList } from '../src/lib/content/schemas/index.ts';
 import { upgrade, needsUpgrade } from '../src/lib/content/migrate.ts';
-import { ensureSingletons } from '../src/lib/content/repo.ts';
+import { ensureSingletons, removeRetiredSingletons } from '../src/lib/content/repo.ts';
 
 const created = ensureSingletons();
 for (const key of created) {
   console.log(`[content] Created "${key}" at its initial value.`);
+}
+
+const removed = removeRetiredSingletons();
+for (const key of removed) {
+  console.log(`[content] Removed retired "${key}".`);
 }
 
 let migrated = 0;
@@ -41,7 +47,7 @@ db.transaction((tx) => {
   }
 });
 
-if (!created.length && !migrated) {
+if (!created.length && !removed.length && !migrated) {
   console.log('[content] All singletons are at their current version — nothing to do.');
 }
 

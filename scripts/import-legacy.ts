@@ -602,6 +602,14 @@ contact.drop(
   ['t011', 'p012', 't013', 't014', ...textKeys(15, 28), 't032', 't033', ...textKeys(34, 51)],
   'The contact form lost its company, sector and country fields (SAFTA, October 2026).',
 );
+contact.drop(
+  ['t004', 'p005', 't006', 'p007', 't008', 't009', 'p010', 't059', 't060'],
+  'The contact form became a HubSpot embed, so its labels are no longer content (SAFTA, October 2026).',
+);
+register.drop(
+  [...textKeys(4, 15), 'p016', ...textKeys(17, 33)],
+  'The register-interest form became a HubSpot embed, so its labels are no longer content (SAFTA, October 2026).',
+);
 
 const foundingEyebrow = about.text('t051', 'eyebrow');
 
@@ -703,22 +711,6 @@ const built = {
   },
 
   contact_hero: { ...contact.text('t002', 'title'), ...contact.text('t003', 'lede') },
-  contact_form: {
-    ...contact.text('t004', 'nameLabel', { stripRequired: true }),
-    ...contact.text('p005', 'namePlaceholder'),
-    ...contact.text('t006', 'emailLabel', { stripRequired: true }),
-    ...contact.text('p007', 'emailPlaceholder'),
-    ...contact.text('t008', 'phoneLabel'),
-    ...contact.text('t009', 'phoneHint'),
-    ...contact.text('p010', 'phonePlaceholder'),
-    // The legacy form had no message field; it starts from the defaults.
-    messageLabelAr: initial('contact_form').messageLabelAr,
-    messageLabelEn: initial('contact_form').messageLabelEn,
-    messagePlaceholderAr: initial('contact_form').messagePlaceholderAr,
-    messagePlaceholderEn: initial('contact_form').messagePlaceholderEn,
-    ...contact.text('t059', 'submitLabel'),
-    ...contact.text('t060', 'successMessage'),
-  },
   contact_info: {
     ...contact.text('t061', 'heading'),
     ...contact.text('t062', 'lede'),
@@ -734,29 +726,6 @@ const built = {
   },
 
   register_hero: { ...register.text('t002', 'title'), ...register.text('t003', 'lede') },
-  register_form: {
-    ...register.text('t004', 'nameLabel', { stripRequired: true }),
-    ...register.text('t005', 'entityLabel', { stripRequired: true }),
-    ...register.text('t006', 'entityTypeLabel', { stripRequired: true }),
-    ...register.text('t007', 'entityTypePrompt'),
-    entityTypeOptions: options(register, 8, initial('register_form').entityTypeOptions),
-    ...register.text('t013', 'emailLabel', { stripRequired: true }),
-    ...register.text('t014', 'phoneLabel'),
-    ...register.text('t015', 'websiteLabel'),
-    ...register.text('p016', 'websitePlaceholder'),
-    ...register.text('t017', 'areaLabel', { stripRequired: true }),
-    ...register.text('t018', 'areaPrompt'),
-    areaOptions: options(register, 19, initial('register_form').areaOptions),
-    ...register.text('t025', 'areaHint'),
-    ...register.text('t026', 'messageLabel'),
-    ...register.text('t027', 'portfolioLabel'),
-    ...register.text('t028', 'portfolioHint'),
-    ...register.text('t029', 'chooseFileLabel'),
-    ...register.text('t030', 'noFileLabel'),
-    ...register.text('t031', 'consent', { prose: true }),
-    ...register.text('t032', 'submitLabel'),
-    ...register.text('t033', 'successMessage'),
-  },
   register_info: {
     ...register.text('t034', 'heading'),
     ...register.text('t035', 'lede'),
@@ -778,21 +747,6 @@ const built = {
   reports_intro: initial('reports_intro'),
   reports_list: initial('reports_list'),
 } satisfies { [K in SingletonKey]: SingletonData<K> };
-
-/**
- * A select's labels from consecutive keys starting at `t<first>`. The submitted
- * `value`s are fixed in code (see `fixedOptions`), so they come from `initial`.
- */
-function options<V extends string>(
-  page: LegacyPage,
-  first: number,
-  fixed: Array<{ value: V; labelAr: string; labelEn: string }>,
-) {
-  return fixed.map((option, i) => ({
-    value: option.value,
-    ...page.text(`t${String(first + i).padStart(3, '0')}`, 'label'),
-  }));
-}
 
 built.article_chrome.defaultImageId = await articlePage.image('i001', {
   ar: built.article_chrome.crumbMediaAr,

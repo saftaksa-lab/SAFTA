@@ -64,6 +64,15 @@ that is the same everywhere, such as the Home breadcrumb and member category nam
 `src/lib/ui.ts`. A missing `?id=` on `/member` or `/article` redirects to the list; an unknown or
 unpublished one is a 404.
 
+**The contact and register-interest forms are HubSpot embeds**
+([src/components/HubSpotForm.astro](src/components/HubSpotForm.astro)), shared with Water STRIP:
+submissions go straight to HubSpot, and the form fields are edited there, not in `/admin`. The
+embed sets the hidden Alliance Category to `SAFTA`. In Arabic it uses HubSpot's `ar-eg` locale and
+rewrites labels and options from [src/lib/hubspot.ts](src/lib/hubspot.ts), keyed by HubSpot field
+name, so a field added in HubSpot shows in English there until it gets an entry. The retired
+`contact_form` and `register_form` singletons are deleted by `npm run content:migrate`. If the
+site gets a Content-Security-Policy, it must allow `js.hsforms.net` and HubSpot's form hosts.
+
 The old editor is still at `/admin/legacy`, but it no longer changes the site: it writes
 `content/*.json`, which is now only the source of the one-time legacy import. It goes away once
 that import has run.

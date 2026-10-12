@@ -24,3 +24,22 @@ export const reportsUi = {
   empty: { ar: 'لا توجد تقارير منشورة حاليًا.', en: 'No reports have been published yet.' },
   external: { ar: 'يفتح في نافذة جديدة', en: 'Opens in a new tab' },
 } satisfies Record<string, Bilingual>;
+
+/**
+ * The HubSpot forms' fixed lines (src/components/HubSpotForm.astro): the success
+ * message shown in place of each form, and the line shown if the form cannot load.
+ */
+export const formsUi = {
+  contactSuccess: {
+    ar: 'تم استلام طلبك. سنتواصل معك قريبًا.',
+    en: 'Your request has been received. We will be in touch shortly.',
+  },
+  registerSuccess: {
+    ar: 'شكرًا لك — تم تسجيل طلبك بنجاح.',
+    en: 'Thank you — your registration has been recorded.',
+  },
+  fallback: {
+    ar: 'تعذّر تحميل النموذج. راسلنا مباشرةً على',
+    en: 'The form couldn’t load. Email us directly at',
+  },
+} satisfies Record<string, Bilingual>;

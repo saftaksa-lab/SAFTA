@@ -1,9 +1,10 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Text from '../../components/content/Text.astro';
+import HubSpotForm from '../../components/HubSpotForm.astro';
 import { getSingleton } from '../../lib/content/cache';
-import { english, pick } from '../../lib/bilingual';
-import { crumbHome } from '../../lib/ui';
+import { pick } from '../../lib/bilingual';
+import { crumbHome, formsUi } from '../../lib/ui';
 import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
@@ -13,9 +14,7 @@ const { locale } = Astro.params;
 if (!isLocale(locale)) return new Response(null, { status: 404 });
 
 const hero = getSingleton('register_hero');
-const form = getSingleton('register_form');
 const info = getSingleton('register_info');
-const website = pick(form, 'websitePlaceholder');
 ---
 <BaseLayout
   locale={locale}
@@ -35,39 +34,7 @@ const website = pick(form, 'websitePlaceholder');
 <section class="ribbon">
 <div class="wrap">
 <div class="form-shell">
-<form class="form reveal" id="interestForm" novalidate="">
-<div class="row-2">
-<div class="field"><Text as="label" field={pick(form, 'nameLabel')} for="ri-name" required /><input id="ri-name" name="name" required=""/></div>
-<div class="field"><Text as="label" field={pick(form, 'entityLabel')} for="ri-entity" required /><input id="ri-entity" name="entity" required=""/></div>
-</div>
-<div class="row-2">
-<div class="field"><Text as="label" field={pick(form, 'entityTypeLabel')} for="ri-type" required />
-<select id="ri-type" name="type" required=""><Text as="option" field={pick(form, 'entityTypePrompt')} value="" />{form.entityTypeOptions.map((option) => (<Text as="option" field={pick(option, 'label')} value={option.value} />))}</select></div>
-<div class="field"><Text as="label" field={pick(form, 'emailLabel')} for="ri-email" required /><input id="ri-email" name="email" required="" type="email"/></div>
-</div>
-<div class="row-2">
-<div class="field"><Text as="label" field={pick(form, 'phoneLabel')} for="ri-phone" /><input id="ri-phone" name="phone"/></div>
-<div class="field"><Text as="label" field={pick(form, 'websiteLabel')} for="ri-site" /><input data-ar-placeholder={website.ar} id="ri-site" name="website" placeholder={english(website)}/></div>
-</div>
-<div class="field"><Text as="label" field={pick(form, 'areaLabel')} for="ri-area" required />
-<select id="ri-area" name="area" required=""><Text as="option" field={pick(form, 'areaPrompt')} value="" />{form.areaOptions.map((option) => (<Text as="option" field={pick(option, 'label')} value={option.value} />))}</select>
-<Text as="p" field={pick(form, 'areaHint')} class="hint" /></div>
-<div class="field"><Text as="label" field={pick(form, 'messageLabel')} for="ri-msg" /><textarea id="ri-msg" name="message"></textarea></div>
-<div class="field">
-<Text as="label" field={pick(form, 'portfolioLabel')} for="ri-file" />
-<Text as="p" field={pick(form, 'portfolioHint')} class="hint hint--top" />
-<div class="filepick">
-<input accept=".pdf,.ppt,.pptx,.doc,.docx" id="ri-file" name="portfolio" type="file"/>
-<Text as="label" field={pick(form, 'chooseFileLabel')} class="filepick__btn" for="ri-file" />
-<Text as="span" field={pick(form, 'noFileLabel')} class="filepick__name" />
-</div>
-</div>
-<label class="check"><input required="" type="checkbox"/><Text as="span" field={pick(form, 'consent')} prose locale={locale} /></label>
-<div class="form-actions">
-<button class="btn-solid" type="submit"><Text as="span" field={pick(form, 'submitLabel')} /><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></button>
-<span class="form-msg" id="riMsg"><svg fill="none" height="15" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="15"><path d="M20 6L9 17l-5-5"></path></svg><Text as="span" field={pick(form, 'successMessage')} /></span>
-</div>
-</form>
+<HubSpotForm email={info.email} formId="71294bfb-a43d-412f-a937-16a0754172ad" success={formsUi.registerSuccess} />
 <aside class="aside-card reveal">
 <Text as="h3" field={pick(info, 'heading')} />
 <Text as="p" field={pick(info, 'lede')} class="aside-card__lede" />

@@ -1,9 +1,10 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Text from '../../components/content/Text.astro';
+import HubSpotForm from '../../components/HubSpotForm.astro';
 import { getSingleton } from '../../lib/content/cache';
-import { english, pick } from '../../lib/bilingual';
-import { crumbHome } from '../../lib/ui';
+import { pick } from '../../lib/bilingual';
+import { crumbHome, formsUi } from '../../lib/ui';
 import { isLocale } from '../../lib/locale';
 
 export function getStaticPaths() {
@@ -13,13 +14,7 @@ const { locale } = Astro.params;
 if (!isLocale(locale)) return new Response(null, { status: 404 });
 
 const hero = getSingleton('contact_hero');
-const form = getSingleton('contact_form');
 const info = getSingleton('contact_info');
-// Placeholders swap through data-ar-placeholder, which i18n.js assigns as plain text.
-const placeholder = (name: 'namePlaceholder' | 'emailPlaceholder' | 'phonePlaceholder' | 'messagePlaceholder') => {
-  const field = pick(form, name);
-  return { placeholder: english(field), 'data-ar-placeholder': field.ar };
-};
 ---
 <BaseLayout
   locale={locale}
@@ -39,36 +34,7 @@ const placeholder = (name: 'namePlaceholder' | 'emailPlaceholder' | 'phonePlaceh
 <section class="ribbon" id="contactMain">
 <div class="wrap">
 <div class="form-shell contact-page">
-<form class="form reveal" id="contactForm" novalidate="">
-
-<div class="field">
-<Text as="label" field={pick(form, 'nameLabel')} for="c-name" required />
-<input autocomplete="name" id="c-name" {...placeholder('namePlaceholder')} name="fullName" required=""/>
-</div>
-
-<div class="row-2">
-<div class="field">
-<Text as="label" field={pick(form, 'emailLabel')} for="c-email" required />
-<input autocomplete="email" id="c-email" {...placeholder('emailPlaceholder')} name="email" required="" type="email"/>
-</div>
-<div class="field">
-<Text as="label" field={pick(form, 'phoneLabel')} for="c-phone" />
-<Text as="p" field={pick(form, 'phoneHint')} class="hint hint--top" />
-<input autocomplete="tel" id="c-phone" inputmode="tel" name="mobile" {...placeholder('phonePlaceholder')} type="tel" value="+966"/>
-</div>
-</div>
-
-<div class="field">
-<Text as="label" field={pick(form, 'messageLabel')} for="c-message" required />
-<textarea id="c-message" {...placeholder('messagePlaceholder')} name="message" required="" rows="6"></textarea>
-</div>
-
-<div class="form-actions">
-<button class="btn-solid" type="submit"><Text as="span" field={pick(form, 'submitLabel')} /><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="16"><path d="M5 12h13M13 6l6 6-6 6"></path></svg></button>
-<span class="form-msg" id="cMsg"><svg fill="none" height="18" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="18"><path d="M20 6L9 17l-5-5"></path></svg><Text as="span" field={pick(form, 'successMessage')} /></span>
-</div>
-
-</form>
+<HubSpotForm email={info.email} formId="810ee0b8-f9a6-4443-a3e7-6fcbf2d0075f" success={formsUi.contactSuccess} />
 <aside class="aside-card reveal">
 <Text as="h3" field={pick(info, 'heading')} />
 <Text as="p" field={pick(info, 'lede')} class="aside-card__lede" />

@@ -1,0 +1,197 @@
+---
+/**
+ * A HubSpot form embedded with HubSpot's v2 script. Submissions go straight to
+ * HubSpot, never to this server. Water STRIP embeds the same two forms (its own
+ * copy of this component); the hidden Alliance Category field is set to
+ * ALLIANCE before HubSpot reads it, so leads land under the right alliance.
+ *
+ * Language: the form's text comes from HubSpot in English. In Arabic it is
+ * translated and set RTL (see src/lib/hubspot.ts). The header's switch reloads
+ * the page, but i18n.js can also switch in place (`SAFTA_setLang`), so the form
+ * is rebuilt in the new language on `safta:lang`; after a submission only the
+ * success message is swapped.
+ *
+ * Styling: HubSpot renders the form in a same-origin iframe, out of reach of
+ * style.css, and a form with a HubSpot-side theme ignores the embed's `css`
+ * option. So each build appends `css` below inside the iframe. It restates the
+ * site's .field / .btn-solid values (style.css "FORMS"); the `form.hs-form`
+ * prefix outranks HubSpot's theme selectors. The page's fonts come along: its
+ * same-origin @font-face rules are copied and cross-origin stylesheets (Google
+ * Fonts) linked. If HubSpot renames its classes the form falls back to
+ * HubSpot's own look and English text.
+ *
+ * If the script is blocked (ad blockers, offline) the fallback line points
+ * people at `email` instead.
+ */
+import Text from './content/Text.astro';
+import { hubspotArabic } from '../lib/hubspot';
+import { formsUi } from '../lib/ui';
+import type { Bilingual } from '../lib/bilingual';
+
+interface Props {
+  formId: string;
+  /** Shown in place of the form after a successful submission. */
+  success: Bilingual;
+  email: string;
+}
+
+const { formId, success, email } = Astro.props;
+
+const hubspot = { portalId: '46313188', formId, region: 'na1' };
+const ALLIANCE = 'SAFTA';
+const targetId = `hs-${formId}`;
+const fallbackId = `${targetId}-fallback`;
+
+const css = `
+  body { color: #0E2F2A; }
+  form.hs-form fieldset { max-width: none; }
+  /* HubSpot floats paired fields left with an LTR-only gutter; flex works both ways. */
+  form.hs-form fieldset.form-columns-2 { display: flex; gap: 22px; }
+  form.hs-form fieldset.form-columns-2 .hs-form-field { float: none; flex: 1; width: auto; }
+  form.hs-form .hs-form-field { margin-bottom: 26px; }
+  form.hs-form .hs-form-field > label { display: block; font-size: 12px; font-weight: 400; line-height: 1.45; letter-spacing: .9px; text-transform: uppercase; color: #4B6660; margin-bottom: 9px; }
+  form.hs-form .hs-form-required { color: #C0392B; margin-inline-start: 2px; }
+  form.hs-form .hs-field-desc { font-family: inherit; font-size: 11.5px; line-height: 17px; color: #4B6660; margin: -4px 0 8px; }
+  form.hs-form .hs-input { width: 100%; height: auto; font-family: inherit; font-size: 15px; color: #0E2F2A; background: #fff; border: 1px solid #D3E0DA; border-radius: 0; transition: border-color .3s, box-shadow .3s; }
+  /* HubSpot's theme sizes text inputs through a long :not() chain no plain selector outranks. */
+  form.hs-form .hs-input { padding: 14px 16px !important; min-height: 52px !important; }
+  form.hs-form textarea.hs-input { min-height: 150px !important; resize: vertical; }
+  form.hs-form .hs-input:focus { outline: 0; border-color: #015C44; box-shadow: 0 0 0 3px rgba(99,189,105,.18); }
+  form.hs-form .hs-input.invalid.error { border-color: #C0392B; }
+  form.hs-form .hs-error-msgs { list-style: none; margin: 7px 0 0; padding: 0; }
+  form.hs-form .hs-error-msg { font-size: 12px; color: #C0392B; }
+  form.hs-form .hs-button { height: 52px; line-height: 52px; padding: 0 34px; border: 0; border-radius: 0; color: #fff; font-size: 14px; font-weight: 600; letter-spacing: .5px; transition: background .3s, transform .3s; }
+  form.hs-form .hs-button:hover { transform: translateY(-2px); }
+  /* The theme sets these per form instance and per :hover/:focus/:active state. */
+  form.hs-form label, form.hs-form .hs-button { font-family: inherit !important; }
+  form.hs-form .hs-button, form.hs-form .hs-button:focus, form.hs-form .hs-button:active { background: #015C44 !important; }
+  form.hs-form .hs-button:hover { background: #01452F !important; }
+  .submitted-message { font-family: inherit; font-size: 15px; color: #015C44; }
+  /* As style.css does for [lang="ar"]: tracking breaks Arabic letter joining. */
+  html[lang="ar"] form.hs-form .hs-form-field > label, html[lang="ar"] form.hs-form .hs-button { letter-spacing: 0; }
+  html[lang="ar"] form.hs-form .hs-field-desc { font-size: 12px; line-height: 19px; }
+  /* Emails, phone numbers and URLs are typed LTR, still right-aligned in RTL. */
+  html[lang="ar"] form.hs-form :is(input[type="email"], .hs-fieldtype-phonenumber input, [class~="hs_0-2/domain"] input) { direction: ltr; text-align: right; }
+`;
+---
+
+<div class="hs-embed reveal">
+  <div id={targetId}></div>
+  <p class="hs-embed__fallback" hidden id={fallbackId}>
+    <Text field={formsUi.fallback} /> <a href={`mailto:${email}`}>{email}</a>
+  </p>
+</div>
+
+<script is:inline charset="utf-8" src="https://js.hsforms.net/forms/embed/v2.js"></script>
+<script is:inline define:vars={{ hubspot, targetId, fallbackId, css, copy: hubspotArabic, alliance: ALLIANCE, success }}>
+  // The page's fonts for the iframe: same-origin @font-face rules copied with
+  // their URLs made absolute, cross-origin stylesheets (Google Fonts) linked.
+  function fontStyles(doc) {
+    const faces = [];
+    for (const sheet of document.styleSheets) {
+      let rules;
+      try {
+        rules = sheet.cssRules;
+      } catch {
+        if (sheet.href) {
+          const link = doc.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = sheet.href;
+          doc.head.append(link);
+        }
+        continue;
+      }
+      for (const rule of rules) {
+        if (!(rule instanceof CSSFontFaceRule)) continue;
+        const base = sheet.href || document.baseURI;
+        faces.push(rule.cssText.replace(/url\((['"]?)([^'")]+)\1\)/g, (_m, _q, url) => `url("${new URL(url, base)}")`));
+      }
+    }
+    return faces.join('\n');
+  }
+
+  // Idempotent, so a MutationObserver can rerun it whenever HubSpot re-renders.
+  function translate(form) {
+    const set = (el, text) => {
+      if (el && text && el.textContent !== text) el.textContent = text;
+    };
+    for (const box of form.querySelectorAll('.hs-form-field')) {
+      const input = box.querySelector('[name]');
+      if (!input) continue;
+      // Non-contact properties carry HubSpot's object type, e.g. "0-2/sector".
+      const name = input.name.replace(/^\d+-\d+\//, '');
+      const field = copy.fields[name] || {};
+      const labels = copy.options[name] || {};
+      set(box.querySelector(':scope > label > span:first-child'), field.label);
+      set(box.querySelector(':scope > .hs-field-desc'), field.description);
+      for (const option of box.querySelectorAll('option')) set(option, option.value ? labels[option.value] : copy.choose);
+    }
+  }
+
+  // Through the native setter plus an event, so HubSpot's own state sees it.
+  function setHidden(form, name, value) {
+    const input = form.querySelector(`input[type="hidden"][name="${name}"]`);
+    if (!input || input.value === value) return;
+    const win = form.ownerDocument.defaultView;
+    Object.getOwnPropertyDescriptor(win.HTMLInputElement.prototype, 'value').set.call(input, value);
+    input.dispatchEvent(new win.Event('input', { bubbles: true }));
+    input.dispatchEvent(new win.Event('change', { bubbles: true }));
+  }
+
+  const target = document.getElementById(targetId);
+  let built = null; // the language the form was last built in
+  let submitted = null; // the iframe document, once the form has been sent
+
+  function build() {
+    const lang = document.documentElement.lang === 'ar' ? 'ar' : 'en';
+    if (lang === built) return;
+    built = lang;
+    if (submitted) {
+      const message = submitted.querySelector('.submitted-message');
+      if (message) message.textContent = success[lang];
+      submitted.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      return;
+    }
+    const ar = lang === 'ar';
+    target.replaceChildren();
+    target.dir = ar ? 'rtl' : 'ltr';
+    target.lang = lang;
+    window.hbspt.forms.create({
+      ...hubspot,
+      target: `#${targetId}`,
+      // HubSpot wants a fresh instance id each time the same form is created.
+      formInstanceId: `${lang}-${Date.now()}`,
+      inlineMessage: success[lang],
+      ...(ar && { locale: copy.locale }),
+      onFormReady(wrapped) {
+        // A jQuery wrapper or the <form> itself, depending on HubSpot's build.
+        const form = wrapped[0] || wrapped;
+        const doc = form.ownerDocument;
+        const style = doc.createElement('style');
+        style.textContent = `${fontStyles(doc)}\n${css}\nbody { font-family: ${getComputedStyle(document.body).fontFamily}; }`;
+        doc.head.append(style);
+        doc.documentElement.dir = ar ? 'rtl' : 'ltr';
+        doc.documentElement.lang = lang;
+        // HubSpot keeps rendering fields after onFormReady, so watch the
+        // iframe's body, with the iframe's own MutationObserver.
+        const run = () =>
+          doc.querySelectorAll('form').forEach((f) => {
+            setHidden(f, 'alliance_category', alliance);
+            if (ar) translate(f);
+          });
+        run();
+        new doc.defaultView.MutationObserver(run).observe(doc.body, { childList: true, subtree: true, characterData: true });
+      },
+      onFormSubmitted(wrapped) {
+        submitted = (wrapped[0] || wrapped).ownerDocument;
+      },
+    });
+  }
+
+  if (window.hbspt) {
+    build();
+    document.addEventListener('safta:lang', build);
+  } else {
+    document.getElementById(fallbackId)?.removeAttribute('hidden');
+  }
+</script>

@@ -384,23 +384,6 @@ export const sections = {
 
   // Contact ------------------------------------------------------------------
   contact_hero: banner('أعلى الصفحة'),
-  contact_form: {
-    title: 'نموذج التواصل',
-    lede: 'تسميات حقول النموذج. علامة الحقل المطلوب (*) تُضاف تلقائيًا.',
-    fields: [
-      { kind: 'text', name: 'nameLabel', label: 'الاسم: التسمية' },
-      { kind: 'text', name: 'namePlaceholder', label: 'الاسم: النص المؤقت' },
-      { kind: 'text', name: 'emailLabel', label: 'البريد: التسمية' },
-      { kind: 'text', name: 'emailPlaceholder', label: 'البريد: النص المؤقت' },
-      { kind: 'text', name: 'phoneLabel', label: 'الجوال: التسمية' },
-      { kind: 'text', name: 'phoneHint', label: 'الجوال: الإرشاد' },
-      { kind: 'text', name: 'phonePlaceholder', label: 'الجوال: النص المؤقت' },
-      { kind: 'text', name: 'messageLabel', label: 'الرسالة: التسمية' },
-      { kind: 'text', name: 'messagePlaceholder', label: 'الرسالة: النص المؤقت', rows: 2 },
-      { kind: 'text', name: 'submitLabel', label: 'نص زر الإرسال' },
-      { kind: 'text', name: 'successMessage', label: 'رسالة النجاح', rows: 2 },
-    ],
-  },
   contact_info: {
     title: 'التواصل المباشر',
     fields: [
@@ -420,43 +403,6 @@ export const sections = {
 
   // Register interest ----------------------------------------------------------
   register_hero: banner('أعلى الصفحة'),
-  register_form: {
-    title: 'نموذج التسجيل',
-    lede: 'تسميات حقول النموذج. علامة الحقل المطلوب (*) تُضاف تلقائيًا.',
-    fields: [
-      { kind: 'text', name: 'nameLabel', label: 'الاسم: التسمية' },
-      { kind: 'text', name: 'entityLabel', label: 'اسم الجهة: التسمية' },
-      { kind: 'text', name: 'entityTypeLabel', label: 'نوع الجهة: التسمية' },
-      { kind: 'text', name: 'entityTypePrompt', label: 'نوع الجهة: الخيار الأول الفارغ' },
-      {
-        kind: 'options',
-        name: 'entityTypeOptions',
-        label: 'نوع الجهة: الخيارات',
-        hint: 'الخيارات ثابتة. يمكن تعديل النص الظاهر لكل خيار فقط.',
-      },
-      { kind: 'text', name: 'emailLabel', label: 'البريد: التسمية' },
-      { kind: 'text', name: 'phoneLabel', label: 'الجوال: التسمية' },
-      { kind: 'text', name: 'websiteLabel', label: 'الموقع الإلكتروني: التسمية' },
-      { kind: 'text', name: 'websitePlaceholder', label: 'الموقع الإلكتروني: النص المؤقت' },
-      { kind: 'text', name: 'areaLabel', label: 'مجال الاهتمام: التسمية' },
-      { kind: 'text', name: 'areaPrompt', label: 'مجال الاهتمام: الخيار الأول الفارغ' },
-      {
-        kind: 'options',
-        name: 'areaOptions',
-        label: 'مجال الاهتمام: الخيارات',
-        hint: 'الخيارات ثابتة. يمكن تعديل النص الظاهر لكل خيار فقط.',
-      },
-      { kind: 'text', name: 'areaHint', label: 'مجال الاهتمام: الإرشاد' },
-      { kind: 'text', name: 'messageLabel', label: 'الرسالة: التسمية' },
-      { kind: 'text', name: 'portfolioLabel', label: 'الملف المرفق: التسمية' },
-      { kind: 'text', name: 'portfolioHint', label: 'الملف المرفق: الإرشاد' },
-      { kind: 'text', name: 'chooseFileLabel', label: 'نص زر اختيار الملف' },
-      { kind: 'text', name: 'noFileLabel', label: 'نص «لم يُختر ملف»' },
-      { kind: 'text', name: 'consent', label: 'نص الإقرار', rows: 3, hint: PROSE_HINT },
-      { kind: 'text', name: 'submitLabel', label: 'نص زر الإرسال' },
-      { kind: 'text', name: 'successMessage', label: 'رسالة النجاح', rows: 2 },
-    ],
-  },
   register_info: {
     title: 'ماذا بعد؟',
     fields: [

@@ -31,10 +31,8 @@ import {
 } from './listings.ts';
 import {
   contactHero,
-  contactForm,
   contactInfo,
   registerHero,
-  registerForm,
   registerInfo,
 } from './forms.ts';
 import { reportsBanner, reportsIntro, reportsList } from './reports.ts';
@@ -69,14 +67,23 @@ export const singletons = {
   reports_intro: reportsIntro,
   reports_list: reportsList,
   contact_hero: contactHero,
-  contact_form: contactForm,
   contact_info: contactInfo,
   register_hero: registerHero,
-  register_form: registerForm,
   register_info: registerInfo,
 } as const;
 
 export type SingletonKey = keyof typeof singletons;
+
+/**
+ * Surfaces that no longer exist. `npm run content:migrate` deletes their rows, and
+ * an import skips them. Keep a key here once it is retired, so an old database
+ * still gets cleaned up.
+ */
+export const RETIRED_SINGLETONS: readonly string[] = [
+  // October 2026: both forms became HubSpot embeds (src/components/HubSpotForm.astro).
+  'contact_form',
+  'register_form',
+];
 export type SingletonData<K extends SingletonKey> = (typeof singletons)[K]['initial'];
 
 export const singletonList: AnySingleton[] = Object.values(singletons);

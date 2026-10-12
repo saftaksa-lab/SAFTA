@@ -21,6 +21,7 @@ import {
   WORKING_GROUP_CHALLENGES,
 } from '../../db/content-schema.ts';
 import {
+  RETIRED_SINGLETONS,
   singletons,
   singletonList,
   type AnySingleton,
@@ -145,6 +146,21 @@ export function ensureSingletons(): string[] {
   });
   if (created.length) invalidateAll();
   return created;
+}
+
+/**
+ * Deletes the rows of retired surfaces (`RETIRED_SINGLETONS`). Nothing reads
+ * them, but they would otherwise sit in the database forever. Runs as part of
+ * `npm run setup`; returns the keys it deleted.
+ */
+export function removeRetiredSingletons(): string[] {
+  if (!RETIRED_SINGLETONS.length) return [];
+  return db
+    .delete(contentSingleton)
+    .where(inArray(contentSingleton.key, [...RETIRED_SINGLETONS]))
+    .returning({ key: contentSingleton.key })
+    .all()
+    .map((row) => row.key);
 }
 
 // ---------------------------------------------------------------------------
